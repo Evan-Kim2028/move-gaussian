@@ -15,19 +15,24 @@
 /// # Implementation
 /// 
 /// Uses a degree (11,11) rational polynomial approximation P(x)/Q(x) computed
-/// offline using the AAA algorithm. Coefficients are stored in `erf_coefficients`
-/// module and evaluated using Horner's method for efficiency.
+/// offline using the AAA algorithm with mpmath (50-digit) sampling.
+/// Coefficients are stored in `erf_coefficients` module and evaluated using 
+/// Horner's method for efficiency.
 /// 
 /// # Accuracy
 /// 
-/// - Max error vs scipy.special.erf: 5.68e-11
+/// - Max error vs mpmath reference: ~6e-11 (verified against 50-digit precision)
 /// - Domain: x ∈ [0, 6] (covers 99.9999998% of distribution)
 /// - Inputs > 6 are clamped to 6
+/// 
+/// Note: The (11,11) degree is optimal for polynomial evaluation. Higher degrees
+/// achieve better AAA approximation but lose precision during the barycentric
+/// to polynomial conversion. See notes/gaussian/precision-limits-and-roadmap.md.
 /// 
 /// # Production Cycle
 /// 
 /// This code is part of a Python → Move pipeline:
-/// 1. Python: AAA algorithm finds optimal P(x)/Q(x) coefficients
+/// 1. Python: AAA algorithm finds optimal P(x)/Q(x) coefficients (mpmath 50-digit sampling)
 /// 2. Python: Scales coefficients to WAD integers (1e18)
 /// 3. Python: Generates `erf_coefficients.move` and test vectors
 /// 4. Move: This module evaluates P(x)/Q(x) using Horner's method
@@ -69,17 +74,65 @@ module gaussian::erf {
     // Error codes
     // ========================================
     
-    /// Denominator is zero (should never happen in valid domain)
-    const E_DENOMINATOR_ZERO: u64 = 100;
+    /// Denominator is zero (Q(x) = 0).
+    /// 
+    /// This error indicates the denominator polynomial Q(x) evaluated to zero,
+    /// which would cause division by zero in the rational function P(x)/Q(x).
+    /// 
+    /// **This should never occur** in the valid domain [0, 6*SCALE] because the
+    /// AAA algorithm ensures Q(x) has no poles (zeros) in this range.
+    /// 
+    /// **If you encounter this error:**
+    /// 1. Verify input is within [0, 6*SCALE] (6e18)
+    /// 2. Check that `erf_coefficients` module was not manually modified
+    /// 3. Report as a bug if input is valid
+    /// 
+    /// **Technical details:**
+    /// - Error code range: 100-199 (erf module errors)
+    /// - Thrown by: `erf_internal()` when Q(x) = 0
+    /// - Related functions: All functions in this module
+    const EDenominatorZero: u64 = 100;
+    
+    /// Input exceeds valid domain [0, 6*SCALE].
+    /// 
+    /// This error is thrown by strict validation functions when the input
+    /// is larger than 6*SCALE (6e18).
+    /// 
+    /// **Why 6 is the limit:**
+    /// - erf(6) ≈ 0.9999999999999998 (essentially 1.0)
+    /// - Beyond 6σ, the error function saturates
+    /// - Approximation quality degrades outside [0, 6]
+    /// 
+    /// **How to fix:**
+    /// - Use `erf()` instead of `erf_strict()` - it clamps automatically
+    /// - Or clamp your input: `let x = min(x_raw, 6 * SCALE)`
+    /// 
+    /// **Example:**
+    /// ```move
+    /// // This will abort with EInputTooLarge:
+    /// let result = erf_strict(10_000_000_000_000_000_000); // 10.0
+    /// 
+    /// // This will work (clamps to 6.0):
+    /// let result = erf(10_000_000_000_000_000_000);
+    /// ```
+    /// 
+    /// **Technical details:**
+    /// - Error code range: 100-199 (erf module errors)
+    /// - Thrown by: `erf_strict()`, `erfc_strict()`, `phi_strict()`
+    /// - Valid domain: [0, 6_000_000_000_000_000_000]
+    const EInputTooLarge: u64 = 101;
     
     // ========================================
     // Main API
     // ========================================
     
-    /// Compute erf(x) for x in [0, 6*SCALE].
+    /// Compute erf(x) for x in [0, 6*SCALE] with input clamping.
     /// 
     /// The error function is defined as:
     ///   erf(x) = (2/√π) ∫₀ˣ e^(-t²) dt
+    /// 
+    /// Inputs larger than 6*SCALE are silently clamped to 6*SCALE.
+    /// For strict input validation, use `erf_strict()`.
     /// 
     /// Properties:
     /// - erf(0) = 0
@@ -90,13 +143,37 @@ module gaussian::erf {
     public fun erf(x: u256): u256 {
         // Clamp to domain
         let x_clamped = if (x > MAX_INPUT) { MAX_INPUT } else { x };
-        
+        erf_internal(x_clamped)
+    }
+    
+    /// Compute erf(x) for x in [0, 6*SCALE] with strict input validation.
+    /// 
+    /// The error function is defined as:
+    ///   erf(x) = (2/√π) ∫₀ˣ e^(-t²) dt
+    /// 
+    /// Aborts if x > 6*SCALE. For automatic clamping, use `erf()`.
+    /// 
+    /// Properties:
+    /// - erf(0) = 0
+    /// - erf(∞) = 1
+    /// - erf(-x) = -erf(x) (symmetry, handle in caller)
+    /// 
+    /// Returns: erf(x) scaled by SCALE, in range [0, SCALE]
+    public fun erf_strict(x: u256): u256 {
+        assert!(x <= MAX_INPUT, EInputTooLarge);
+        erf_internal(x)
+    }
+    
+    /// Internal implementation of erf evaluation.
+    /// 
+    /// Assumes x is already validated/clamped to domain [0, 6*SCALE].
+    fun erf_internal(x: u256): u256 {
         // Evaluate P(x) / Q(x)
-        let (p_mag, p_neg) = horner_eval_p(x_clamped);
-        let (q_mag, _q_neg) = horner_eval_q(x_clamped);
+        let (p_mag, p_neg) = horner_eval_p(x);
+        let (q_mag, _q_neg) = horner_eval_q(x);
         
         // Q(x) should always be positive in our domain (no poles)
-        assert!(q_mag > 0, E_DENOMINATOR_ZERO);
+        assert!(q_mag > 0, EDenominatorZero);
         
         // Compute P(x) / Q(x) with proper scaling
         // result = (P * SCALE) / Q
@@ -277,5 +354,55 @@ module gaussian::erf {
         let result = erf(10 * SCALE);
         assert!(result <= SCALE, 0);
         assert!(result > SCALE - 1_000_000_000, 1); // Should be ~1
+    }
+    
+    #[test]
+    fun test_phi_monotonic() {
+        // phi should be monotonically increasing
+        let x1 = 1_000_000_000_000_000_000; // 1.0
+        let x2 = 2_000_000_000_000_000_000; // 2.0
+        assert!(phi(x2) > phi(x1), 0);
+    }
+    
+    // ========================================
+    // Error code tests
+    // ========================================
+    
+    #[test]
+    #[expected_failure(abort_code = EInputTooLarge)]
+    /// Test that erf_strict() aborts when input exceeds 6*SCALE
+    fun test_erf_strict_input_too_large() {
+        let x = 10_000_000_000_000_000_000; // 10.0 > 6.0
+        erf_strict(x); // Should abort with EInputTooLarge
+    }
+    
+    #[test]
+    #[expected_failure(abort_code = EInputTooLarge)]
+    /// Test that erfc_strict() aborts when input exceeds 6*SCALE
+    fun test_erfc_strict_input_too_large() {
+        let x = 7_000_000_000_000_000_000; // 7.0 > 6.0
+        erfc_strict(x); // Should abort with EInputTooLarge
+    }
+    
+    #[test]
+    #[expected_failure(abort_code = EInputTooLarge)]
+    /// Test that phi_strict() aborts when input exceeds 6*SCALE
+    fun test_phi_strict_input_too_large() {
+        let x = 100_000_000_000_000_000_000; // 100.0 >> 6.0
+        phi_strict(x); // Should abort with EInputTooLarge
+    }
+    
+    #[test]
+    /// Test that non-strict functions clamp instead of aborting
+    fun test_clamping_functions_dont_abort() {
+        let x = 10_000_000_000_000_000_000; // 10.0 > 6.0
+        
+        // These should not abort, just return erf(6.0)
+        let _ = erf(x);
+        let _ = erfc(x);
+        let _ = phi(x);
+        
+        // Verify they return the clamped value (erf(6.0) ≈ 1.0)
+        assert!(erf(x) > 999_999_000_000_000_000, 0); // > 0.999999
     }
 }
