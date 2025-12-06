@@ -1,0 +1,16 @@
+# Move build artifacts
+build/
+.move/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dependencies (if using package manager)
+node_modules/
