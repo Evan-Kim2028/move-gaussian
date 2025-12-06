@@ -7,6 +7,9 @@
 module gaussian::erf_tests {
     use gaussian::erf::erf;
     
+    /// Test tolerance: 1e-7 in WAD scaling (100_000_000_000 out of 1e18)
+    const TEST_TOLERANCE: u256 = 100_000_000_000;
+    
     /// Helper: absolute difference
     fun abs_diff(a: u256, b: u256): u256 {
         if (a > b) { a - b } else { b - a }
@@ -17,12 +20,11 @@ module gaussian::erf_tests {
     fun test_erf_0_0_0000() {
         let x = 0_u256;
         let expected = 0_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 0);
+        assert!(diff <= TEST_TOLERANCE, 0);
     }
     
     #[test]
@@ -30,12 +32,11 @@ module gaussian::erf_tests {
     fun test_erf_1_0_0010() {
         let x = 1000000000000000_u256;
         let expected = 1128378794485484_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 1);
+        assert!(diff <= TEST_TOLERANCE, 1);
     }
     
     #[test]
@@ -43,12 +44,11 @@ module gaussian::erf_tests {
     fun test_erf_2_0_0100() {
         let x = 10000000000000000_u256;
         let expected = 11283415579881188_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 2);
+        assert!(diff <= TEST_TOLERANCE, 2);
     }
     
     #[test]
@@ -56,12 +56,11 @@ module gaussian::erf_tests {
     fun test_erf_3_0_1000() {
         let x = 100000000000000000_u256;
         let expected = 112462915974481391_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 3);
+        assert!(diff <= TEST_TOLERANCE, 3);
     }
     
     #[test]
@@ -69,12 +68,11 @@ module gaussian::erf_tests {
     fun test_erf_4_0_5000() {
         let x = 500000000000000000_u256;
         let expected = 520499877813060001_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 4);
+        assert!(diff <= TEST_TOLERANCE, 4);
     }
     
     #[test]
@@ -82,12 +80,11 @@ module gaussian::erf_tests {
     fun test_erf_5_1_0000() {
         let x = 1000000000000000000_u256;
         let expected = 842700792956151261_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 5);
+        assert!(diff <= TEST_TOLERANCE, 5);
     }
     
     #[test]
@@ -95,12 +92,11 @@ module gaussian::erf_tests {
     fun test_erf_6_1_5000() {
         let x = 1500000000000000000_u256;
         let expected = 966105146478537013_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 6);
+        assert!(diff <= TEST_TOLERANCE, 6);
     }
     
     #[test]
@@ -108,12 +104,11 @@ module gaussian::erf_tests {
     fun test_erf_7_2_0000() {
         let x = 2000000000000000000_u256;
         let expected = 995322265025322227_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 7);
+        assert!(diff <= TEST_TOLERANCE, 7);
     }
     
     #[test]
@@ -121,12 +116,11 @@ module gaussian::erf_tests {
     fun test_erf_8_2_5000() {
         let x = 2500000000000000000_u256;
         let expected = 999593047982559714_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 8);
+        assert!(diff <= TEST_TOLERANCE, 8);
     }
     
     #[test]
@@ -134,12 +128,11 @@ module gaussian::erf_tests {
     fun test_erf_9_3_0000() {
         let x = 3000000000000000000_u256;
         let expected = 999977909484333991_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 9);
+        assert!(diff <= TEST_TOLERANCE, 9);
     }
     
     #[test]
@@ -147,12 +140,11 @@ module gaussian::erf_tests {
     fun test_erf_10_4_0000() {
         let x = 4000000000000000000_u256;
         let expected = 999999984526090990_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 10);
+        assert!(diff <= TEST_TOLERANCE, 10);
     }
     
     #[test]
@@ -160,12 +152,11 @@ module gaussian::erf_tests {
     fun test_erf_11_5_0000() {
         let x = 5000000000000000000_u256;
         let expected = 999999999945655365_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 11);
+        assert!(diff <= TEST_TOLERANCE, 11);
     }
     
     #[test]
@@ -173,12 +164,11 @@ module gaussian::erf_tests {
     fun test_erf_12_5_5000() {
         let x = 5500000000000000000_u256;
         let expected = 999999999962835636_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 12);
+        assert!(diff <= TEST_TOLERANCE, 12);
     }
     
     #[test]
@@ -186,12 +176,11 @@ module gaussian::erf_tests {
     fun test_erf_13_6_0000() {
         let x = 6000000000000000000_u256;
         let expected = 999999999966535620_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 13);
+        assert!(diff <= TEST_TOLERANCE, 13);
     }
     
     #[test]
@@ -199,12 +188,11 @@ module gaussian::erf_tests {
     fun test_erf_14_0_0500() {
         let x = 50000000000000000_u256;
         let expected = 56371977794680637_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 14);
+        assert!(diff <= TEST_TOLERANCE, 14);
     }
     
     #[test]
@@ -212,12 +200,11 @@ module gaussian::erf_tests {
     fun test_erf_15_0_1194() {
         let x = 119411764705882352_u256;
         let expected = 134104042763353525_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 15);
+        assert!(diff <= TEST_TOLERANCE, 15);
     }
     
     #[test]
@@ -225,12 +212,11 @@ module gaussian::erf_tests {
     fun test_erf_16_0_1888() {
         let x = 188823529411764736_u256;
         let expected = 210559169813427197_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 16);
+        assert!(diff <= TEST_TOLERANCE, 16);
     }
     
     #[test]
@@ -238,12 +224,11 @@ module gaussian::erf_tests {
     fun test_erf_17_0_2582() {
         let x = 258235294117647072_u256;
         let expected = 285037773642766803_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 17);
+        assert!(diff <= TEST_TOLERANCE, 17);
     }
     
     #[test]
@@ -251,12 +236,11 @@ module gaussian::erf_tests {
     fun test_erf_18_0_3276() {
         let x = 327647058823529408_u256;
         let expected = 356895743430664514_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 18);
+        assert!(diff <= TEST_TOLERANCE, 18);
     }
     
     #[test]
@@ -264,12 +248,11 @@ module gaussian::erf_tests {
     fun test_erf_19_0_3971() {
         let x = 397058823529411712_u256;
         let expected = 425560970816831494_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 19);
+        assert!(diff <= TEST_TOLERANCE, 19);
     }
     
     #[test]
@@ -277,12 +260,11 @@ module gaussian::erf_tests {
     fun test_erf_20_0_4665() {
         let x = 466470588235294144_u256;
         let expected = 490546593639623980_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 20);
+        assert!(diff <= TEST_TOLERANCE, 20);
     }
     
     #[test]
@@ -290,12 +272,11 @@ module gaussian::erf_tests {
     fun test_erf_21_0_5359() {
         let x = 535882352941176448_u256;
         let expected = 551460466373700842_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 21);
+        assert!(diff <= TEST_TOLERANCE, 21);
     }
     
     #[test]
@@ -303,12 +284,11 @@ module gaussian::erf_tests {
     fun test_erf_22_0_6053() {
         let x = 605294117647058816_u256;
         let expected = 608010600656682008_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 22);
+        assert!(diff <= TEST_TOLERANCE, 22);
     }
     
     #[test]
@@ -316,12 +296,11 @@ module gaussian::erf_tests {
     fun test_erf_23_0_6747() {
         let x = 674705882352941312_u256;
         let expected = 660006557210021775_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 23);
+        assert!(diff <= TEST_TOLERANCE, 23);
     }
     
     #[test]
@@ -329,12 +308,11 @@ module gaussian::erf_tests {
     fun test_erf_24_0_7441() {
         let x = 744117647058823552_u256;
         let expected = 707356995831300914_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 24);
+        assert!(diff <= TEST_TOLERANCE, 24);
     }
     
     #[test]
@@ -342,12 +320,11 @@ module gaussian::erf_tests {
     fun test_erf_25_0_8135() {
         let x = 813529411764705920_u256;
         let expected = 750063787127627153_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 25);
+        assert!(diff <= TEST_TOLERANCE, 25);
     }
     
     #[test]
@@ -355,12 +332,11 @@ module gaussian::erf_tests {
     fun test_erf_26_0_8829() {
         let x = 882941176470588288_u256;
         let expected = 788213245874387202_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 26);
+        assert!(diff <= TEST_TOLERANCE, 26);
     }
     
     #[test]
@@ -368,12 +344,11 @@ module gaussian::erf_tests {
     fun test_erf_27_0_9524() {
         let x = 952352941176470656_u256;
         let expected = 821965153211632334_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 27);
+        assert!(diff <= TEST_TOLERANCE, 27);
     }
     
     #[test]
@@ -381,12 +356,11 @@ module gaussian::erf_tests {
     fun test_erf_28_1_0218() {
         let x = 1021764705882352896_u256;
         let expected = 851540289892662825_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 28);
+        assert!(diff <= TEST_TOLERANCE, 28);
     }
     
     #[test]
@@ -394,12 +368,11 @@ module gaussian::erf_tests {
     fun test_erf_29_1_0912() {
         let x = 1091176470588235392_u256;
         let expected = 877207206602872228_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 29);
+        assert!(diff <= TEST_TOLERANCE, 29);
     }
     
     #[test]
@@ -407,12 +380,11 @@ module gaussian::erf_tests {
     fun test_erf_30_1_1606() {
         let x = 1160588235294117632_u256;
         let expected = 899268915124221061_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 30);
+        assert!(diff <= TEST_TOLERANCE, 30);
     }
     
     #[test]
@@ -420,12 +392,11 @@ module gaussian::erf_tests {
     fun test_erf_31_1_2300() {
         let x = 1230000000000000000_u256;
         let expected = 918050104126811907_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 31);
+        assert!(diff <= TEST_TOLERANCE, 31);
     }
     
     #[test]
@@ -433,12 +404,11 @@ module gaussian::erf_tests {
     fun test_erf_32_1_2994() {
         let x = 1299411764705882368_u256;
         let expected = 933885375963683741_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 32);
+        assert!(diff <= TEST_TOLERANCE, 32);
     }
     
     #[test]
@@ -446,12 +416,11 @@ module gaussian::erf_tests {
     fun test_erf_33_1_3688() {
         let x = 1368823529411764736_u256;
         let expected = 947108877243027461_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 33);
+        assert!(diff <= TEST_TOLERANCE, 33);
     }
     
     #[test]
@@ -459,12 +428,11 @@ module gaussian::erf_tests {
     fun test_erf_34_1_4382() {
         let x = 1438235294117647104_u256;
         let expected = 958045567136498958_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 34);
+        assert!(diff <= TEST_TOLERANCE, 34);
     }
     
     #[test]
@@ -472,12 +440,11 @@ module gaussian::erf_tests {
     fun test_erf_35_1_5076() {
         let x = 1507647058823529472_u256;
         let expected = 967004243169977668_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 35);
+        assert!(diff <= TEST_TOLERANCE, 35);
     }
     
     #[test]
@@ -485,12 +452,11 @@ module gaussian::erf_tests {
     fun test_erf_36_1_5771() {
         let x = 1577058823529411840_u256;
         let expected = 974272332597674116_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 36);
+        assert!(diff <= TEST_TOLERANCE, 36);
     }
     
     #[test]
@@ -498,12 +464,11 @@ module gaussian::erf_tests {
     fun test_erf_37_1_6465() {
         let x = 1646470588235294208_u256;
         let expected = 980112364087965863_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 37);
+        assert!(diff <= TEST_TOLERANCE, 37);
     }
     
     #[test]
@@ -511,12 +476,11 @@ module gaussian::erf_tests {
     fun test_erf_38_1_7159() {
         let x = 1715882352941176576_u256;
         let expected = 984759962673626750_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 38);
+        assert!(diff <= TEST_TOLERANCE, 38);
     }
     
     #[test]
@@ -524,12 +488,11 @@ module gaussian::erf_tests {
     fun test_erf_39_1_7853() {
         let x = 1785294117647058944_u256;
         let expected = 988423161804250706_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 39);
+        assert!(diff <= TEST_TOLERANCE, 39);
     }
     
     #[test]
@@ -537,12 +500,11 @@ module gaussian::erf_tests {
     fun test_erf_40_1_8547() {
         let x = 1854705882352941312_u256;
         let expected = 991282799003089128_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 40);
+        assert!(diff <= TEST_TOLERANCE, 40);
     }
     
     #[test]
@@ -550,12 +512,11 @@ module gaussian::erf_tests {
     fun test_erf_41_1_9241() {
         let x = 1924117647058823424_u256;
         let expected = 993493753686637059_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 41);
+        assert!(diff <= TEST_TOLERANCE, 41);
     }
     
     #[test]
@@ -563,12 +524,11 @@ module gaussian::erf_tests {
     fun test_erf_42_1_9935() {
         let x = 1993529411764706048_u256;
         let expected = 995186793756382709_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 42);
+        assert!(diff <= TEST_TOLERANCE, 42);
     }
     
     #[test]
@@ -576,12 +536,11 @@ module gaussian::erf_tests {
     fun test_erf_43_2_0629() {
         let x = 2062941176470588160_u256;
         let expected = 996470817704604654_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 43);
+        assert!(diff <= TEST_TOLERANCE, 43);
     }
     
     #[test]
@@ -589,12 +548,11 @@ module gaussian::erf_tests {
     fun test_erf_44_2_1324() {
         let x = 2132352941176470528_u256;
         let expected = 997435307198467315_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 44);
+        assert!(diff <= TEST_TOLERANCE, 44);
     }
     
     #[test]
@@ -602,12 +560,11 @@ module gaussian::erf_tests {
     fun test_erf_45_2_2018() {
         let x = 2201764705882352896_u256;
         let expected = 998152837701569999_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 45);
+        assert!(diff <= TEST_TOLERANCE, 45);
     }
     
     #[test]
@@ -615,12 +572,11 @@ module gaussian::erf_tests {
     fun test_erf_46_2_2712() {
         let x = 2271176470588235008_u256;
         let expected = 998681528465507448_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 46);
+        assert!(diff <= TEST_TOLERANCE, 46);
     }
     
     #[test]
@@ -628,12 +584,11 @@ module gaussian::erf_tests {
     fun test_erf_47_2_3406() {
         let x = 2340588235294117376_u256;
         let expected = 999067345648691592_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 47);
+        assert!(diff <= TEST_TOLERANCE, 47);
     }
     
     #[test]
@@ -641,12 +596,11 @@ module gaussian::erf_tests {
     fun test_erf_48_2_4100() {
         let x = 2409999999999999488_u256;
         let expected = 999346201585183888_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 48);
+        assert!(diff <= TEST_TOLERANCE, 48);
     }
     
     #[test]
@@ -654,12 +608,11 @@ module gaussian::erf_tests {
     fun test_erf_49_2_4794() {
         let x = 2479411764705882112_u256;
         let expected = 999545818210003939_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 49);
+        assert!(diff <= TEST_TOLERANCE, 49);
     }
     
     #[test]
@@ -667,12 +620,11 @@ module gaussian::erf_tests {
     fun test_erf_50_2_5488() {
         let x = 2548823529411764736_u256;
         let expected = 999687342832736779_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 50);
+        assert!(diff <= TEST_TOLERANCE, 50);
     }
     
     #[test]
@@ -680,12 +632,11 @@ module gaussian::erf_tests {
     fun test_erf_51_2_6182() {
         let x = 2618235294117646848_u256;
         let expected = 999786719810852148_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 51);
+        assert!(diff <= TEST_TOLERANCE, 51);
     }
     
     #[test]
@@ -693,12 +644,11 @@ module gaussian::erf_tests {
     fun test_erf_52_2_6876() {
         let x = 2687647058823529472_u256;
         let expected = 999855832540812491_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 52);
+        assert!(diff <= TEST_TOLERANCE, 52);
     }
     
     #[test]
@@ -706,12 +656,11 @@ module gaussian::erf_tests {
     fun test_erf_53_2_7571() {
         let x = 2757058823529411584_u256;
         let expected = 999903437126222019_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 53);
+        assert!(diff <= TEST_TOLERANCE, 53);
     }
     
     #[test]
@@ -719,12 +668,11 @@ module gaussian::erf_tests {
     fun test_erf_54_2_8265() {
         let x = 2826470588235293696_u256;
         let expected = 999935912787234179_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 54);
+        assert!(diff <= TEST_TOLERANCE, 54);
     }
     
     #[test]
@@ -732,12 +680,11 @@ module gaussian::erf_tests {
     fun test_erf_55_2_8959() {
         let x = 2895882352941176320_u256;
         let expected = 999957855265621368_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 55);
+        assert!(diff <= TEST_TOLERANCE, 55);
     }
     
     #[test]
@@ -745,12 +692,11 @@ module gaussian::erf_tests {
     fun test_erf_56_2_9653() {
         let x = 2965294117647058944_u256;
         let expected = 999972538841195180_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 56);
+        assert!(diff <= TEST_TOLERANCE, 56);
     }
     
     #[test]
@@ -758,12 +704,11 @@ module gaussian::erf_tests {
     fun test_erf_57_3_0347() {
         let x = 3034705882352941056_u256;
         let expected = 999982270714108065_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 57);
+        assert!(diff <= TEST_TOLERANCE, 57);
     }
     
     #[test]
@@ -771,12 +716,11 @@ module gaussian::erf_tests {
     fun test_erf_58_3_1041() {
         let x = 3104117647058823680_u256;
         let expected = 999988658928775876_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 58);
+        assert!(diff <= TEST_TOLERANCE, 58);
     }
     
     #[test]
@@ -784,12 +728,11 @@ module gaussian::erf_tests {
     fun test_erf_59_3_1735() {
         let x = 3173529411764705792_u256;
         let expected = 999992812111606320_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 59);
+        assert!(diff <= TEST_TOLERANCE, 59);
     }
     
     #[test]
@@ -797,12 +740,11 @@ module gaussian::erf_tests {
     fun test_erf_60_3_2429() {
         let x = 3242941176470587904_u256;
         let expected = 999995486355915818_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 60);
+        assert!(diff <= TEST_TOLERANCE, 60);
     }
     
     #[test]
@@ -810,12 +752,11 @@ module gaussian::erf_tests {
     fun test_erf_61_3_3124() {
         let x = 3312352941176470528_u256;
         let expected = 999997191808156225_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 61);
+        assert!(diff <= TEST_TOLERANCE, 61);
     }
     
     #[test]
@@ -823,12 +764,11 @@ module gaussian::erf_tests {
     fun test_erf_62_3_3818() {
         let x = 3381764705882353152_u256;
         let expected = 999998269008278782_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 62);
+        assert!(diff <= TEST_TOLERANCE, 62);
     }
     
     #[test]
@@ -836,12 +776,11 @@ module gaussian::erf_tests {
     fun test_erf_63_3_4512() {
         let x = 3451176470588235264_u256;
         let expected = 999998942870855713_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 63);
+        assert!(diff <= TEST_TOLERANCE, 63);
     }
     
     #[test]
@@ -849,12 +788,11 @@ module gaussian::erf_tests {
     fun test_erf_64_3_5206() {
         let x = 3520588235294117376_u256;
         let expected = 999999360378032689_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 64);
+        assert!(diff <= TEST_TOLERANCE, 64);
     }
     
     #[test]
@@ -862,12 +800,11 @@ module gaussian::erf_tests {
     fun test_erf_65_3_5900() {
         let x = 3590000000000000000_u256;
         let expected = 999999616574718656_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 65);
+        assert!(diff <= TEST_TOLERANCE, 65);
     }
     
     #[test]
@@ -875,12 +812,11 @@ module gaussian::erf_tests {
     fun test_erf_66_3_6594() {
         let x = 3659411764705882112_u256;
         let expected = 999999772278502501_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 66);
+        assert!(diff <= TEST_TOLERANCE, 66);
     }
     
     #[test]
@@ -888,12 +824,11 @@ module gaussian::erf_tests {
     fun test_erf_67_3_7288() {
         let x = 3728823529411764224_u256;
         let expected = 999999866000176103_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 67);
+        assert!(diff <= TEST_TOLERANCE, 67);
     }
     
     #[test]
@@ -901,12 +836,11 @@ module gaussian::erf_tests {
     fun test_erf_68_3_7982() {
         let x = 3798235294117646848_u256;
         let expected = 999999921872439033_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 68);
+        assert!(diff <= TEST_TOLERANCE, 68);
     }
     
     #[test]
@@ -914,12 +848,11 @@ module gaussian::erf_tests {
     fun test_erf_69_3_8676() {
         let x = 3867647058823529472_u256;
         let expected = 999999954861461522_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 69);
+        assert!(diff <= TEST_TOLERANCE, 69);
     }
     
     #[test]
@@ -927,12 +860,11 @@ module gaussian::erf_tests {
     fun test_erf_70_3_9371() {
         let x = 3937058823529411584_u256;
         let expected = 999999974152991326_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 70);
+        assert!(diff <= TEST_TOLERANCE, 70);
     }
     
     #[test]
@@ -940,12 +872,11 @@ module gaussian::erf_tests {
     fun test_erf_71_4_0065() {
         let x = 4006470588235294208_u256;
         let expected = 999999985326765052_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 71);
+        assert!(diff <= TEST_TOLERANCE, 71);
     }
     
     #[test]
@@ -953,12 +884,11 @@ module gaussian::erf_tests {
     fun test_erf_72_4_0759() {
         let x = 4075882352941176832_u256;
         let expected = 999999991737268489_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 72);
+        assert!(diff <= TEST_TOLERANCE, 72);
     }
     
     #[test]
@@ -966,12 +896,11 @@ module gaussian::erf_tests {
     fun test_erf_73_4_1453() {
         let x = 4145294117647058944_u256;
         let expected = 999999995380329787_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 73);
+        assert!(diff <= TEST_TOLERANCE, 73);
     }
     
     #[test]
@@ -979,12 +908,11 @@ module gaussian::erf_tests {
     fun test_erf_74_4_2147() {
         let x = 4214705882352941056_u256;
         let expected = 999999997431267358_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 74);
+        assert!(diff <= TEST_TOLERANCE, 74);
     }
     
     #[test]
@@ -992,12 +920,11 @@ module gaussian::erf_tests {
     fun test_erf_75_4_2841() {
         let x = 4284117647058823680_u256;
         let expected = 999999998575084352_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 75);
+        assert!(diff <= TEST_TOLERANCE, 75);
     }
     
     #[test]
@@ -1005,12 +932,11 @@ module gaussian::erf_tests {
     fun test_erf_76_4_3535() {
         let x = 4353529411764705792_u256;
         let expected = 999999999206900724_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 76);
+        assert!(diff <= TEST_TOLERANCE, 76);
     }
     
     #[test]
@@ -1018,12 +944,11 @@ module gaussian::erf_tests {
     fun test_erf_77_4_4229() {
         let x = 4422941176470587904_u256;
         let expected = 999999999552352567_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 77);
+        assert!(diff <= TEST_TOLERANCE, 77);
     }
     
     #[test]
@@ -1031,12 +956,11 @@ module gaussian::erf_tests {
     fun test_erf_78_4_4924() {
         let x = 4492352941176470528_u256;
         let expected = 999999999739067257_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 78);
+        assert!(diff <= TEST_TOLERANCE, 78);
     }
     
     #[test]
@@ -1044,12 +968,11 @@ module gaussian::erf_tests {
     fun test_erf_79_4_5618() {
         let x = 4561764705882352640_u256;
         let expected = 999999999838598496_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 79);
+        assert!(diff <= TEST_TOLERANCE, 79);
     }
     
     #[test]
@@ -1057,12 +980,11 @@ module gaussian::erf_tests {
     fun test_erf_80_4_6312() {
         let x = 4631176470588234752_u256;
         let expected = 999999999890743511_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 80);
+        assert!(diff <= TEST_TOLERANCE, 80);
     }
     
     #[test]
@@ -1070,12 +992,11 @@ module gaussian::erf_tests {
     fun test_erf_81_4_7006() {
         let x = 4700588235294116864_u256;
         let expected = 999999999917540122_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 81);
+        assert!(diff <= TEST_TOLERANCE, 81);
     }
     
     #[test]
@@ -1083,12 +1004,11 @@ module gaussian::erf_tests {
     fun test_erf_82_4_7700() {
         let x = 4770000000000000000_u256;
         let expected = 999999999931090395_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 82);
+        assert!(diff <= TEST_TOLERANCE, 82);
     }
     
     #[test]
@@ -1096,12 +1016,11 @@ module gaussian::erf_tests {
     fun test_erf_83_4_8394() {
         let x = 4839411764705882112_u256;
         let expected = 999999999938055463_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 83);
+        assert!(diff <= TEST_TOLERANCE, 83);
     }
     
     #[test]
@@ -1109,12 +1028,11 @@ module gaussian::erf_tests {
     fun test_erf_84_4_9088() {
         let x = 4908823529411764224_u256;
         let expected = 999999999941991106_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 84);
+        assert!(diff <= TEST_TOLERANCE, 84);
     }
     
     #[test]
@@ -1122,12 +1040,11 @@ module gaussian::erf_tests {
     fun test_erf_85_4_9782() {
         let x = 4978235294117647360_u256;
         let expected = 999999999944823973_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 85);
+        assert!(diff <= TEST_TOLERANCE, 85);
     }
     
     #[test]
@@ -1135,12 +1052,11 @@ module gaussian::erf_tests {
     fun test_erf_86_5_0476() {
         let x = 5047647058823529472_u256;
         let expected = 999999999947439426_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 86);
+        assert!(diff <= TEST_TOLERANCE, 86);
     }
     
     #[test]
@@ -1148,12 +1064,11 @@ module gaussian::erf_tests {
     fun test_erf_87_5_1171() {
         let x = 5117058823529411584_u256;
         let expected = 999999999950193307_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 87);
+        assert!(diff <= TEST_TOLERANCE, 87);
     }
     
     #[test]
@@ -1161,12 +1076,11 @@ module gaussian::erf_tests {
     fun test_erf_88_5_1865() {
         let x = 5186470588235293696_u256;
         let expected = 999999999953054512_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 88);
+        assert!(diff <= TEST_TOLERANCE, 88);
     }
     
     #[test]
@@ -1174,12 +1088,11 @@ module gaussian::erf_tests {
     fun test_erf_89_5_2559() {
         let x = 5255882352941176832_u256;
         let expected = 999999999955860156_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 89);
+        assert!(diff <= TEST_TOLERANCE, 89);
     }
     
     #[test]
@@ -1187,12 +1100,11 @@ module gaussian::erf_tests {
     fun test_erf_90_5_3253() {
         let x = 5325294117647058944_u256;
         let expected = 999999999958453540_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 90);
+        assert!(diff <= TEST_TOLERANCE, 90);
     }
     
     #[test]
@@ -1200,12 +1112,11 @@ module gaussian::erf_tests {
     fun test_erf_91_5_3947() {
         let x = 5394705882352941056_u256;
         let expected = 999999999960619555_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 91);
+        assert!(diff <= TEST_TOLERANCE, 91);
     }
     
     #[test]
@@ -1213,12 +1124,11 @@ module gaussian::erf_tests {
     fun test_erf_92_5_4641() {
         let x = 5464117647058823168_u256;
         let expected = 999999999962231132_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 92);
+        assert!(diff <= TEST_TOLERANCE, 92);
     }
     
     #[test]
@@ -1226,12 +1136,11 @@ module gaussian::erf_tests {
     fun test_erf_93_5_5335() {
         let x = 5533529411764705280_u256;
         let expected = 999999999963273356_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 93);
+        assert!(diff <= TEST_TOLERANCE, 93);
     }
     
     #[test]
@@ -1239,12 +1148,11 @@ module gaussian::erf_tests {
     fun test_erf_94_5_6029() {
         let x = 5602941176470587392_u256;
         let expected = 999999999963823282_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 94);
+        assert!(diff <= TEST_TOLERANCE, 94);
     }
     
     #[test]
@@ -1252,12 +1160,11 @@ module gaussian::erf_tests {
     fun test_erf_95_5_6724() {
         let x = 5672352941176470528_u256;
         let expected = 999999999964068262_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 95);
+        assert!(diff <= TEST_TOLERANCE, 95);
     }
     
     #[test]
@@ -1265,12 +1172,11 @@ module gaussian::erf_tests {
     fun test_erf_96_5_7418() {
         let x = 5741764705882352640_u256;
         let expected = 999999999964244025_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 96);
+        assert!(diff <= TEST_TOLERANCE, 96);
     }
     
     #[test]
@@ -1278,12 +1184,11 @@ module gaussian::erf_tests {
     fun test_erf_97_5_8112() {
         let x = 5811176470588234752_u256;
         let expected = 999999999964570769_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 97);
+        assert!(diff <= TEST_TOLERANCE, 97);
     }
     
     #[test]
@@ -1291,12 +1196,11 @@ module gaussian::erf_tests {
     fun test_erf_98_5_8806() {
         let x = 5880588235294117888_u256;
         let expected = 999999999965167473_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 98);
+        assert!(diff <= TEST_TOLERANCE, 98);
     }
     
     #[test]
@@ -1304,12 +1208,11 @@ module gaussian::erf_tests {
     fun test_erf_99_5_9500() {
         let x = 5950000000000000000_u256;
         let expected = 999999999965972162_u256;
-        let tolerance = 100000000000_u256;
         
         let result = erf(x);
         let diff = abs_diff(result, expected);
         
-        assert!(diff <= tolerance, 99);
+        assert!(diff <= TEST_TOLERANCE, 99);
     }
     
 }

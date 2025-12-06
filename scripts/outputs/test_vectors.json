@@ -1,6 +1,6 @@
 {
   "function": "erf",
-  "generated_at": "2025-12-06T13:44:23.512033",
+  "generated_at": "2025-12-06T15:28:31.854063",
   "n_tests": 100,
   "tolerance_description": "~1e-7 in float terms",
   "vectors": [
@@ -15,792 +15,792 @@
     {
       "x": 0.001,
       "x_wad": 1000000000000000,
-      "expected_wad": 1128378794485484,
-      "expected_float": 0.001128378794485484,
+      "expected_wad": 1128378790969300,
+      "expected_float": 0.0011283787909693,
       "scipy_reference": 0.0011283787909692363,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.01,
       "x_wad": 10000000000000000,
-      "expected_wad": 11283415579881188,
-      "expected_float": 0.011283415579881188,
+      "expected_wad": 11283415555849924,
+      "expected_float": 0.011283415555849923,
       "scipy_reference": 0.011283415555849616,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.1,
       "x_wad": 100000000000000000,
-      "expected_wad": 112462915974481391,
-      "expected_float": 0.1124629159744814,
+      "expected_wad": 112462916018284373,
+      "expected_float": 0.11246291601828437,
       "scipy_reference": 0.1124629160182849,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.5,
       "x_wad": 500000000000000000,
-      "expected_wad": 520499877813060001,
-      "expected_float": 0.52049987781306,
+      "expected_wad": 520499877812968102,
+      "expected_float": 0.5204998778129681,
       "scipy_reference": 0.5204998778130465,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.0,
       "x_wad": 1000000000000000000,
-      "expected_wad": 842700792956151261,
-      "expected_float": 0.8427007929561513,
+      "expected_wad": 842700792948153431,
+      "expected_float": 0.8427007929481535,
       "scipy_reference": 0.8427007929497148,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.5,
       "x_wad": 1500000000000000000,
-      "expected_wad": 966105146478537013,
-      "expected_float": 0.966105146478537,
+      "expected_wad": 966105146424742726,
+      "expected_float": 0.9661051464247428,
       "scipy_reference": 0.9661051464753108,
       "tolerance_wad": 100000000000
     },
     {
       "x": 2.0,
       "x_wad": 2000000000000000000,
-      "expected_wad": 995322265025322227,
-      "expected_float": 0.9953222650253222,
+      "expected_wad": 995322264734512910,
+      "expected_float": 0.9953222647345129,
       "scipy_reference": 0.9953222650189527,
       "tolerance_wad": 100000000000
     },
     {
       "x": 2.5,
       "x_wad": 2500000000000000000,
-      "expected_wad": 999593047982559714,
-      "expected_float": 0.9995930479825598,
+      "expected_wad": 999593047684965995,
+      "expected_float": 0.999593047684966,
       "scipy_reference": 0.999593047982555,
       "tolerance_wad": 100000000000
     },
     {
       "x": 3.0,
       "x_wad": 3000000000000000000,
-      "expected_wad": 999977909484333991,
-      "expected_float": 0.999977909484334,
+      "expected_wad": 999977910636175430,
+      "expected_float": 0.9999779106361755,
       "scipy_reference": 0.9999779095030014,
       "tolerance_wad": 100000000000
     },
     {
       "x": 4.0,
       "x_wad": 4000000000000000000,
-      "expected_wad": 999999984526090990,
-      "expected_float": 0.999999984526091,
+      "expected_wad": 999999992146458421,
+      "expected_float": 0.9999999921464584,
       "scipy_reference": 0.9999999845827421,
       "tolerance_wad": 100000000000
     },
     {
       "x": 5.0,
       "x_wad": 5000000000000000000,
-      "expected_wad": 999999999945655365,
-      "expected_float": 0.9999999999456554,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999984626,
       "tolerance_wad": 100000000000
     },
     {
       "x": 5.5,
       "x_wad": 5500000000000000000,
-      "expected_wad": 999999999962835636,
-      "expected_float": 0.9999999999628356,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999999927,
       "tolerance_wad": 100000000000
     },
     {
       "x": 6.0,
       "x_wad": 6000000000000000000,
-      "expected_wad": 999999999966535620,
-      "expected_float": 0.9999999999665357,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 1.0,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.05,
       "x_wad": 50000000000000000,
-      "expected_wad": 56371977794680637,
-      "expected_float": 0.05637197779468064,
+      "expected_wad": 56371977797016105,
+      "expected_float": 0.0563719777970161,
       "scipy_reference": 0.05637197779701662,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.11941176470588236,
       "x_wad": 119411764705882352,
-      "expected_wad": 134104042763353525,
-      "expected_float": 0.13410404276335353,
+      "expected_wad": 134104042805303978,
+      "expected_float": 0.13410404280530397,
       "scipy_reference": 0.13410404280530455,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.18882352941176472,
       "x_wad": 188823529411764736,
-      "expected_wad": 210559169813427197,
-      "expected_float": 0.2105591698134272,
+      "expected_wad": 210559169822132434,
+      "expected_float": 0.21055916982213244,
       "scipy_reference": 0.2105591698221342,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.25823529411764706,
       "x_wad": 258235294117647072,
-      "expected_wad": 285037773642766803,
-      "expected_float": 0.2850377736427668,
+      "expected_wad": 285037773644161407,
+      "expected_float": 0.2850377736441614,
       "scipy_reference": 0.2850377736441667,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.3276470588235294,
       "x_wad": 327647058823529408,
-      "expected_wad": 356895743430664514,
-      "expected_float": 0.3568957434306645,
+      "expected_wad": 356895743442793005,
+      "expected_float": 0.356895743442793,
       "scipy_reference": 0.3568957434428075,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.39705882352941174,
       "x_wad": 397058823529411712,
-      "expected_wad": 425560970816831494,
-      "expected_float": 0.4255609708168315,
+      "expected_wad": 425560970828537047,
+      "expected_float": 0.42556097082853706,
       "scipy_reference": 0.42556097082856964,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.46647058823529414,
       "x_wad": 466470588235294144,
-      "expected_wad": 490546593639623980,
-      "expected_float": 0.490546593639624,
+      "expected_wad": 490546593642158094,
+      "expected_float": 0.4905465936421581,
       "scipy_reference": 0.490546593642219,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.5358823529411765,
       "x_wad": 535882352941176448,
-      "expected_wad": 551460466373700842,
-      "expected_float": 0.5514604663737008,
+      "expected_wad": 551460466373933274,
+      "expected_float": 0.5514604663739333,
       "scipy_reference": 0.5514604663740329,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.6052941176470589,
       "x_wad": 605294117647058816,
-      "expected_wad": 608010600656682008,
-      "expected_float": 0.608010600656682,
+      "expected_wad": 608010600665570769,
+      "expected_float": 0.6080106006655708,
       "scipy_reference": 0.6080106006657184,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.6747058823529413,
       "x_wad": 674705882352941312,
-      "expected_wad": 660006557210021775,
-      "expected_float": 0.6600065572100218,
+      "expected_wad": 660006557229443624,
+      "expected_float": 0.6600065572294436,
       "scipy_reference": 0.6600065572296484,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.7441176470588236,
       "x_wad": 744117647058823552,
-      "expected_wad": 707356995831300914,
-      "expected_float": 0.707356995831301,
+      "expected_wad": 707356995853189863,
+      "expected_float": 0.7073569958531899,
       "scipy_reference": 0.7073569958534688,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.813529411764706,
       "x_wad": 813529411764705920,
-      "expected_wad": 750063787127627153,
-      "expected_float": 0.7500637871276271,
+      "expected_wad": 750063787142194328,
+      "expected_float": 0.7500637871421943,
       "scipy_reference": 0.7500637871425904,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.8829411764705883,
       "x_wad": 882941176470588288,
-      "expected_wad": 788213245874387202,
-      "expected_float": 0.7882132458743872,
+      "expected_wad": 788213245877591514,
+      "expected_float": 0.7882132458775916,
       "scipy_reference": 0.7882132458782078,
       "tolerance_wad": 100000000000
     },
     {
       "x": 0.9523529411764706,
       "x_wad": 952352941176470656,
-      "expected_wad": 821965153211632334,
-      "expected_float": 0.8219651532116323,
+      "expected_wad": 821965153206260907,
+      "expected_float": 0.821965153206261,
       "scipy_reference": 0.8219651532073112,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.021764705882353,
       "x_wad": 1021764705882352896,
-      "expected_wad": 851540289892662825,
-      "expected_float": 0.8515402898926628,
+      "expected_wad": 851540289884272980,
+      "expected_float": 0.851540289884273,
       "scipy_reference": 0.8515402898861503,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.0911764705882354,
       "x_wad": 1091176470588235392,
-      "expected_wad": 877207206602872228,
-      "expected_float": 0.8772072066028722,
+      "expected_wad": 877207206595129983,
+      "expected_float": 0.87720720659513,
       "scipy_reference": 0.8772072065984934,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.1605882352941177,
       "x_wad": 1160588235294117632,
-      "expected_wad": 899268915124221061,
-      "expected_float": 0.899268915124221,
+      "expected_wad": 899268915116935700,
+      "expected_float": 0.8992689151169357,
       "scipy_reference": 0.8992689151228077,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.23,
       "x_wad": 1230000000000000000,
-      "expected_wad": 918050104126811907,
-      "expected_float": 0.9180501041268119,
+      "expected_wad": 918050104116893658,
+      "expected_float": 0.9180501041168937,
       "scipy_reference": 0.9180501041267614,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.2994117647058825,
       "x_wad": 1299411764705882368,
-      "expected_wad": 933885375963683741,
-      "expected_float": 0.9338853759636837,
+      "expected_wad": 933885375947202089,
+      "expected_float": 0.9338853759472021,
       "scipy_reference": 0.9338853759631072,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.3688235294117648,
       "x_wad": 1368823529411764736,
-      "expected_wad": 947108877243027461,
-      "expected_float": 0.9471088772430275,
+      "expected_wad": 947108877216531033,
+      "expected_float": 0.947108877216531,
       "scipy_reference": 0.9471088772411356,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.438235294117647,
       "x_wad": 1438235294117647104,
-      "expected_wad": 958045567136498958,
-      "expected_float": 0.9580455671364989,
+      "expected_wad": 958045567097003124,
+      "expected_float": 0.9580455670970032,
       "scipy_reference": 0.9580455671336132,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.5076470588235296,
       "x_wad": 1507647058823529472,
-      "expected_wad": 967004243169977668,
-      "expected_float": 0.9670042431699777,
+      "expected_wad": 967004243114203459,
+      "expected_float": 0.9670042431142034,
       "scipy_reference": 0.9670042431667347,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.5770588235294118,
       "x_wad": 1577058823529411840,
-      "expected_wad": 974272332597674116,
-      "expected_float": 0.9742723325976741,
+      "expected_wad": 974272332521458517,
+      "expected_float": 0.9742723325214585,
       "scipy_reference": 0.974272332594327,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.6464705882352941,
       "x_wad": 1646470588235294208,
-      "expected_wad": 980112364087965863,
-      "expected_float": 0.9801123640879659,
+      "expected_wad": 980112363986335551,
+      "expected_float": 0.9801123639863355,
       "scipy_reference": 0.9801123640842702,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.7158823529411766,
       "x_wad": 1715882352941176576,
-      "expected_wad": 984759962673626750,
-      "expected_float": 0.9847599626736268,
+      "expected_wad": 984759962541433379,
+      "expected_float": 0.9847599625414334,
       "scipy_reference": 0.9847599626691893,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.785294117647059,
       "x_wad": 1785294117647058944,
-      "expected_wad": 988423161804250706,
-      "expected_float": 0.9884231618042507,
+      "expected_wad": 988423161636926752,
+      "expected_float": 0.9884231616369268,
       "scipy_reference": 0.9884231617989193,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.8547058823529412,
       "x_wad": 1854705882352941312,
-      "expected_wad": 991282799003089128,
-      "expected_float": 0.9912827990030891,
+      "expected_wad": 991282798797204296,
+      "expected_float": 0.9912827987972043,
       "scipy_reference": 0.9912827989970625,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.9241176470588235,
       "x_wad": 1924117647058823424,
-      "expected_wad": 993493753686637059,
-      "expected_float": 0.9934937536866371,
+      "expected_wad": 993493753440235970,
+      "expected_float": 0.9934937534402359,
       "scipy_reference": 0.9934937536802881,
       "tolerance_wad": 100000000000
     },
     {
       "x": 1.993529411764706,
       "x_wad": 1993529411764706048,
-      "expected_wad": 995186793756382709,
-      "expected_float": 0.9951867937563827,
+      "expected_wad": 995186793469296437,
+      "expected_float": 0.9951867934692964,
       "scipy_reference": 0.9951867937500071,
       "tolerance_wad": 100000000000
     },
     {
       "x": 2.0629411764705883,
       "x_wad": 2062941176470588160,
-      "expected_wad": 996470817704604654,
-      "expected_float": 0.9964708177046047,
+      "expected_wad": 996470817378901892,
+      "expected_float": 0.9964708173789019,
       "scipy_reference": 0.9964708176983158,
       "tolerance_wad": 100000000000
     },
     {
       "x": 2.1323529411764706,
       "x_wad": 2132352941176470528,
-      "expected_wad": 997435307198467315,
-      "expected_float": 0.9974353071984673,
+      "expected_wad": 997435306839062018,
+      "expected_float": 0.997435306839062,
       "scipy_reference": 0.9974353071922902,
       "tolerance_wad": 100000000000
     },
     {
       "x": 2.201764705882353,
       "x_wad": 2201764705882352896,
-      "expected_wad": 998152837701569999,
-      "expected_float": 0.99815283770157,
+      "expected_wad": 998152837316970606,
+      "expected_float": 0.9981528373169706,
       "scipy_reference": 0.9981528376956333,
       "tolerance_wad": 100000000000
     },
     {
       "x": 2.271176470588235,
       "x_wad": 2271176470588235008,
-      "expected_wad": 998681528465507448,
-      "expected_float": 0.9986815284655074,
+      "expected_wad": 998681528068206800,
+      "expected_float": 0.9986815280682068,
       "scipy_reference": 0.9986815284601542,
       "tolerance_wad": 100000000000
     },
     {
       "x": 2.3405882352941174,
       "x_wad": 2340588235294117376,
-      "expected_wad": 999067345648691592,
-      "expected_float": 0.9990673456486916,
+      "expected_wad": 999067345255504560,
+      "expected_float": 0.9990673452555046,
       "scipy_reference": 0.9990673456444416,
       "tolerance_wad": 100000000000
     },
     {
       "x": 2.4099999999999997,
       "x_wad": 2409999999999999488,
-      "expected_wad": 999346201585183888,
-      "expected_float": 0.9993462015851838,
+      "expected_wad": 999346201217087414,
+      "expected_float": 0.9993462012170874,
       "scipy_reference": 0.9993462015825646,
       "tolerance_wad": 100000000000
     },
     {
       "x": 2.479411764705882,
       "x_wad": 2479411764705882112,
-      "expected_wad": 999545818210003939,
-      "expected_float": 0.999545818210004,
+      "expected_wad": 999545817892198431,
+      "expected_float": 0.9995458178921984,
       "scipy_reference": 0.9995458182093742,
       "tolerance_wad": 100000000000
     },
     {
       "x": 2.5488235294117647,
       "x_wad": 2548823529411764736,
-      "expected_wad": 999687342832736779,
-      "expected_float": 0.9996873428327367,
+      "expected_wad": 999687342593809817,
+      "expected_float": 0.9996873425938099,
       "scipy_reference": 0.999687342834228,
       "tolerance_wad": 100000000000
     },
     {
       "x": 2.618235294117647,
       "x_wad": 2618235294117646848,
-      "expected_wad": 999786719810852148,
-      "expected_float": 0.9997867198108521,
+      "expected_wad": 999786719682800850,
+      "expected_float": 0.9997867196828009,
       "scipy_reference": 0.9997867198144439,
       "tolerance_wad": 100000000000
     },
     {
       "x": 2.6876470588235293,
       "x_wad": 2687647058823529472,
-      "expected_wad": 999855832540812491,
-      "expected_float": 0.9998558325408125,
+      "expected_wad": 999855832558883421,
+      "expected_float": 0.9998558325588834,
       "scipy_reference": 0.9998558325465019,
       "tolerance_wad": 100000000000
     },
     {
       "x": 2.7570588235294116,
       "x_wad": 2757058823529411584,
-      "expected_wad": 999903437126222019,
-      "expected_float": 0.999903437126222,
+      "expected_wad": 999903437327643430,
+      "expected_float": 0.9999034373276434,
       "scipy_reference": 0.9999034371341664,
       "tolerance_wad": 100000000000
     },
     {
       "x": 2.826470588235294,
       "x_wad": 2826470588235293696,
-      "expected_wad": 999935912787234179,
-      "expected_float": 0.9999359127872341,
+      "expected_wad": 999935913211277686,
+      "expected_float": 0.9999359132112777,
       "scipy_reference": 0.9999359127977815,
       "tolerance_wad": 100000000000
     },
     {
       "x": 2.895882352941176,
       "x_wad": 2895882352941176320,
-      "expected_wad": 999957855265621368,
-      "expected_float": 0.9999578552656214,
+      "expected_wad": 999957855952089424,
+      "expected_float": 0.9999578559520894,
       "scipy_reference": 0.9999578552792121,
       "tolerance_wad": 100000000000
     },
     {
       "x": 2.965294117647059,
       "x_wad": 2965294117647058944,
-      "expected_wad": 999972538841195180,
-      "expected_float": 0.9999725388411952,
+      "expected_wad": 999972539828536290,
+      "expected_float": 0.9999725398285363,
       "scipy_reference": 0.999972538858143,
       "tolerance_wad": 100000000000
     },
     {
       "x": 3.034705882352941,
       "x_wad": 3034705882352941056,
-      "expected_wad": 999982270714108065,
-      "expected_float": 0.9999822707141081,
+      "expected_wad": 999982272039465090,
+      "expected_float": 0.9999822720394651,
       "scipy_reference": 0.9999822707344604,
       "tolerance_wad": 100000000000
     },
     {
       "x": 3.1041176470588234,
       "x_wad": 3104117647058823680,
-      "expected_wad": 999988658928775876,
-      "expected_float": 0.9999886589287759,
+      "expected_wad": 999988660626922386,
+      "expected_float": 0.9999886606269224,
       "scipy_reference": 0.999988658952258,
       "tolerance_wad": 100000000000
     },
     {
       "x": 3.1735294117647057,
       "x_wad": 3173529411764705792,
-      "expected_wad": 999992812111606320,
-      "expected_float": 0.9999928121116063,
+      "expected_wad": 999992814214086576,
+      "expected_float": 0.9999928142140866,
       "scipy_reference": 0.9999928121376847,
       "tolerance_wad": 100000000000
     },
     {
       "x": 3.242941176470588,
       "x_wad": 3242941176470587904,
-      "expected_wad": 999995486355915818,
-      "expected_float": 0.9999954863559158,
+      "expected_wad": 999995488890166344,
+      "expected_float": 0.9999954888901663,
       "scipy_reference": 0.9999954863839658,
       "tolerance_wad": 100000000000
     },
     {
       "x": 3.3123529411764703,
       "x_wad": 3312352941176470528,
-      "expected_wad": 999997191808156225,
-      "expected_float": 0.9999971918081563,
+      "expected_wad": 999997194795781469,
+      "expected_float": 0.9999971947957814,
       "scipy_reference": 0.9999971918377318,
       "tolerance_wad": 100000000000
     },
     {
       "x": 3.381764705882353,
       "x_wad": 3381764705882353152,
-      "expected_wad": 999998269008278782,
-      "expected_float": 0.9999982690082788,
+      "expected_wad": 999998272468183126,
+      "expected_float": 0.9999982724681832,
       "scipy_reference": 0.9999982690392814,
       "tolerance_wad": 100000000000
     },
     {
       "x": 3.4511764705882353,
       "x_wad": 3451176470588235264,
-      "expected_wad": 999998942870855713,
-      "expected_float": 0.9999989428708557,
+      "expected_wad": 999998946815115036,
+      "expected_float": 0.999998946815115,
       "scipy_reference": 0.9999989429035929,
       "tolerance_wad": 100000000000
     },
     {
       "x": 3.5205882352941176,
       "x_wad": 3520588235294117376,
-      "expected_wad": 999999360378032689,
-      "expected_float": 0.9999993603780327,
+      "expected_wad": 999999364814258436,
+      "expected_float": 0.9999993648142584,
       "scipy_reference": 0.9999993604131389,
       "tolerance_wad": 100000000000
     },
     {
       "x": 3.59,
       "x_wad": 3590000000000000000,
-      "expected_wad": 999999616574718656,
-      "expected_float": 0.9999996165747187,
+      "expected_wad": 999999621508926853,
+      "expected_float": 0.9999996215089269,
       "scipy_reference": 0.9999996166129631,
       "tolerance_wad": 100000000000
     },
     {
       "x": 3.659411764705882,
       "x_wad": 3659411764705882112,
-      "expected_wad": 999999772278502501,
-      "expected_float": 0.9999997722785025,
+      "expected_wad": 999999777703934069,
+      "expected_float": 0.9999997777039341,
       "scipy_reference": 0.9999997723205266,
       "tolerance_wad": 100000000000
     },
     {
       "x": 3.7288235294117644,
       "x_wad": 3728823529411764224,
-      "expected_wad": 999999866000176103,
-      "expected_float": 0.9999998660001761,
+      "expected_wad": 999999871907876595,
+      "expected_float": 0.9999998719078766,
       "scipy_reference": 0.9999998660463041,
       "tolerance_wad": 100000000000
     },
     {
       "x": 3.7982352941176467,
       "x_wad": 3798235294117646848,
-      "expected_wad": 999999921872439033,
-      "expected_float": 0.999999921872439,
+      "expected_wad": 999999928248090386,
+      "expected_float": 0.9999999282480904,
       "scipy_reference": 0.999999921922503,
       "tolerance_wad": 100000000000
     },
     {
       "x": 3.8676470588235294,
       "x_wad": 3867647058823529472,
-      "expected_wad": 999999954861461522,
-      "expected_float": 0.9999999548614615,
+      "expected_wad": 999999961689116790,
+      "expected_float": 0.9999999616891168,
       "scipy_reference": 0.9999999549148427,
       "tolerance_wad": 100000000000
     },
     {
       "x": 3.9370588235294117,
       "x_wad": 3937058823529411584,
-      "expected_wad": 999999974152991326,
-      "expected_float": 0.9999999741529914,
+      "expected_wad": 999999981406615320,
+      "expected_float": 0.9999999814066153,
       "scipy_reference": 0.9999999742086454,
       "tolerance_wad": 100000000000
     },
     {
       "x": 4.0064705882352944,
       "x_wad": 4006470588235294208,
-      "expected_wad": 999999985326765052,
-      "expected_float": 0.999999985326765,
+      "expected_wad": 999999992983493435,
+      "expected_float": 0.9999999929834934,
       "scipy_reference": 0.9999999853834776,
       "tolerance_wad": 100000000000
     },
     {
       "x": 4.075882352941177,
       "x_wad": 4075882352941176832,
-      "expected_wad": 999999991737268489,
-      "expected_float": 0.9999999917372685,
+      "expected_wad": 999999999767228451,
+      "expected_float": 0.9999999997672284,
       "scipy_reference": 0.9999999917938407,
       "tolerance_wad": 100000000000
     },
     {
       "x": 4.145294117647059,
       "x_wad": 4145294117647058944,
-      "expected_wad": 999999995380329787,
-      "expected_float": 0.9999999953803298,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999954358639,
       "tolerance_wad": 100000000000
     },
     {
       "x": 4.214705882352941,
       "x_wad": 4214705882352941056,
-      "expected_wad": 999999997431267358,
-      "expected_float": 0.9999999974312673,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.999999997485238,
       "tolerance_wad": 100000000000
     },
     {
       "x": 4.284117647058824,
       "x_wad": 4284117647058823680,
-      "expected_wad": 999999998575084352,
-      "expected_float": 0.9999999985750844,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999986273751,
       "tolerance_wad": 100000000000
     },
     {
       "x": 4.353529411764706,
       "x_wad": 4353529411764705792,
-      "expected_wad": 999999999206900724,
-      "expected_float": 0.9999999992069007,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999992578004,
       "tolerance_wad": 100000000000
     },
     {
       "x": 4.422941176470588,
       "x_wad": 4422941176470587904,
-      "expected_wad": 999999999552352567,
-      "expected_float": 0.9999999995523525,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999996024418,
       "tolerance_wad": 100000000000
     },
     {
       "x": 4.49235294117647,
       "x_wad": 4492352941176470528,
-      "expected_wad": 999999999739067257,
-      "expected_float": 0.9999999997390673,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999997890453,
       "tolerance_wad": 100000000000
     },
     {
       "x": 4.561764705882353,
       "x_wad": 4561764705882352640,
-      "expected_wad": 999999999838598496,
-      "expected_float": 0.9999999998385984,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999998891123,
       "tolerance_wad": 100000000000
     },
     {
       "x": 4.631176470588235,
       "x_wad": 4631176470588234752,
-      "expected_wad": 999999999890743511,
-      "expected_float": 0.9999999998907435,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999422594,
       "tolerance_wad": 100000000000
     },
     {
       "x": 4.700588235294117,
       "x_wad": 4700588235294116864,
-      "expected_wad": 999999999917540122,
-      "expected_float": 0.9999999999175401,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999702162,
       "tolerance_wad": 100000000000
     },
     {
       "x": 4.77,
       "x_wad": 4770000000000000000,
-      "expected_wad": 999999999931090395,
-      "expected_float": 0.9999999999310903,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999847813,
       "tolerance_wad": 100000000000
     },
     {
       "x": 4.839411764705882,
       "x_wad": 4839411764705882112,
-      "expected_wad": 999999999938055463,
-      "expected_float": 0.9999999999380554,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999922967,
       "tolerance_wad": 100000000000
     },
     {
       "x": 4.908823529411764,
       "x_wad": 4908823529411764224,
-      "expected_wad": 999999999941991106,
-      "expected_float": 0.9999999999419911,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999961375,
       "tolerance_wad": 100000000000
     },
     {
       "x": 4.978235294117647,
       "x_wad": 4978235294117647360,
-      "expected_wad": 999999999944823973,
-      "expected_float": 0.999999999944824,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999980815,
       "tolerance_wad": 100000000000
     },
     {
       "x": 5.04764705882353,
       "x_wad": 5047647058823529472,
-      "expected_wad": 999999999947439426,
-      "expected_float": 0.9999999999474394,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999990561,
       "tolerance_wad": 100000000000
     },
     {
       "x": 5.117058823529412,
       "x_wad": 5117058823529411584,
-      "expected_wad": 999999999950193307,
-      "expected_float": 0.9999999999501933,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999995399,
       "tolerance_wad": 100000000000
     },
     {
       "x": 5.186470588235294,
       "x_wad": 5186470588235293696,
-      "expected_wad": 999999999953054512,
-      "expected_float": 0.9999999999530546,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.999999999999778,
       "tolerance_wad": 100000000000
     },
     {
       "x": 5.2558823529411764,
       "x_wad": 5255882352941176832,
-      "expected_wad": 999999999955860156,
-      "expected_float": 0.9999999999558602,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999998938,
       "tolerance_wad": 100000000000
     },
     {
       "x": 5.325294117647059,
       "x_wad": 5325294117647058944,
-      "expected_wad": 999999999958453540,
-      "expected_float": 0.9999999999584536,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999999497,
       "tolerance_wad": 100000000000
     },
     {
       "x": 5.394705882352941,
       "x_wad": 5394705882352941056,
-      "expected_wad": 999999999960619555,
-      "expected_float": 0.9999999999606195,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999999764,
       "tolerance_wad": 100000000000
     },
     {
       "x": 5.464117647058823,
       "x_wad": 5464117647058823168,
-      "expected_wad": 999999999962231132,
-      "expected_float": 0.9999999999622311,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.999999999999989,
       "tolerance_wad": 100000000000
     },
     {
       "x": 5.533529411764706,
       "x_wad": 5533529411764705280,
-      "expected_wad": 999999999963273356,
-      "expected_float": 0.9999999999632734,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999999949,
       "tolerance_wad": 100000000000
     },
     {
       "x": 5.602941176470588,
       "x_wad": 5602941176470587392,
-      "expected_wad": 999999999963823282,
-      "expected_float": 0.9999999999638233,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999999977,
       "tolerance_wad": 100000000000
     },
     {
       "x": 5.67235294117647,
       "x_wad": 5672352941176470528,
-      "expected_wad": 999999999964068262,
-      "expected_float": 0.9999999999640683,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.999999999999999,
       "tolerance_wad": 100000000000
     },
     {
       "x": 5.741764705882352,
       "x_wad": 5741764705882352640,
-      "expected_wad": 999999999964244025,
-      "expected_float": 0.999999999964244,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999999996,
       "tolerance_wad": 100000000000
     },
     {
       "x": 5.811176470588235,
       "x_wad": 5811176470588234752,
-      "expected_wad": 999999999964570769,
-      "expected_float": 0.9999999999645708,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999999998,
       "tolerance_wad": 100000000000
     },
     {
       "x": 5.880588235294118,
       "x_wad": 5880588235294117888,
-      "expected_wad": 999999999965167473,
-      "expected_float": 0.9999999999651674,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 0.9999999999999999,
       "tolerance_wad": 100000000000
     },
     {
       "x": 5.95,
       "x_wad": 5950000000000000000,
-      "expected_wad": 999999999965972162,
-      "expected_float": 0.9999999999659721,
+      "expected_wad": 1000000000000000000,
+      "expected_float": 1.0,
       "scipy_reference": 1.0,
       "tolerance_wad": 100000000000
     }

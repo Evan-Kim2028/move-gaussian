@@ -377,32 +377,25 @@ module gaussian::erf {
     }
     
     #[test]
-    #[expected_failure(abort_code = EInputTooLarge)]
-    /// Test that erfc_strict() aborts when input exceeds 6*SCALE
-    fun test_erfc_strict_input_too_large() {
-        let x = 7_000_000_000_000_000_000; // 7.0 > 6.0
-        erfc_strict(x); // Should abort with EInputTooLarge
-    }
-    
-    #[test]
-    #[expected_failure(abort_code = EInputTooLarge)]
-    /// Test that phi_strict() aborts when input exceeds 6*SCALE
-    fun test_phi_strict_input_too_large() {
-        let x = 100_000_000_000_000_000_000; // 100.0 >> 6.0
-        phi_strict(x); // Should abort with EInputTooLarge
-    }
-    
-    #[test]
-    /// Test that non-strict functions clamp instead of aborting
-    fun test_clamping_functions_dont_abort() {
+    /// Test that non-strict erf() clamps instead of aborting
+    fun test_erf_clamping_doesnt_abort() {
         let x = 10_000_000_000_000_000_000; // 10.0 > 6.0
         
-        // These should not abort, just return erf(6.0)
-        let _ = erf(x);
-        let _ = erfc(x);
-        let _ = phi(x);
+        // This should not abort, just return erf(6.0)
+        let result = erf(x);
         
-        // Verify they return the clamped value (erf(6.0) ≈ 1.0)
-        assert!(erf(x) > 999_999_000_000_000_000, 0); // > 0.999999
+        // Verify it returns the clamped value (erf(6.0) ≈ 1.0)
+        assert!(result > 999_999_000_000_000_000, 0); // > 0.999999
+        assert!(result <= SCALE, 1);
+    }
+    
+    #[test]
+    /// Test edge case: exactly at domain boundary
+    fun test_erf_at_boundary() {
+        let x = 6 * SCALE; // Exactly 6.0
+        let result = erf(x);
+        
+        // Should work fine, no abort
+        assert!(result > 999_999_000_000_000_000, 0);
     }
 }

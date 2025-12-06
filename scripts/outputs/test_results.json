@@ -2,9 +2,9 @@
   "accuracy_tests": [
     {
       "n_points": 10000,
-      "max_error_scipy": 5.678790770957676e-11,
-      "mean_error_scipy": 2.5421966377966664e-11,
-      "max_error_mpmath": 5.678790770957676e-11
+      "max_error_scipy": 7.987271621878733e-09,
+      "mean_error_scipy": 1.0467736858652118e-09,
+      "max_error_mpmath": 7.987271621878733e-09
     }
   ],
   "edge_cases": [
@@ -27,80 +27,80 @@
     {
       "x": 1e-10,
       "expected": 1.1283791670955126e-10,
-      "result": 1.12837917e-10,
-      "error": 2.904487427416601e-19,
+      "result": 1.12837916e-10,
+      "error": 7.095512642979537e-19,
       "passed": true,
       "description": "Small x"
     },
     {
       "x": 1e-05,
       "expected": 1.1283791670938876e-05,
-      "result": 1.1283791707143e-05,
-      "error": 3.620412448296622e-14,
+      "result": 1.1283791670579e-05,
+      "error": 3.5987550016814557e-16,
       "passed": true,
       "description": "x = 1e-5"
     },
     {
       "x": 0.1,
       "expected": 0.1124629160182849,
-      "result": 0.1124629159744814,
-      "error": 4.3803502491890356e-11,
+      "result": 0.11246291601828437,
+      "error": 5.273559366969494e-16,
       "passed": true,
       "description": "x = 0.1"
     },
     {
       "x": 0.5,
       "expected": 0.5204998778130465,
-      "result": 0.52049987781306,
-      "error": 1.3433698597964394e-14,
+      "result": 0.5204998778129681,
+      "error": 7.838174553853605e-14,
       "passed": true,
       "description": "x = 0.5"
     },
     {
       "x": 1.0,
       "expected": 0.8427007929497149,
-      "result": 0.8427007929561513,
-      "error": 6.4364069629618825e-12,
+      "result": 0.8427007929481535,
+      "error": 1.5614176618328202e-12,
       "passed": true,
       "description": "x = 1.0"
     },
     {
       "x": 2.0,
       "expected": 0.9953222650189527,
-      "result": 0.9953222650253222,
-      "error": 6.3694605145769856e-12,
+      "result": 0.9953222647345129,
+      "error": 2.844398050427799e-10,
       "passed": true,
       "description": "x = 2.0"
     },
     {
       "x": 3.0,
       "expected": 0.9999779095030014,
-      "result": 0.999977909484334,
-      "error": 1.8667400958349845e-11,
+      "result": 0.9999779106361755,
+      "error": 1.13317411010172e-09,
       "passed": true,
       "description": "x = 3.0"
     },
     {
       "x": 4.0,
       "expected": 0.999999984582742,
-      "result": 0.999999984526091,
-      "error": 5.6651017210640475e-11,
+      "result": 0.9999999921464584,
+      "error": 7.563716430958323e-09,
       "passed": true,
       "description": "x = 4.0"
     },
     {
       "x": 5.0,
       "expected": 0.9999999999984626,
-      "result": 0.9999999999456554,
-      "error": 5.280720305478326e-11,
+      "result": 1.0,
+      "error": 1.5374368445009168e-12,
       "passed": true,
       "description": "x = 5.0"
     },
     {
       "x": 6.0,
       "expected": 0.9999999999999999,
-      "result": 0.9999999999665357,
-      "error": 3.3464231385949006e-11,
+      "result": 1.0,
+      "error": 1.1102230246251565e-16,
       "passed": true,
       "description": "x = 6.0 (near saturation)"
     }
@@ -108,7 +108,7 @@
   "overflow_tests": [],
   "summary": {
     "all_passed": true,
-    "max_error": 5.678790770957676e-11,
-    "mean_error": 2.5421966377966664e-11
+    "max_error": 7.987271621878733e-09,
+    "mean_error": 1.0467736858652118e-09
   }
 }

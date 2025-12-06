@@ -39,11 +39,44 @@ module gaussian::math {
     // Error codes
     // ========================================
     
-    /// Input x exceeds maximum domain [0, 6]
-    const E_INPUT_TOO_LARGE: u64 = 1;
-    
-    /// Division by zero (pole in rational function)
-    const E_DIVISION_BY_ZERO: u64 = 2;
+    /// Division by zero (denominator is zero).
+    /// 
+    /// This error occurs when attempting to divide by zero in fixed-point
+    /// division operations. Most commonly seen in `div_scaled()`.
+    /// 
+    /// **Common causes:**
+    /// 1. Denominator Q(x) = 0 in rational function evaluation
+    /// 2. Invalid coefficient configuration
+    /// 3. Numerical underflow in intermediate calculations
+    /// 
+    /// **How to fix:**
+    /// - Check that the denominator is non-zero before calling `div_scaled()`
+    /// - Verify input is within valid domain [0, 6*SCALE]
+    /// - For erf functions, ensure using valid coefficients from `erf_coefficients`
+    /// 
+    /// **Example of the error:**
+    /// ```move
+    /// // This will abort with EDivisionByZero:
+    /// let result = div_scaled(100, 0);
+    /// 
+    /// // Correct: check denominator first
+    /// assert!(denominator > 0, EDivisionByZero);
+    /// let result = div_scaled(numerator, denominator);
+    /// ```
+    /// 
+    /// **Technical details:**
+    /// - Error code range: 1-99 (math module errors)
+    /// - Thrown by: `div_scaled()`
+    /// - Related to: `EDenominatorZero` in erf module (code 100)
+    /// 
+    /// **Overflow safety:**
+    /// This module uses u256 intermediates to prevent overflow:
+    /// - Max coefficient: ~1e20
+    /// - Max input: 6e18
+    /// - Max product: ~6e38 << u256 max (~1e77)
+    /// 
+    /// Division by zero is the primary failure mode, not overflow.
+    const EDivisionByZero: u64 = 2;
     
     // ========================================
     // Public getters
@@ -102,7 +135,7 @@ module gaussian::math {
     /// Used for computing P(x) / Q(x) in rational functions.
     /// Aborts if b is zero.
     public fun div_scaled(a: u256, b: u256): u256 {
-        assert!(b > 0, E_DIVISION_BY_ZERO);
+        assert!(b > 0, EDivisionByZero);
         (a * SCALE) / b
     }
     
@@ -113,11 +146,6 @@ module gaussian::math {
         } else {
             value
         }
-    }
-    
-    /// Check if input is within valid domain [0, MAX_INPUT]
-    public fun validate_input(x: u256) {
-        assert!(x <= MAX_INPUT, E_INPUT_TOO_LARGE);
     }
     
     // ========================================
@@ -176,5 +204,35 @@ module gaussian::math {
         assert!(clamp_to_unit(SCALE) == SCALE, 1);
         assert!(clamp_to_unit(SCALE + 1) == SCALE, 2);
         assert!(clamp_to_unit(2 * SCALE) == SCALE, 3);
+    }
+    
+    // ========================================
+    // Error code tests
+    // ========================================
+    
+    #[test]
+    #[expected_failure(abort_code = EDivisionByZero)]
+    /// Test that div_scaled aborts when denominator is zero
+    fun test_div_scaled_zero_denominator() {
+        div_scaled(100, 0); // Should abort with EDivisionByZero
+    }
+    
+    #[test]
+    #[expected_failure(abort_code = EDivisionByZero)]
+    /// Test that div_scaled aborts even with large numerator and zero denominator
+    fun test_div_scaled_large_numerator_zero_denominator() {
+        div_scaled(1_000_000_000_000_000_000, 0); // Should abort
+    }
+    
+    #[test]
+    /// Test that div_scaled works correctly with non-zero denominator
+    fun test_div_scaled_normal_operation() {
+        // (2 * SCALE) / (4 * SCALE) = 0.5 * SCALE
+        let result = div_scaled(2 * SCALE, 4 * SCALE);
+        assert!(result == SCALE / 2, 0);
+        
+        // Should not abort with positive denominator
+        let _ = div_scaled(100, 1);
+        let _ = div_scaled(0, 1); // Numerator can be zero
     }
 }
