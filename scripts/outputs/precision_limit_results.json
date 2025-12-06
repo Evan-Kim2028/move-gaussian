@@ -1,0 +1,60 @@
+{
+  "erf": {
+    "n_points": 100000,
+    "max_error": 5.6808557857834785e-11,
+    "mean_error": 2.5422724306824547e-11,
+    "p99_error": 5.668044034123909e-11,
+    "max_rel_error": 3.2341108615697644e-09,
+    "headroom": 56808.55785783478,
+    "worst_case": {
+      "x": 4.0360003600036,
+      "error": 5.6808557857834785e-11,
+      "result": 0.9999999884963572,
+      "expected": 0.9999999885531657
+    },
+    "within_target": false
+  },
+  "distribution": {
+    "Near zero": {
+      "range": [
+        0.0,
+        0.5
+      ],
+      "max_error": 4.412532839115357e-11,
+      "mean_error": 1.4088025161830541e-11,
+      "headroom": 44125.32839115357
+    },
+    "Central": {
+      "range": [
+        0.5,
+        2.0
+      ],
+      "max_error": 2.254696429559999e-11,
+      "mean_error": 5.917589303282006e-12,
+      "headroom": 22546.96429559999
+    },
+    "Transition": {
+      "range": [
+        2.0,
+        4.0
+      ],
+      "max_error": 5.6643578716375487e-11,
+      "mean_error": 2.1803942156801093e-11,
+      "headroom": 56643.57871637548
+    },
+    "Saturation": {
+      "range": [
+        4.0,
+        6.0
+      ],
+      "max_error": 5.678790770957676e-11,
+      "mean_error": 4.64975145095585e-11,
+      "headroom": 56787.90770957675
+    }
+  },
+  "overhead": {
+    "float_max_error": 5.673916891879571e-11,
+    "wad_max_error": 5.678713055345952e-11,
+    "overhead_factor": 1.0008453002674826
+  }
+}
