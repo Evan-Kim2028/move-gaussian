@@ -5,6 +5,11 @@ Step 2: Extract Polynomial Coefficients from AAA Approximation
 Converts the barycentric rational form from AAA into explicit P(x)/Q(x)
 polynomial coefficients that can be used for Horner evaluation.
 
+PRECISION UPGRADE (2025-12-06):
+- Uses mpmath for high-precision function sampling
+- Configurable tolerance (default 1e-13 for near-WAD-limit precision)
+- Imports settings from 01_aaa_exploration.py
+
 Barycentric form:
     R(x) = Σ (w_j * f_j) / (x - z_j)  /  Σ w_j / (x - z_j)
 
@@ -25,8 +30,19 @@ Output:
 import json
 import numpy as np
 from numpy.polynomial import polynomial as P
-from scipy.special import erf
 from pathlib import Path
+
+# High-precision math
+try:
+    from mpmath import mp, erf as mp_erf, erfc as mp_erfc
+    mp.dps = 50
+    HAS_MPMATH = True
+except ImportError:
+    HAS_MPMATH = False
+    print("WARNING: mpmath not installed - using scipy (double precision)")
+
+from scipy.special import erf as scipy_erf, erfc as scipy_erfc
+from scipy.stats import norm
 
 # Try to import baryrat
 try:
@@ -36,6 +52,45 @@ except ImportError:
     HAS_BARYRAT = False
     print("ERROR: baryrat not installed. Run: pip install baryrat")
     exit(1)
+
+
+# =============================================================================
+# Configuration (matches 01_aaa_exploration.py)
+# =============================================================================
+
+N_SAMPLES = 2000        # Sample density
+AAA_TOLERANCE = 1e-13   # Tighter tolerance for near-WAD-limit precision
+DOMAIN_MIN = 0
+DOMAIN_MAX = 6
+
+
+# =============================================================================
+# High-Precision Sampling
+# =============================================================================
+
+def erf_hp(x_arr):
+    """High-precision erf using mpmath."""
+    if HAS_MPMATH:
+        return np.array([float(mp_erf(mp.mpf(str(xi)))) for xi in x_arr])
+    return scipy_erf(x_arr)
+
+
+def erfc_hp(x_arr):
+    """High-precision erfc using mpmath."""
+    if HAS_MPMATH:
+        return np.array([float(mp_erfc(mp.mpf(str(xi)))) for xi in x_arr])
+    return scipy_erfc(x_arr)
+
+
+def phi_hp(x_arr):
+    """High-precision standard normal CDF using mpmath."""
+    if HAS_MPMATH:
+        sqrt2 = mp.sqrt(2)
+        return np.array([
+            float(0.5 * (1 + mp_erf(mp.mpf(str(xi)) / sqrt2)))
+            for xi in x_arr
+        ])
+    return norm.cdf(x_arr)
 
 
 def barycentric_to_poly(nodes: np.ndarray, weights: np.ndarray, values: np.ndarray):
@@ -141,13 +196,13 @@ def analyze_coefficients(p_coeffs, q_coeffs):
     print(f"\n  Negative coefficients: P has {p_neg}, Q has {q_neg}")
 
 
-def run_extraction(func_name, func, x_min, x_max, n_points=1000, tol=1e-10):
+def run_extraction(func_name, func_hp, x_min, x_max, n_points=N_SAMPLES, tol=AAA_TOLERANCE):
     """
     Run the full extraction pipeline for a function.
     
     Args:
         func_name: Name for output files
-        func: Target function
+        func_hp: High-precision target function (takes array, returns array)
         x_min, x_max: Domain bounds
         n_points: Number of sample points
         tol: AAA tolerance
@@ -159,12 +214,14 @@ def run_extraction(func_name, func, x_min, x_max, n_points=1000, tol=1e-10):
     print(f"Extracting coefficients for {func_name}")
     print(f"{'='*60}")
     
-    # Sample function
+    # Sample function with high precision
     x = np.linspace(x_min, x_max, n_points)
-    f = func(x)
+    f = func_hp(x)
     
     print(f"Domain: [{x_min}, {x_max}]")
     print(f"Sample points: {n_points}")
+    print(f"Tolerance: {tol:.0e}")
+    print(f"Precision: {'mpmath (50 digits)' if HAS_MPMATH else 'scipy (double)'}")
     
     # Run AAA
     r = aaa(x, f, tol=tol)
@@ -196,13 +253,13 @@ def run_extraction(func_name, func, x_min, x_max, n_points=1000, tol=1e-10):
     if not is_valid:
         print("  WARNING: Conversion error too large!")
     
-    # Compute error vs true function
+    # Compute error vs true function (high-precision reference)
     r_poly = P.polyval(x_test, p_coeffs) / P.polyval(x_test, q_coeffs)
-    f_true = func(x_test)
+    f_true = func_hp(x_test)
     approx_error = np.max(np.abs(r_poly - f_true))
     mean_error = np.mean(np.abs(r_poly - f_true))
     
-    print(f"\nApproximation error (vs true function):")
+    print(f"\nApproximation error (vs {'mpmath' if HAS_MPMATH else 'scipy'}):")
     print(f"  Max error: {approx_error:.2e}")
     print(f"  Mean error: {mean_error:.2e}")
     
@@ -236,6 +293,9 @@ def run_extraction(func_name, func, x_min, x_max, n_points=1000, tol=1e-10):
         'max_error_vs_true': float(approx_error),
         'mean_error_vs_true': float(mean_error),
         'conversion_max_diff': float(max_diff),
+        'aaa_tolerance': tol,
+        'n_samples': n_points,
+        'precision': 'mpmath_50' if HAS_MPMATH else 'scipy_double',
         'barycentric': {
             'nodes': nodes.tolist(),
             'weights': weights.tolist(),
@@ -258,33 +318,33 @@ def main():
     # 1. Extract coefficients for erf(x) on [0, 6]
     results['erf'] = run_extraction(
         func_name='erf',
-        func=erf,
+        func_hp=erf_hp,
         x_min=0,
         x_max=6,
-        n_points=1000,
-        tol=1e-10
+        n_points=N_SAMPLES,
+        tol=AAA_TOLERANCE
     )
     
     # 2. Extract coefficients for erfc(x) on [0, 6]
     from scipy.special import erfc
     results['erfc'] = run_extraction(
         func_name='erfc',
-        func=erfc,
+        func_hp=erfc_hp,
         x_min=0,
         x_max=6,
-        n_points=1000,
-        tol=1e-10
+        n_points=N_SAMPLES,
+        tol=AAA_TOLERANCE
     )
     
     # 3. Extract coefficients for Φ(x) (normal CDF) on [0, 6]
     from scipy.stats import norm
     results['phi'] = run_extraction(
         func_name='phi',
-        func=norm.cdf,
+        func_hp=phi_hp,
         x_min=0,
         x_max=6,
-        n_points=1000,
-        tol=1e-10
+        n_points=N_SAMPLES,
+        tol=AAA_TOLERANCE
     )
     
     # Save results
