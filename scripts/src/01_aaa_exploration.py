@@ -8,8 +8,13 @@ optimal rational approximations for erf and the Gaussian CDF (Φ).
 The goal is to discover coefficients offline that can be hardcoded into
 a Move smart contract for on-chain evaluation.
 
+PRECISION UPGRADE (2025-12-06):
+- Uses mpmath for 50-digit precision ground truth (instead of scipy double)
+- Increased sample density: 2000 points (up from 1000)
+- Tighter AAA tolerance: 1e-13 (pushing toward WAD limits)
+
 Usage:
-    pip install numpy scipy baryrat matplotlib
+    pip install numpy scipy baryrat matplotlib mpmath
     python aaa_exploration.py
 
 References:
@@ -18,9 +23,19 @@ References:
 """
 
 import numpy as np
-from scipy.special import erf, erfc
+from scipy.special import erf as scipy_erf, erfc as scipy_erfc
 from scipy.stats import norm
 import matplotlib.pyplot as plt
+
+# High-precision math with mpmath
+try:
+    from mpmath import mp, erf as mp_erf, erfc as mp_erfc
+    HAS_MPMATH = True
+    mp.dps = 50  # 50 decimal places - far exceeds WAD (18 digits)
+except ImportError:
+    HAS_MPMATH = False
+    print("WARNING: mpmath not installed. Using scipy (double precision).")
+    print("For maximum precision, install with: pip install mpmath\n")
 
 # Try to import baryrat, provide instructions if not available
 try:
@@ -32,14 +47,90 @@ except ImportError:
     print("Continuing with analysis only...\n")
 
 
-def sample_function(func, x_min, x_max, n_points=1000):
-    """Sample a function on a uniform grid."""
+# =============================================================================
+# Configuration
+# =============================================================================
+
+# Sample density - higher = better approximation, slower fitting
+N_SAMPLES = 2000  # Up from 1000
+
+# AAA tolerance - lower = more accurate, higher degree polynomials
+# 1e-13 pushes toward WAD arithmetic limits (~1e-15)
+AAA_TOLERANCE = 1e-13  # Up from 1e-10
+
+# Domain for erf/erfc/phi
+DOMAIN_MIN = 0
+DOMAIN_MAX = 6  # erf(6) ≈ 1 - 2e-17
+
+
+# =============================================================================
+# High-Precision Sampling Functions
+# =============================================================================
+
+def sample_erf_mpmath(n_points=N_SAMPLES):
+    """
+    Sample erf(x) using mpmath 50-digit precision.
+    
+    This is the ground truth for coefficient fitting.
+    """
+    x = np.linspace(DOMAIN_MIN, DOMAIN_MAX, n_points)
+    
+    if HAS_MPMATH:
+        # Use mpmath for 50-digit precision
+        y = np.array([float(mp_erf(mp.mpf(str(xi)))) for xi in x])
+    else:
+        # Fallback to scipy double precision
+        y = scipy_erf(x)
+    
+    return x, y
+
+
+def sample_erfc_mpmath(n_points=N_SAMPLES):
+    """
+    Sample erfc(x) using mpmath 50-digit precision.
+    """
+    x = np.linspace(DOMAIN_MIN, DOMAIN_MAX, n_points)
+    
+    if HAS_MPMATH:
+        y = np.array([float(mp_erfc(mp.mpf(str(xi)))) for xi in x])
+    else:
+        y = scipy_erfc(x)
+    
+    return x, y
+
+
+def sample_phi_mpmath(n_points=N_SAMPLES):
+    """
+    Sample standard normal CDF Φ(x) using mpmath 50-digit precision.
+    
+    Φ(x) = 0.5 * (1 + erf(x / √2))
+    """
+    x = np.linspace(DOMAIN_MIN, DOMAIN_MAX, n_points)
+    
+    if HAS_MPMATH:
+        sqrt2 = mp.sqrt(2)
+        y = np.array([
+            float(0.5 * (1 + mp_erf(mp.mpf(str(xi)) / sqrt2)))
+            for xi in x
+        ])
+    else:
+        y = norm.cdf(x)
+    
+    return x, y
+
+
+def sample_function(func, x_min, x_max, n_points=N_SAMPLES):
+    """Sample a function on a uniform grid (legacy compatibility)."""
     x = np.linspace(x_min, x_max, n_points)
     f = func(x)
     return x, f
 
 
-def analyze_aaa_approximation(x, f, func_name, tol=1e-10):
+# =============================================================================
+# AAA Analysis
+# =============================================================================
+
+def analyze_aaa_approximation(x, f, func_name, tol=AAA_TOLERANCE):
     """
     Run AAA and analyze the resulting rational approximation.
     
@@ -54,7 +145,8 @@ def analyze_aaa_approximation(x, f, func_name, tol=1e-10):
     print(f"{'='*60}")
     print(f"Domain: [{x.min():.2f}, {x.max():.2f}]")
     print(f"Sample points: {len(x)}")
-    print(f"Tolerance: {tol}")
+    print(f"Tolerance: {tol:.0e}")
+    print(f"Ground truth: {'mpmath (50 digits)' if HAS_MPMATH else 'scipy (double precision)'}")
     
     # Run AAA
     r = aaa(x, f, tol=tol)
@@ -65,15 +157,25 @@ def analyze_aaa_approximation(x, f, func_name, tol=1e-10):
     print(f"  Degree (num/denom): {degree}")
     print(f"  Number of nodes: {len(r.nodes)}")
     
-    # Compute errors
+    # Compute errors vs fitting data
     r_vals = r(x)
     errors = np.abs(f - r_vals)
     max_error = np.max(errors)
     mean_error = np.mean(errors)
     
-    print(f"\nError Analysis:")
+    print(f"\nError Analysis (vs fitting data):")
     print(f"  Max absolute error: {max_error:.2e}")
     print(f"  Mean absolute error: {mean_error:.2e}")
+    
+    # Verify against mpmath on denser grid
+    if HAS_MPMATH and func_name == "erf(x)":
+        x_verify = np.linspace(DOMAIN_MIN, DOMAIN_MAX, 10000)
+        y_true = np.array([float(mp_erf(mp.mpf(str(xi)))) for xi in x_verify])
+        y_approx = r(x_verify)
+        verify_errors = np.abs(y_true - y_approx)
+        verify_max = np.max(verify_errors)
+        print(f"\nVerification (vs mpmath on 10k points):")
+        print(f"  Max absolute error: {verify_max:.2e}")
     
     # Check for poles on real axis
     poles = r.poles()
@@ -149,20 +251,17 @@ def extract_rational_coefficients(r):
     return r.nodes, r.weights
 
 
-def compare_with_solgauss():
+def compare_with_existing():
     """
-    Compare AAA result with solgauss's (11,4) rational approximation.
-    
-    solgauss uses a degree (11,4) rational polynomial for erfc.
-    Let's see what degree AAA chooses for similar accuracy.
+    Compare AAA result with existing implementations.
     """
     print(f"\n{'='*60}")
-    print(f"Comparison with solgauss")
+    print(f"Comparison with Existing Implementations")
     print(f"{'='*60}")
-    print(f"solgauss uses: (11,4) rational polynomial for erfc")
-    print(f"solgauss error: < 1e-8")
-    print(f"solgauss gas (CDF): 519-833")
-    print(f"\nLet's see what AAA finds for similar accuracy...")
+    print(f"solgauss (Solidity):  (11,4) rational, error < 1e-8")
+    print(f"Acklam (Aptos):       Two-region + Newton, error ~1.15e-9")
+    print(f"Our target:           Push toward WAD limit ~1e-15")
+    print(f"\nAAA with mpmath sampling should achieve ~1e-13 or better...")
 
 
 def plot_results(x, f, r, func_name):
@@ -189,6 +288,7 @@ def plot_results(x, f, r, func_name):
     axes[1].set_title('Absolute Error (log scale)')
     axes[1].grid(True, alpha=0.3)
     axes[1].axhline(y=1e-8, color='r', linestyle='--', label='solgauss target (1e-8)')
+    axes[1].axhline(y=1e-13, color='orange', linestyle='--', label='Our target (1e-13)')
     axes[1].legend()
     
     plt.tight_layout()
@@ -199,25 +299,32 @@ def plot_results(x, f, r, func_name):
 def main():
     print("AAA Algorithm Exploration for Gaussian/erf Approximation")
     print("="*60)
+    print(f"\nConfiguration:")
+    print(f"  Sample points: {N_SAMPLES}")
+    print(f"  AAA tolerance: {AAA_TOLERANCE:.0e}")
+    print(f"  Domain: [{DOMAIN_MIN}, {DOMAIN_MAX}]")
+    print(f"  Precision: {'mpmath (50 digits)' if HAS_MPMATH else 'scipy (double)'}")
     
-    # 1. Approximate erf(x) on [0, 6]
-    # We use [0, 6] because erf(6) ≈ 1 - 2e-17 (essentially 1)
-    x_erf, f_erf = sample_function(erf, 0, 6, n_points=1000)
-    r_erf, results_erf = analyze_aaa_approximation(x_erf, f_erf, "erf(x)", tol=1e-10)
+    # 1. Approximate erf(x) on [0, 6] using high-precision sampling
+    print("\n" + "="*60)
+    print("Sampling erf(x) with high precision...")
+    x_erf, f_erf = sample_erf_mpmath()
+    r_erf, results_erf = analyze_aaa_approximation(x_erf, f_erf, "erf(x)")
     
     # 2. Approximate erfc(x) on [0, 6]
-    # erfc is what solgauss approximates directly
-    x_erfc, f_erfc = sample_function(erfc, 0, 6, n_points=1000)
-    r_erfc, results_erfc = analyze_aaa_approximation(x_erfc, f_erfc, "erfc(x)", tol=1e-10)
+    print("\n" + "="*60)
+    print("Sampling erfc(x) with high precision...")
+    x_erfc, f_erfc = sample_erfc_mpmath()
+    r_erfc, results_erfc = analyze_aaa_approximation(x_erfc, f_erfc, "erfc(x)")
     
     # 3. Approximate standard normal CDF Φ(x) on [0, 6]
-    # Φ(x) = 0.5 * erfc(-x/√2) = 0.5 * (1 + erf(x/√2))
-    phi = lambda x: norm.cdf(x)
-    x_phi, f_phi = sample_function(phi, 0, 6, n_points=1000)
-    r_phi, results_phi = analyze_aaa_approximation(x_phi, f_phi, "Φ(x) (normal CDF)", tol=1e-10)
+    print("\n" + "="*60)
+    print("Sampling Φ(x) with high precision...")
+    x_phi, f_phi = sample_phi_mpmath()
+    r_phi, results_phi = analyze_aaa_approximation(x_phi, f_phi, "Φ(x) (normal CDF)")
     
-    # 4. Compare with solgauss
-    compare_with_solgauss()
+    # 4. Compare with existing implementations
+    compare_with_existing()
     
     # 5. Extract coefficients (for Move implementation)
     if r_erf is not None:
@@ -242,6 +349,9 @@ def main():
         print(f"erfc: degree={results_erfc['degree']}, max_error={results_erfc['max_error']:.2e}")
     if results_phi:
         print(f"Φ:    degree={results_phi['degree']}, max_error={results_phi['max_error']:.2e}")
+    
+    print(f"\nPrecision target: ~1e-13 (within 100x of WAD limit)")
+    print(f"WAD theoretical limit: ~1e-15")
     
     print(f"\nNext steps:")
     print(f"1. Convert barycentric form to P(x)/Q(x) polynomial form")

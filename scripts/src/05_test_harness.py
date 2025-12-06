@@ -6,6 +6,10 @@ Tests the fixed-point implementation against high-precision references:
 - scipy.special.erf (fast, double precision)
 - mpmath.erf (arbitrary precision, ground truth)
 
+PRECISION UPGRADE (2025-12-06):
+- Uses string conversion for mpmath to avoid float precision loss
+- Reports distance from theoretical WAD limit (~1e-15)
+
 Usage:
     python 05_test_harness.py
 
@@ -33,6 +37,7 @@ except ImportError:
     print("Warning: mpmath not installed. Using scipy only.")
 
 WAD = 10**18
+WAD_THEORETICAL_LIMIT = 1e-15  # Theoretical precision floor of WAD arithmetic
 
 
 def load_fixed_point_erf():
@@ -86,8 +91,9 @@ class TestHarness:
             errors_scipy.append(abs(result - ref_scipy))
             
             # mpmath reference (slower, but more accurate)
+            # Use string conversion to avoid float precision loss
             if HAS_MPMATH:
-                ref_mpmath = float(mp_erf(mp.mpf(x)))
+                ref_mpmath = float(mp_erf(mp.mpf(str(x))))
                 errors_mpmath.append(abs(result - ref_mpmath))
         
         max_scipy = max(errors_scipy)
@@ -101,10 +107,14 @@ class TestHarness:
         if HAS_MPMATH:
             max_mpmath = max(errors_mpmath)
             mean_mpmath = np.mean(errors_mpmath)
+            headroom = max_mpmath / WAD_THEORETICAL_LIMIT
             print(f"\nvs mpmath (50 decimal places):")
             print(f"  Max error:  {max_mpmath:.2e}")
             print(f"  Mean error: {mean_mpmath:.2e}")
             print(f"  Status: {'✓ PASS' if max_mpmath < 1e-7 else '✗ FAIL'}")
+            print(f"\nDistance from WAD theoretical limit ({WAD_THEORETICAL_LIMIT:.0e}):")
+            print(f"  Headroom factor: {headroom:.1f}x")
+            print(f"  {'✓ Near optimal' if headroom < 1000 else '→ Room for improvement'}")
         
         self.results['accuracy_tests'].append({
             'n_points': n_points,
