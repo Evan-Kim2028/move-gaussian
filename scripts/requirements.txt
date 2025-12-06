@@ -1,5 +1,22 @@
-# Python dependencies for AAA exploration
-numpy>=1.20.0
-scipy>=1.7.0
-matplotlib>=3.4.0
-baryrat>=1.0.0
+# Gaussian Approximation Pipeline Dependencies
+# See docs/SPECIFICATION.md for usage
+
+# Core scientific computing
+numpy>=1.24
+scipy>=1.15.0  # Required for scipy.interpolate.AAA
+
+# Rational approximation (barycentric internals)
+baryrat>=2024.1
+
+# High-precision arithmetic (ground truth validation)
+mpmath>=1.3.0
+
+# Testing
+hypothesis>=6.100.0
+pytest>=7.0
+
+# Visualization
+matplotlib>=3.8
+
+# Code generation (optional)
+sympy>=1.12

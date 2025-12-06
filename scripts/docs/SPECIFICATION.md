@@ -1,8 +1,24 @@
 # Gaussian Approximation Pipeline Specification
 
-**Version**: 1.0  
+**Version**: 2.0  
 **Date**: 2025-12-06  
-**Status**: In Progress
+**Status**: In Progress  
+**Master Plan**: See `/Users/evandekim/Documents/learning_move/plans/gaussian-pipeline-plan-v2.md`
+
+---
+
+## Quick Reference
+
+This is the working specification for the `scripts/` folder. The master plan with full details and rationale is in the `plans/` directory at the repository root.
+
+### Key Changes in v2 (Based on Python Tools Inventory)
+
+| Aspect | v1 | v2 (Current) | Reason |
+|--------|-----|--------------|--------|
+| AAA Library | `baryrat` only | `scipy.interpolate.AAA` + `baryrat` | SciPy is official (1.15+) |
+| Validation | Custom tests | `hypothesis` property-based | Better edge case discovery |
+| Reference | `scipy.special` | + `mpmath` arbitrary precision | Ground truth validation |
+| New Step | None | `06_property_tests.py` | Verify monotonicity, bounds |
 
 ---
 
