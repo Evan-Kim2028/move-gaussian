@@ -1,0 +1,5 @@
+# Python dependencies for AAA exploration
+numpy>=1.20.0
+scipy>=1.7.0
+matplotlib>=3.4.0
+baryrat>=1.0.0
