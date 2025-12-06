@@ -1,0 +1,9 @@
+[package]
+name = "gaussian"
+edition = "2024.beta"
+
+[dependencies]
+# No explicit Sui dependency - let the CLI auto-add it based on local version
+
+[addresses]
+gaussian = "0x0"
