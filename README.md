@@ -79,15 +79,23 @@ All values use **WAD scaling** (10¹⁸) for fixed-point precision:
 
 ## Performance
 
-| Function | Gas Cost | Accuracy |
-|----------|----------|----------|
-| `sample_z` | ~1M MIST | - |
-| `sample_normal` | ~1M MIST | - |
-| `cdf` | ~500K MIST | < 0.05% error |
-| `pdf` | ~500K MIST | < 0.1% error |
-| `ppf` | ~1M MIST | < 0.05% error |
+| Function | Computation | Storage | Total | Accuracy |
+|----------|-------------|---------|-------|----------|
+| `sample_z` | 1,000,000 | 988,000 | 1,988,000 MIST | - |
+| `sample_normal` | 1,000,000 | 988,000 | 1,988,000 MIST | - |
+| `cdf` | ~500,000 | ~500,000 | ~1,000,000 MIST | < 0.05% |
+| `pdf` | ~500,000 | ~500,000 | ~1,000,000 MIST | < 0.1% |
+| `ppf` | ~1,000,000 | ~988,000 | ~1,988,000 MIST | < 0.05% |
 
-~1,000 samples per SUI at current gas prices.
+### Cost in SUI
+
+| Unit | Value |
+|------|-------|
+| 1 SUI | 1,000,000,000 MIST (10⁹) |
+| 1 sample | ~0.001 - 0.002 SUI |
+| Samples per SUI | ~500 - 1,000 |
+
+*Benchmarked on Sui testnet. Actual costs may vary.*
 
 ## Documentation
 
