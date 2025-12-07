@@ -62,6 +62,41 @@ explorer = "https://testnet.suivision.xyz/package/0x70c5040e7e2119275d8f93df8242
 # - sample_normal_from_seed: exact match for mean when z≈0
 # - Cross-validated at 5 probability points across distribution
 
+[testnet.v0_7_0]
+package_id = "0xa3cf304af5b168686db4bff7e28072490bfd154fb1da50af84919ae20df12938"
+upgrade_cap = "0x50a3a5966f9acf603f0706f7a070f1c3fd3b2dbaac6c7e712b0870bdd152667b"
+gaussian_profile = "0xc50129aa9173920304033e20b43ad9925f44a4a3bf1d344b030dc53ea2eb661b"
+transaction_digest = "Fi7fR8JAVGpZvjeiGCfVgmDKv9WH9Jh7qyukmb9yY5R9"
+deployed_at = "2025-12-07T00:00:00Z"
+deployed_by = "0x9d4d9ad2332d39f58082311bad065bf4e4476c4e3510d21f1d8931c57df863c5"
+sui_version = "sui 1.61.2-homebrew"
+gas_used = "197550280 MIST (~0.198 SUI)"
+epoch = "941"
+notes = "v0.7.0 release - events, core facade, profile, transcendental - 13 modules published"
+explorer = "https://testnet.suivision.xyz/package/0xa3cf304af5b168686db4bff7e28072490bfd154fb1da50af84919ae20df12938"
+
+# Modules published (13):
+# - coefficients
+# - core (NEW)
+# - erf
+# - erf_coefficients
+# - events (NEW)
+# - harness
+# - math
+# - normal_forward
+# - normal_inverse
+# - profile (NEW)
+# - sampling
+# - signed_wad
+# - transcendental (NEW)
+
+# New Features:
+# - On-chain events (GaussianSampleEvent, NormalSampleEvent)
+# - Core facade module with short names (cdf, pdf, ppf, sample_z)
+# - GaussianProfile shared object for version tracking
+# - Transcendental functions (ln_wad, exp_wad, sqrt_wad)
+# - 257 Move tests + 24 Python property tests passing
+
 # =============================================================================
 # Mainnet Deployments
 # =============================================================================
