@@ -81,21 +81,13 @@ All values use **WAD scaling** (10¹⁸) for fixed-point precision:
 
 | Function | Computation | Storage | Total | Accuracy |
 |----------|-------------|---------|-------|----------|
-| `sample_z` | 1,000,000 | 988,000 | 1,988,000 MIST | - |
-| `sample_normal` | 1,000,000 | 988,000 | 1,988,000 MIST | - |
-| `cdf` | ~500,000 | ~500,000 | ~1,000,000 MIST | < 0.05% |
-| `pdf` | ~500,000 | ~500,000 | ~1,000,000 MIST | < 0.1% |
-| `ppf` | ~1,000,000 | ~988,000 | ~1,988,000 MIST | < 0.05% |
+| `sample_z` | 1,000,000 (0.001 SUI) | 988,000 (0.000988 SUI) | 1,988,000 MIST (0.00199 SUI) | - |
+| `sample_normal` | 1,000,000 (0.001 SUI) | 988,000 (0.000988 SUI) | 1,988,000 MIST (0.00199 SUI) | - |
+| `cdf` | ~500,000 (0.0005 SUI) | ~500,000 (0.0005 SUI) | ~1,000,000 MIST (0.001 SUI) | < 0.05% |
+| `pdf` | ~500,000 (0.0005 SUI) | ~500,000 (0.0005 SUI) | ~1,000,000 MIST (0.001 SUI) | < 0.1% |
+| `ppf` | ~1,000,000 (0.001 SUI) | ~988,000 (0.000988 SUI) | ~1,988,000 MIST (0.00199 SUI) | < 0.05% |
 
-### Cost in SUI
-
-| Unit | Value |
-|------|-------|
-| 1 SUI | 1,000,000,000 MIST (10⁹) |
-| 1 sample | ~0.001 - 0.002 SUI |
-| Samples per SUI | ~500 - 1,000 |
-
-*Benchmarked on Sui testnet. Actual costs may vary.*
+*1 SUI = 1,000,000,000 MIST. Benchmarked on Sui testnet.*
 
 ## Documentation
 
