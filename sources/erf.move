@@ -53,9 +53,9 @@ module gaussian::erf {
     use gaussian::math;
     use gaussian::erf_coefficients;
     
-    // ========================================
-    // Constants
-    // ========================================
+    
+    // === Constants ===
+    
     
     /// Scale factor (WAD = 10^18)
     const SCALE: u256 = 1_000_000_000_000_000_000;
@@ -70,9 +70,9 @@ module gaussian::erf {
     /// sqrt(2) ≈ 1.41421356237...
     const SQRT2_SCALED: u256 = 1_414_213_562_373_095_048;
     
-    // ========================================
-    // Error codes
-    // ========================================
+    
+    // === Errors ===
+    
     
     /// Denominator is zero (Q(x) = 0).
     /// 
@@ -122,9 +122,9 @@ module gaussian::erf {
     /// - Valid domain: [0, 6_000_000_000_000_000_000]
     const EInputTooLarge: u64 = 101;
     
-    // ========================================
-    // Main API
-    // ========================================
+    
+    // === Public API ===
+    
     
     /// Compute erf(x) for x in [0, 6*SCALE] with input clamping.
     /// 
@@ -217,9 +217,9 @@ module gaussian::erf {
         (SCALE + erf_val) / 2
     }
     
-    // ========================================
-    // Horner evaluation
-    // ========================================
+    
+    // === Horner Evaluation ===
+    
     
     /// Evaluate numerator polynomial P(x) using Horner's rule.
     /// 
@@ -273,9 +273,9 @@ module gaussian::erf {
         (result_mag, result_neg)
     }
     
-    // ========================================
-    // Tests
-    // ========================================
+    
+    // === Tests ===
+    
     
     #[test]
     fun test_erf_zero() {
@@ -364,9 +364,9 @@ module gaussian::erf {
         assert!(phi(x2) > phi(x1), 0);
     }
     
-    // ========================================
+    
     // Error code tests
-    // ========================================
+    
     
     #[test]
     #[expected_failure(abort_code = EInputTooLarge)]

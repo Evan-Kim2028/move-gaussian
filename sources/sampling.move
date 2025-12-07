@@ -6,16 +6,19 @@ module gaussian::sampling {
     use sui::random;
 
     /// Standard normal sample stored as a SignedWad value.
-    /// magnitude / SCALE is |z|, negative indicates sign.
+    /// 
+    /// Wraps a z-score from N(0,1) for type safety and ergonomic accessors.
+    /// Use `magnitude()` and `is_negative()` to extract the value, or
+    /// `to_signed_wad()` for use with other Gaussian functions.
     public struct StandardNormal has copy, drop, store {
+        /// The underlying z-score from N(0,1), storing magnitude and sign.
+        /// Compute the real value as: z = (negative ? -1 : 1) * magnitude / 10^18
         value: SignedWad,
     }
 
-    // ========================================
-    // Constants
-    // ========================================
+    // === Constants ===
 
-    /// Invalid std_dev input
+    /// Invalid std_dev input (must be > 0).
     const EInvalidStdDev: u64 = 401;
 
     /// Guard has already been used for sampling (replay attempt).
@@ -38,14 +41,23 @@ module gaussian::sampling {
     /// Minimum probability for PPF (avoids singularity): ~1e-10 * WAD
     const EPS: u128 = 100_000_000;
 
-    // ========================================
-    // Replay guard (one-shot sampler)
-    // ========================================
+    // === Structs ===
 
-    /// Guard to enforce single-use sampling when callers want to prevent reuse of a randomness handle.
+    /// Guard to enforce single-use sampling when callers want to prevent
+    /// reuse of a randomness handle. Protects against replay attacks.
+    /// 
+    /// # Usage
+    /// ```move
+    /// let mut guard = new_sampler_guard();
+    /// let z = sample_z_once(r, &mut guard, ctx); // Consumes guard
+    /// // Second call would abort with ERandomAlreadyUsed
+    /// ```
     public struct SamplerGuard has store, drop {
+        /// Whether this guard has been consumed (true = already used, will abort on reuse)
         used: bool,
     }
+
+    // === Replay Guard ===
 
     /// Create a fresh sampler guard.
     public fun new_sampler_guard(): SamplerGuard {
@@ -57,9 +69,7 @@ module gaussian::sampling {
         guard.used = true;
     }
 
-    // ========================================
-    // Uniform generation helpers
-    // ========================================
+    // === Uniform Generation Helpers ===
 
     /// Convert a raw u64 into a WAD-scaled uniform in [0, 1).
     public(package) fun uniform_from_u64(u: u64): u256 {
@@ -81,16 +91,22 @@ module gaussian::sampling {
         frac + EPS
     }
 
-    // ========================================
-    // CLT-based sampling (original implementation)
-    // ========================================
+    // === CLT-Based Sampling ===
 
     /// Core CLT-based standard normal sampler given pre-generated uniforms.
     ///
-    /// Each entry in `uniforms` must be WAD-scaled and lie in [0, SCALE].
-    /// The result is (magnitude, negative) for
-    ///   Z ≈ Σ U_i - 6 ,  U_i ~ Uniform(0,1), i=1..12
-    /// which is approximately N(0, 1).
+    /// # Arguments
+    /// * `uniforms` - Vector of exactly 12 WAD-scaled uniform values in [0, SCALE]
+    ///
+    /// # Returns
+    /// * `(u256, bool)` - Sample as (magnitude, is_negative) where Z ≈ Σ U_i - 6
+    ///
+    /// # Errors
+    /// * `EInvalidUniformsLength` (403) - if vector length ≠ 12
+    ///
+    /// # Mathematical Basis
+    /// By the Central Limit Theorem, the sum of 12 U(0,1) variables has variance 1,
+    /// so Z = (Σ U_i) - 6 is approximately N(0, 1).
     public fun clt_from_uniforms(uniforms: &vector<u256>): (u256, bool) {
         let n = std::vector::length(uniforms);
         assert!(n == NUM_UNIFORMS, EInvalidUniformsLength);
@@ -128,11 +144,20 @@ module gaussian::sampling {
         clt_from_uniforms(&uniforms)
     }
 
-    /// Sample an approximately standard normal variable using CLT:
-    ///   Z ≈ Σ U_i - 6 ,  U_i ~ Uniform(0,1), i=1..12
+    /// Sample an approximately standard normal variable using CLT.
     ///
-    /// Returns (magnitude, negative) in WAD scaling.
-    /// Emits a GaussianSampleEvent.
+    /// # Arguments
+    /// * `r` - Reference to Sui's Random object for entropy
+    /// * `ctx` - Transaction context for randomness generation
+    ///
+    /// # Returns
+    /// * `(u256, bool)` - Sample as (magnitude, is_negative) in WAD scaling
+    ///
+    /// # Events
+    /// Emits `GaussianSampleEvent` with z-score and caller address.
+    ///
+    /// # Note
+    /// For better tail accuracy, prefer `sample_z()` which uses PPF-based sampling.
     #[allow(lint(public_random))]
     public fun sample_standard_normal_clt(
         r: &random::Random,
@@ -147,11 +172,30 @@ module gaussian::sampling {
         (z_mag, z_neg)
     }
 
-    /// Sample from N(mean, std_dev^2) using CLT-based standard normal sampler.
+    /// Sample from N(mean, std_dev²) using CLT-based standard normal sampler.
     ///
-    /// - `mean` and `std_dev` are WAD-scaled.
-    /// - Returns (magnitude, negative) representing the sampled value in WAD.
-    /// - Emits a NormalSampleEvent.
+    /// # Arguments
+    /// * `r` - Reference to Sui's Random object for entropy
+    /// * `mean` - Distribution mean μ (WAD-scaled, e.g., 100e18 for μ=100)
+    /// * `std_dev` - Standard deviation σ (WAD-scaled, must be > 0)
+    /// * `ctx` - Transaction context for randomness generation
+    ///
+    /// # Returns
+    /// * `(u256, bool)` - Sample value as (magnitude, is_negative) in WAD
+    ///
+    /// # Events
+    /// Emits `NormalSampleEvent` with z-score, parameters, and final value.
+    ///
+    /// # Errors
+    /// * `EInvalidStdDev` (401) - if std_dev is 0
+    ///
+    /// # Example
+    /// ```move
+    /// // Sample from N(100, 15²) - IQ distribution
+    /// let mean = 100_000_000_000_000_000_000; // 100.0
+    /// let std = 15_000_000_000_000_000_000;   // 15.0
+    /// let (mag, neg) = sample_normal_clt(r, mean, std, ctx);
+    /// ```
     #[allow(lint(public_random))]
     public fun sample_normal_clt(
         r: &random::Random,
@@ -188,9 +232,7 @@ module gaussian::sampling {
         (value_mag, value_neg)
     }
 
-    // ========================================
-    // PPF-based sampling (new implementation)
-    // ========================================
+    // === PPF-Based Sampling ===
 
     /// Sample standard normal using PPF (inverse CDF) method.
     /// 
@@ -279,12 +321,25 @@ module gaussian::sampling {
         (z, value)
     }
 
-    // ========================================
-    // Public API
-    // ========================================
+    // === Public API ===
 
-    /// Direct SignedWad standard normal sample ("sample_z" helper).
-    /// Emits a GaussianSampleEvent.
+    /// Sample from standard normal distribution N(0,1).
+    ///
+    /// # Arguments
+    /// * `r` - Reference to Sui's Random object for entropy
+    /// * `ctx` - Transaction context for randomness generation
+    ///
+    /// # Returns
+    /// * `SignedWad` - z-score sample from N(0,1)
+    ///
+    /// # Events
+    /// Emits `GaussianSampleEvent` with z-score and caller address.
+    ///
+    /// # Example
+    /// ```move
+    /// let z = sample_z(r, ctx);
+    /// let prob = normal_forward::cdf_standard(&z); // P(Z ≤ z)
+    /// ```
     #[allow(lint(public_random))]
     public fun sample_z(
         r: &random::Random,
@@ -302,8 +357,21 @@ module gaussian::sampling {
         z
     }
 
-    /// One-shot standard normal sample that consumes the provided guard to block reuse.
-    /// Emits a GaussianSampleEvent.
+    /// One-shot standard normal sample with replay protection.
+    ///
+    /// # Arguments
+    /// * `r` - Reference to Sui's Random object for entropy
+    /// * `guard` - Mutable reference to SamplerGuard (consumed on use)
+    /// * `ctx` - Transaction context for randomness generation
+    ///
+    /// # Returns
+    /// * `SignedWad` - z-score sample from N(0,1)
+    ///
+    /// # Events
+    /// Emits `GaussianSampleEvent` with z-score and caller address.
+    ///
+    /// # Errors
+    /// * `ERandomAlreadyUsed` (402) - if guard was already consumed
     #[allow(lint(public_random))]
     public fun sample_z_once(
         r: &random::Random,
@@ -323,14 +391,21 @@ module gaussian::sampling {
         z
     }
 
-    /// Ergonomic wrapper returning a StandardNormal sample.
-    /// Emits a GaussianSampleEvent.
+    /// Sample from N(0,1) returning a StandardNormal wrapper.
     ///
-    /// **Implementation**: Currently uses PPF-based sampling for better
-    /// accuracy, especially in the tails. Falls back to CLT if needed.
+    /// # Arguments
+    /// * `r` - Reference to Sui's Random object for entropy
+    /// * `ctx` - Transaction context for randomness generation
     ///
-    /// Internal implementation may change in future versions without
-    /// affecting the public API.
+    /// # Returns
+    /// * `StandardNormal` - Wrapped z-score with ergonomic accessors
+    ///
+    /// # Events
+    /// Emits `GaussianSampleEvent` with z-score and caller address.
+    ///
+    /// # Implementation Note
+    /// Uses PPF-based sampling for better tail accuracy. Falls back to CLT if needed.
+    /// Internal implementation may change without affecting the public API.
     #[allow(lint(public_random))]
     public fun sample_standard_normal(
         r: &random::Random,
@@ -349,10 +424,30 @@ module gaussian::sampling {
         StandardNormal { value }
     }
 
-    /// Ergonomic wrapper for N(mean, std_dev^2) returning a StandardNormal.
-    /// Emits a NormalSampleEvent.
+    /// Sample from custom normal distribution N(μ, σ²).
     ///
-    /// **Implementation**: Uses PPF-based sampling internally.
+    /// # Arguments
+    /// * `r` - Reference to Sui's Random object for entropy
+    /// * `mean` - Distribution mean μ (WAD-scaled)
+    /// * `std_dev` - Standard deviation σ (WAD-scaled, must be > 0)
+    /// * `ctx` - Transaction context for randomness generation
+    ///
+    /// # Returns
+    /// * `StandardNormal` - Sample value = μ + σ·z where z ~ N(0,1)
+    ///
+    /// # Events
+    /// Emits `NormalSampleEvent` with z-score, parameters, and final value.
+    ///
+    /// # Errors
+    /// * `EInvalidStdDev` (401) - if std_dev is 0
+    ///
+    /// # Example
+    /// ```move
+    /// // Sample from N(100, 15²) - IQ-like distribution
+    /// let mean = 100_000_000_000_000_000_000; // 100.0
+    /// let std = 15_000_000_000_000_000_000;   // 15.0
+    /// let sample = sample_normal(r, mean, std, ctx);
+    /// ```
     #[allow(lint(public_random))]
     public fun sample_normal(
         r: &random::Random,
@@ -375,8 +470,24 @@ module gaussian::sampling {
         StandardNormal { value }
     }
 
-    /// One-shot N(mean, std_dev^2) sample that consumes the provided guard to block reuse.
-    /// Emits a NormalSampleEvent.
+    /// One-shot N(μ, σ²) sample with replay protection.
+    ///
+    /// # Arguments
+    /// * `r` - Reference to Sui's Random object for entropy
+    /// * `mean` - Distribution mean μ (WAD-scaled)
+    /// * `std_dev` - Standard deviation σ (WAD-scaled, must be > 0)
+    /// * `guard` - Mutable reference to SamplerGuard (consumed on use)
+    /// * `ctx` - Transaction context for randomness generation
+    ///
+    /// # Returns
+    /// * `StandardNormal` - Sample value = μ + σ·z where z ~ N(0,1)
+    ///
+    /// # Events
+    /// Emits `NormalSampleEvent` with z-score, parameters, and final value.
+    ///
+    /// # Errors
+    /// * `EInvalidStdDev` (401) - if std_dev is 0
+    /// * `ERandomAlreadyUsed` (402) - if guard was already consumed
     #[allow(lint(public_random))]
     public fun sample_normal_once(
         r: &random::Random,
@@ -402,9 +513,7 @@ module gaussian::sampling {
         StandardNormal { value }
     }
 
-    // ========================================
-    // StandardNormal accessors
-    // ========================================
+    // === StandardNormal Accessors ===
 
     /// Get the magnitude (absolute value) of a StandardNormal sample.
     public fun magnitude(sn: &StandardNormal): u256 {
@@ -426,9 +535,7 @@ module gaussian::sampling {
         StandardNormal { value: *sw }
     }
 
-    // ========================================
-    // Tests
-    // ========================================
+    // === Tests ===
 
     #[test]
     fun test_clt_zero_when_all_half() {

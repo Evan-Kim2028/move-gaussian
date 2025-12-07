@@ -41,9 +41,9 @@ module gaussian::core {
     use gaussian::signed_wad::{Self, SignedWad};
     use sui::random::Random;
 
-    // ========================================
-    // Constants
-    // ========================================
+    
+    // === Constants ===
+    
 
     /// WAD scale factor: 10^18
     /// All values in the library are scaled by this factor.
@@ -51,9 +51,9 @@ module gaussian::core {
         1_000_000_000_000_000_000
     }
 
-    // ========================================
-    // Sampling Functions
-    // ========================================
+    
+    // === Sampling Functions ===
+    
 
     /// Sample from the standard normal distribution N(0,1).
     /// 
@@ -101,9 +101,9 @@ module gaussian::core {
         sampling::sample_standard_normal(r, ctx)
     }
 
-    // ========================================
-    // Distribution Functions
-    // ========================================
+    
+    // === Distribution Functions ===
+    
 
     /// Standard normal CDF: Φ(z) = P(Z ≤ z)
     /// 
@@ -143,9 +143,9 @@ module gaussian::core {
         normal_inverse::ppf(p)
     }
 
-    // ========================================
-    // Error Function
-    // ========================================
+    
+    // === Error Function ===
+    
 
     /// Error function: erf(x) = (2/√π) ∫₀ˣ e^(-t²) dt
     /// 
@@ -163,9 +163,9 @@ module gaussian::core {
         erf::erfc(x)
     }
 
-    // ========================================
-    // SignedWad Utilities
-    // ========================================
+    
+    // === SignedWad Utilities ===
+    
 
     /// Create a SignedWad with the given magnitude and sign.
     public fun signed_new(magnitude: u256, negative: bool): SignedWad {
@@ -197,9 +197,9 @@ module gaussian::core {
         signed_wad::is_zero(x)
     }
 
-    // ========================================
-    // Tests
-    // ========================================
+    
+    // === Tests ===
+    
 
     #[test]
     fun test_scale_constant() {

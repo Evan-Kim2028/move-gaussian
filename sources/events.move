@@ -21,9 +21,9 @@
 module gaussian::events {
     use sui::event;
 
-    // ========================================
-    // Event Structs
-    // ========================================
+    
+    // === Event Structs ===
+    
 
     /// Emitted on every standard normal N(0,1) sample.
     /// 
@@ -60,9 +60,9 @@ module gaussian::events {
         caller: address,
     }
 
-    // ========================================
-    // Internal Emit Functions
-    // ========================================
+    
+    // === Internal Emit Functions ===
+    
 
     /// Emit a GaussianSampleEvent for N(0,1) samples.
     /// 
@@ -102,9 +102,9 @@ module gaussian::events {
         });
     }
 
-    // ========================================
-    // Tests
-    // ========================================
+    
+    // === Tests ===
+    
 
     #[test]
     fun test_gaussian_event_can_be_constructed() {

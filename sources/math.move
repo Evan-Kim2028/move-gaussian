@@ -35,9 +35,9 @@ module gaussian::math {
     /// Maximum value for domain [0, 6]
     const MAX_INPUT: u256 = 6_000_000_000_000_000_000;
     
-    // ========================================
-    // Error codes
-    // ========================================
+    
+    // === Errors ===
+    
     
     /// Division by zero (denominator is zero).
     /// 
@@ -78,9 +78,9 @@ module gaussian::math {
     /// Division by zero is the primary failure mode, not overflow.
     const EDivisionByZero: u64 = 2;
     
-    // ========================================
-    // Public getters
-    // ========================================
+    
+    // === Public Getters ===
+    
     
     /// Get the scale factor (WAD = 1e18)
     public fun scale(): u256 {
@@ -92,9 +92,9 @@ module gaussian::math {
         MAX_INPUT
     }
     
-    // ========================================
-    // Signed arithmetic
-    // ========================================
+    
+    // === Signed Arithmetic ===
+    
     
     /// Add two signed magnitudes.
     /// 
@@ -148,9 +148,9 @@ module gaussian::math {
         }
     }
     
-    // ========================================
-    // Tests
-    // ========================================
+    
+    // === Tests ===
+    
     
     #[test]
     fun test_signed_add_same_sign_positive() {
@@ -206,9 +206,9 @@ module gaussian::math {
         assert!(clamp_to_unit(2 * SCALE) == SCALE, 3);
     }
     
-    // ========================================
+    
     // Error code tests
-    // ========================================
+    
     
     #[test]
     #[expected_failure(abort_code = EDivisionByZero)]

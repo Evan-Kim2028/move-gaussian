@@ -80,8 +80,20 @@ const SCALE: u256 = 1_000_000_000_000_000_000; // 10^18 (WAD)
 ### SignedWad
 
 ```move
+/// Signed WAD value with magnitude and sign flag.
+/// 
+/// This is the canonical signed type for all Gaussian functions:
+/// - PPF returns `SignedWad`
+/// - CDF/PDF take `&SignedWad`
+/// - Sampler can return `SignedWad` or wrap it
+/// 
+/// Zero is always stored as non-negative (negative: false).
 public struct SignedWad has copy, drop, store {
+    /// Absolute value of the number (WAD-scaled, 10^18).
+    /// Example: For -2.5, magnitude = 2_500_000_000_000_000_000
     magnitude: u256,
+    /// Sign flag: true = negative, false = non-negative.
+    /// Note: Zero is always stored with negative = false.
     negative: bool,
 }
 ```
@@ -100,12 +112,62 @@ let zero = signed_wad::zero();
 ### StandardNormal
 
 ```move
+/// Standard normal sample stored as a SignedWad value.
+/// 
+/// Wraps a z-score from N(0,1) for type safety and ergonomic accessors.
+/// Use `magnitude()` and `is_negative()` to extract the value, or
+/// `to_signed_wad()` for use with other Gaussian functions.
 public struct StandardNormal has copy, drop, store {
+    /// The underlying z-score from N(0,1), storing magnitude and sign.
+    /// Compute the real value as: z = (negative ? -1 : 1) * magnitude / 10^18
     value: SignedWad,
 }
 ```
 
 A sample from the standard normal distribution N(0, 1).
+
+### SamplerGuard
+
+```move
+/// Guard to enforce single-use sampling when callers want to prevent
+/// reuse of a randomness handle. Protects against replay attacks.
+public struct SamplerGuard has store, drop {
+    /// Whether this guard has been consumed (true = already used, will abort on reuse)
+    used: bool,
+}
+```
+
+**Usage:**
+```move
+let mut guard = new_sampler_guard();
+let z = sample_z_once(r, &mut guard, ctx); // Consumes guard
+// Second call would abort with ERandomAlreadyUsed (402)
+```
+
+### GaussianProfile
+
+```move
+/// Immutable metadata about the Gaussian library configuration.
+/// 
+/// Created once at package deployment, shared for public read access.
+/// Never modified after creation.
+public struct GaussianProfile has key, store {
+    /// Sui object identifier (required for shared objects)
+    id: UID,
+    /// Library version as semantic version integer.
+    /// Encoding: major * 10000 + minor * 100 + patch
+    /// Example: v1.1.0 = 10100, v2.3.1 = 20301
+    version: u32,
+    /// Precision class indicating the approximation method:
+    /// - 0 = standard (AAA polynomial approximation)
+    /// - 1 = high (future: more Newton iterations)
+    /// - 2 = fast (future: LUT-based)
+    precision_class: u8,
+    /// Maximum supported |z| value (WAD-scaled).
+    /// Current: 6e18 (covers 99.9999998% of distribution)
+    max_z_wad: u256,
+}
+```
 
 ---
 

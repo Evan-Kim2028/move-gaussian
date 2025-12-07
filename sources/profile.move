@@ -28,9 +28,7 @@
 /// - v2.3.1 = 20301
 module gaussian::profile {
 
-    // ========================================
-    // Constants
-    // ========================================
+    // === Constants ===
 
     /// Current library version: v1.1.0
     /// Encoding: major * 10000 + minor * 100 + patch
@@ -48,20 +46,20 @@ module gaussian::profile {
     /// Maximum |z| = 6.0 in WAD scaling
     const MAX_Z_WAD: u256 = 6_000_000_000_000_000_000;
 
-    // ========================================
-    // Profile Struct
-    // ========================================
+    // === Structs ===
 
     /// Immutable metadata about the Gaussian library configuration.
     /// 
     /// Created once at package deployment, shared for public read access.
     /// Never modified after creation.
     public struct GaussianProfile has key, store {
+        /// Sui object identifier (required for shared objects)
         id: UID,
         /// Library version as semantic version integer.
         /// Encoding: major * 10000 + minor * 100 + patch
+        /// Example: v1.1.0 = 10100, v2.3.1 = 20301
         version: u32,
-        /// Precision class:
+        /// Precision class indicating the approximation method:
         /// - 0 = standard (AAA polynomial approximation)
         /// - 1 = high (future: more Newton iterations)
         /// - 2 = fast (future: LUT-based)
@@ -71,9 +69,7 @@ module gaussian::profile {
         max_z_wad: u256,
     }
 
-    // ========================================
-    // Initialization
-    // ========================================
+    // === Initialization ===
 
     /// Package initializer - creates and shares the GaussianProfile.
     /// 
@@ -91,9 +87,7 @@ module gaussian::profile {
         transfer::public_share_object(profile);
     }
 
-    // ========================================
-    // Accessors
-    // ========================================
+    // === Accessors ===
 
     /// Get the library version as semantic version integer.
     /// 
@@ -116,9 +110,7 @@ module gaussian::profile {
         p.max_z_wad
     }
 
-    // ========================================
-    // Version Helpers
-    // ========================================
+    // === Version Helpers ===
 
     /// Extract major version number from profile.
     /// 
@@ -141,9 +133,7 @@ module gaussian::profile {
         p.version % 100
     }
 
-    // ========================================
-    // Precision Class Helpers
-    // ========================================
+    // === Precision Class Helpers ===
 
     /// Check if this is the standard precision profile.
     public fun is_standard_precision(p: &GaussianProfile): bool {
@@ -160,9 +150,7 @@ module gaussian::profile {
         p.precision_class == PRECISION_FAST
     }
 
-    // ========================================
-    // Constants Accessors
-    // ========================================
+    // === Constants Accessors ===
 
     /// Get the current library version constant.
     public fun current_version(): u32 {
@@ -174,9 +162,7 @@ module gaussian::profile {
         PRECISION_STANDARD
     }
 
-    // ========================================
-    // Tests
-    // ========================================
+    // === Tests ===
 
     #[test]
     fun test_version_encoding() {
@@ -231,9 +217,7 @@ module gaussian::profile {
         assert!(standard_precision() == 0, 0);
     }
 
-    // ========================================
-    // Test-only helpers for creating profiles
-    // ========================================
+    // === Test-only helpers for creating profiles ===
 
     #[test_only]
     public fun create_test_profile(ctx: &mut TxContext): GaussianProfile {
