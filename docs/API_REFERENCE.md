@@ -44,6 +44,32 @@ The Gaussian package provides on-chain Gaussian (normal) distribution functions 
 - **Core Facade** (`gaussian::core`): Single import point with shorter function names
 - **Events** (`gaussian::events`): All sampling functions emit events by default
 - **Profile** (`gaussian::profile`): On-chain version tracking and configuration
+- **Transcendental** (`gaussian::transcendental`): ln, exp, sqrt for financial math
+
+### Security Note: `public_random` Lint
+
+All sampling functions in this library suppress the `public_random` linter warning:
+
+```move
+#[allow(lint(public_random))]
+public fun sample_z(r: &random::Random, ctx: &mut TxContext): SignedWad
+```
+
+**Why this is suppressed**: This library is designed for **composition** - other Move modules need to call these functions to build DeFi applications. The Sui linter warns about public functions accepting `Random` because they can be vulnerable to composition attacks where a malicious contract reverts if the random outcome is unfavorable.
+
+**Consumer responsibility**: If you're building an application using this library:
+
+1. **For entry points** (user-facing functions): Consider wrapping calls in a private `entry` function:
+   ```move
+   entry fun my_random_function(r: &Random, ctx: &mut TxContext) {
+       let z = gaussian::core::sample_z(r, ctx);
+       // Use z - attacker cannot compose with this
+   }
+   ```
+
+2. **For composable functions**: Ensure the "unhappy path" doesn't consume fewer resources than the "happy path" (see [Sui's randomness docs](https://docs.sui.io/guides/developer/advanced/randomness-onchain)).
+
+3. **Two-step pattern**: For high-value operations, consider splitting into two transactions - one to commit randomness, one to use it.
 
 ### WAD Scaling Convention
 

@@ -1,3 +1,20 @@
+/// Gaussian sampling functions using Sui's native randomness.
+/// 
+/// # Security Note: `public_random` Lint Suppression
+/// 
+/// All sampling functions in this module suppress the `public_random` linter warning.
+/// This is **intentional** because this is a library designed for composition.
+/// 
+/// The lint warns about public functions accepting `Random` because they can be
+/// vulnerable to composition attacks where a malicious contract reverts if the
+/// random outcome is unfavorable.
+/// 
+/// **Library consumers must ensure safe usage:**
+/// - Wrap calls in private `entry` functions for user-facing endpoints
+/// - Ensure "unhappy paths" don't consume fewer resources than "happy paths"
+/// - Consider two-step patterns for high-value random operations
+/// 
+/// See: https://docs.sui.io/guides/developer/advanced/randomness-onchain
 module gaussian::sampling {
     use gaussian::math;
     use gaussian::signed_wad::{Self, SignedWad};

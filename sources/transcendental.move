@@ -298,6 +298,14 @@ module gaussian::transcendental {
     /// 
     /// # Returns
     /// * `u256` - e^(-x) in WAD scaling
+    /// 
+    /// # Example
+    /// ```move
+    /// // Discount factor for 5% rate over 1 year: e^(-0.05)
+    /// let rate_time = 50_000_000_000_000_000; // 0.05
+    /// let discount = exp_neg_wad(rate_time);
+    /// // discount ≈ 951_229_424_500_714_000 (~0.9512)
+    /// ```
     public fun exp_neg_wad(x: u256): u256 {
         let neg_x = signed_wad::new(x, true);
         exp_wad(&neg_x)
@@ -312,6 +320,18 @@ module gaussian::transcendental {
     /// 
     /// # Returns
     /// * `SignedWad` - ln(a/b)
+    /// 
+    /// # Errors
+    /// * `ELnNonPositive` (500) - if a <= 0 or b <= 0
+    /// 
+    /// # Example
+    /// ```move
+    /// // ln(S/K) for Black-Scholes where S=105, K=100
+    /// let spot = 105_000_000_000_000_000_000;   // 105.0
+    /// let strike = 100_000_000_000_000_000_000; // 100.0
+    /// let ln_moneyness = ln_ratio(spot, strike);
+    /// // ln_moneyness ≈ 48_790_164_169_432_057 (ln(1.05) ≈ 0.0488)
+    /// ```
     public fun ln_ratio(a: u256, b: u256): SignedWad {
         assert!(a > 0 && b > 0, ELnNonPositive);
         

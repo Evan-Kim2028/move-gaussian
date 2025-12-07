@@ -10,6 +10,12 @@
 /// use gaussian::core::{sample_z, cdf, pdf, ppf};
 /// ```
 /// 
+/// # Security Note: `public_random` Lint
+/// 
+/// Sampling functions suppress the `public_random` lint because this is a
+/// composable library. Consumers must ensure safe usage - see `sampling.move`
+/// module documentation for details.
+/// 
 /// # Available Functions
 /// 
 /// **Sampling:**
