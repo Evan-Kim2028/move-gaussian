@@ -1,153 +1,101 @@
 # move-gaussian
 
-On-chain Gaussian distribution library for Sui Move (AAA-derived CDF/PPF + sampling with `sui::random`).
+On-chain Gaussian (normal) distribution library for Sui Move.
 
-## Quick Links
-- **API Reference**: [docs/API_REFERENCE.md](docs/API_REFERENCE.md)
-- **Changelog**: [CHANGELOG.md](CHANGELOG.md)
-- **Gas benchmarks**: [docs/GAS_BENCHMARKS.md](docs/GAS_BENCHMARKS.md)
-- **Test coverage**: [docs/test_coverage_review.md](docs/test_coverage_review.md)
-- **Status**: [STATUS.md](STATUS.md)
-- **Roadmap**: [ROADMAP.md](ROADMAP.md)
+Generate random samples from normal distributions, compute probabilities, and perform statistical calculations directly in your smart contracts.
 
-## Snapshot
-- **Version**: v1.1.0 (events + facade + profile)
-- **Tests passing**: 228 Move + 24 Python property tests
-- **Package ID (Testnet)**: `0x70c5040e7e2119275d8f93df8242e882a20ac6ae5a317673995323d75a93b36b`
-- **Last updated**: 2025-12-07
+## Features
 
-## What's New in v1.1
+- **Sampling** - Generate random samples from N(0,1) or custom N(μ,σ²) distributions using `sui::random`
+- **CDF** - Cumulative distribution function Φ(z) = P(Z ≤ z)
+- **PDF** - Probability density function φ(z)
+- **PPF** - Inverse CDF / quantile function Φ⁻¹(p)
+- **Error Function** - erf(x) and erfc(x) implementations
 
-### On-chain Events (#21)
-All sampling functions now emit events for indexing and verification:
-- `GaussianSampleEvent` for N(0,1) samples
-- `NormalSampleEvent` for N(μ,σ²) samples
+All functions achieve **<0.05% error** vs scipy reference with **~1M MIST gas cost** per operation.
 
-### Core Facade (#22)
-Single import point with shorter function names:
-```move
-use gaussian::core::{sample_z, cdf, pdf, ppf};
-```
-
-### Profile Metadata (#23)
-On-chain version tracking via shared `GaussianProfile` object:
-```move
-use gaussian::profile;
-assert!(profile::version(profile) >= 10100, EOutdatedLibrary); // v1.1.0+
-```
-
-### Enhanced Testing (#24-27)
-- PDF monotonicity: 60 dense test points
-- PPF fuzzing: 25 evenly-spaced probabilities  
-- Sampler monotonicity: 20 seeds with strict comparison
-- Python Hypothesis: 24 property tests with ~100,000+ examples
-
-## Install
+## Installation
 
 Add to your `Move.toml`:
+
 ```toml
 [dependencies]
-gaussian = { git = "https://github.com/Evan-Kim2028/move-gaussian.git", rev = "v1.1.0" }
+gaussian = { git = "https://github.com/Evan-Kim2028/move-gaussian.git", rev = "main" }
 ```
 
-Build & test:
+Then build:
+
 ```bash
 sui move build
-sui move test
 ```
 
 ## Quick Start
 
-### Using the Core Facade (Recommended)
-
 ```move
 use gaussian::core;
-use gaussian::signed_wad::{Self, SignedWad};
+use gaussian::signed_wad::SignedWad;
 use sui::random::Random;
 
-public entry fun sample_and_compute(r: &Random, ctx: &mut TxContext) {
-    // Sample from N(0,1)
+public entry fun example(r: &Random, ctx: &mut TxContext) {
+    // Sample from standard normal N(0,1)
     let z: SignedWad = core::sample_z(r, ctx);
     
-    // Compute CDF: P(Z ≤ z)
-    let prob = core::cdf(&z);
+    // Compute probability P(Z ≤ z)
+    let prob: u256 = core::cdf(&z);
     
-    // Compute PDF: φ(z)
-    let density = core::pdf(&z);
+    // Compute density at z
+    let density: u256 = core::pdf(&z);
     
-    // Inverse CDF: find z for p=0.95
-    let z_95: SignedWad = core::ppf(950_000_000_000_000_000); // 0.95 WAD
+    // Find z-score for 95th percentile
+    let z_95: SignedWad = core::ppf(950_000_000_000_000_000); // p = 0.95
 }
 ```
 
-### Sample from Custom Distribution
+## Sampling from Custom Distributions
 
 ```move
 use gaussian::core;
 
-// Sample from N(100, 15²) - e.g., IQ distribution
-let mean = 100_000_000_000_000_000_000u256;  // 100.0 WAD
-let std = 15_000_000_000_000_000_000u256;    // 15.0 WAD
-let sample = core::sample_normal(r, mean, std, ctx);
+public entry fun custom_distribution(r: &Random, ctx: &mut TxContext) {
+    // Sample from N(100, 15²) - e.g., IQ-like distribution
+    let mean: u256 = 100_000_000_000_000_000_000;  // 100.0
+    let std: u256 = 15_000_000_000_000_000_000;    // 15.0
+    
+    let sample = core::sample_normal(r, mean, std, ctx);
+}
 ```
 
-### One-Shot Sampling (Replay Protection)
+## WAD Scaling
 
-```move
-use gaussian::sampling;
+All values use **WAD scaling** (10¹⁸) for fixed-point precision:
 
-let mut guard = sampling::new_sampler_guard();
-let z = sampling::sample_z_once(r, &mut guard, ctx);
-// guard is consumed - can't be reused
-```
+| Real Value | WAD Value |
+|------------|-----------|
+| 1.0 | `1_000_000_000_000_000_000` |
+| 0.5 | `500_000_000_000_000_000` |
+| -2.5 | SignedWad { mag: `2_500_000_000_000_000_000`, neg: true } |
 
-## Precision & Performance
+## Performance
 
-| Function | Domain | Max Error | Gas Cost |
-|----------|--------|-----------|----------|
-| `cdf` | z ∈ [-6, 6] | < 0.05% | ~500K MIST |
-| `pdf` | z ∈ [-6, 6] | < 0.1% | ~500K MIST |
-| `ppf` | p ∈ (10⁻¹⁰, 1-10⁻¹⁰) | < 0.05% | ~1M MIST |
-| `sample_z` | - | - | ~1M MIST |
+| Function | Gas Cost | Accuracy |
+|----------|----------|----------|
+| `sample_z` | ~1M MIST | - |
+| `sample_normal` | ~1M MIST | - |
+| `cdf` | ~500K MIST | < 0.05% error |
+| `pdf` | ~500K MIST | < 0.1% error |
+| `ppf` | ~1M MIST | < 0.05% error |
 
-At ~0.001 SUI per sample, you can perform ~1,000 Gaussian samples per SUI.
+~1,000 samples per SUI at current gas prices.
 
-## Architecture
+## Documentation
 
-```
-gaussian/
-├── sources/
-│   ├── core.move          # v1.1 facade - single import point
-│   ├── events.move        # v1.1 on-chain events
-│   ├── profile.move       # v1.1 version metadata
-│   ├── sampling.move      # Gaussian sampling with sui::random
-│   ├── normal_forward.move # CDF, PDF
-│   ├── normal_inverse.move # PPF (inverse CDF)
-│   ├── erf.move           # Error function
-│   ├── signed_wad.move    # Signed fixed-point arithmetic
-│   └── coefficients.move  # Auto-generated polynomial coefficients
-├── tests/
-│   └── property_fuzz.move # Move property tests
-├── scripts/
-│   └── src/
-│       └── 11_v1_1_property_tests.py  # Python Hypothesis tests
-└── docs/
-    ├── API_REFERENCE.md
-    ├── GAS_BENCHMARKS.md
-    └── SECURITY_REVIEW.md
-```
+- [API Reference](docs/API_REFERENCE.md) - Complete function documentation
+- [Changelog](CHANGELOG.md) - Version history
+- [Contributing](CONTRIBUTING.md) - Development guidelines
 
-## Testing
+## Package Info
 
-- 228 Move tests covering CDF, PDF, PPF, and sampling functions
-- 24 Python property tests with Hypothesis framework
-- All division operations protected against zero divisor
-- Comprehensive test coverage including edge cases and property-based tests
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for issue naming conventions and development workflow.
-
-## License
-
-MIT
+- **Version**: 1.1.0
+- **Testnet Package ID**: `0x70c5040e7e2119275d8f93df8242e882a20ac6ae5a317673995323d75a93b36b`
+- **Tests**: 228 Move + 24 Python property tests
+- **License**: MIT
