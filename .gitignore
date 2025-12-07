@@ -64,3 +64,15 @@ venv/
 docs/internal/
 RELEASE_NOTES_*.md
 .hypothesis/
+
+# ===========================================
+# Local-only files (keep for development)
+# ===========================================
+# Planning and status tracking files
+ROADMAP.md
+STATUS.md
+plans/
+
+# Internal documentation and reviews
+docs/test_coverage_review.md
+docs/CI_QUALITY_TOOLS.md
