@@ -57,3 +57,9 @@ dist/
 .venv/
 venv/
 .python-version
+
+# ===========================================
+# Documentation (internal/drafts)
+# ===========================================
+docs/internal/
+RELEASE_NOTES_*.md
