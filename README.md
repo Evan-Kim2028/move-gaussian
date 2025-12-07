@@ -2,17 +2,19 @@
 
 On-chain Gaussian (normal) distribution library for Sui Move.
 
-Generate random samples from normal distributions, compute probabilities, and perform statistical calculations directly in your smart contracts.
+Generate random samples from normal distributions, compute probabilities, and perform statistical calculations directly in your smart contracts. Uses Sui's native randomness (`sui::random`) - no external oracle required.
 
 ## Features
 
-- **Sampling** - Generate random samples from N(0,1) or custom N(μ,σ²) distributions using `sui::random`
-- **CDF** - Cumulative distribution function Φ(z) = P(Z ≤ z)
-- **PDF** - Probability density function φ(z)
-- **PPF** - Inverse CDF / quantile function Φ⁻¹(p)
-- **Error Function** - erf(x) and erfc(x) implementations
+| Function | Description | Example |
+|----------|-------------|---------|
+| **Sampling** | Generate random samples from N(0,1) or N(μ,σ²) | `core::sample_z(r, ctx)` |
+| **CDF** | Cumulative distribution function Φ(z) = P(Z ≤ z) | `core::cdf(&z)` |
+| **PDF** | Probability density function φ(z) | `core::pdf(&z)` |
+| **PPF** | Inverse CDF / quantile function Φ⁻¹(p) | `core::ppf(p)` |
+| **erf / erfc** | Error function and complement | `core::erf(x)` |
 
-All functions achieve **<0.05% error** vs scipy reference with **~1M MIST gas cost** per operation.
+All functions achieve **<0.05% error** vs scipy reference.
 
 ## Installation
 
