@@ -16,10 +16,10 @@ module gaussian::erf_coefficients {
     /// Number of denominator coefficients  
     const Q_DEGREE: u64 = 11;
     
-    // ========================================
+    
     // Numerator P(x) coefficients
     // P(x) = P0 + P1*x + P2*x² + ... + P11*x^11
-    // ========================================
+    
     const P0: u256 = 0;
     const P0_NEG: bool = false;
     const P1: u256 = 1128379170753457800;
@@ -45,10 +45,10 @@ module gaussian::erf_coefficients {
     const P11: u256 = 16501013491964;
     const P11_NEG: bool = false;
 
-    // ========================================
+    
     // Denominator Q(x) coefficients
     // Q(x) = Q0 + Q1*x + Q2*x² + ... + Q11*x^11
-    // ========================================
+    
     const Q0: u256 = 1000000000000000000;
     const Q0_NEG: bool = false;
     const Q1: u256 = 925801939222393200;
@@ -74,9 +74,9 @@ module gaussian::erf_coefficients {
     const Q11: u256 = 16492859370954;
     const Q11_NEG: bool = false;
 
-    // ========================================
+    
     // Getter functions (for use by erf module)
-    // ========================================
+    
     
     public fun scale(): u256 { SCALE }
     public fun p_degree(): u64 { P_DEGREE }

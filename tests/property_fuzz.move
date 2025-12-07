@@ -247,6 +247,8 @@ module gaussian::property_fuzz {
     }
 
     /// Monotonicity check for seeded sampler (raw seed order maps to increasing z).
+    /// NOTE: Uses non-strict le because adjacent small seeds may map to same z
+    /// due to precision limits in uniform_open_interval_from_u64.
     #[test]
     fun test_sampler_tail_monotonicity_from_seeds() {
         let seeds = vector[0u64, 1u64, 0x7FFFFFFFFFFFFFFFu64, 0xFFFFFFFFFFFFFFFFu64];
@@ -254,6 +256,7 @@ module gaussian::property_fuzz {
         let mut i = 1;
         while (i < std::vector::length(&seeds)) {
             let next = sampling::sample_z_from_u64(*std::vector::borrow(&seeds, i));
+            // Use non-strict le because 0 and 1 may map to same probability
             assert!(signed_wad::le(&prev, &next), i as u64);
             prev = next;
             i = i + 1;
@@ -435,6 +438,113 @@ module gaussian::property_fuzz {
         let second_moment = sum_sq / n;
         let diff_var = if (second_moment > SCALE) { second_moment - SCALE } else { SCALE - second_moment };
         assert!(diff_var < SCALE / 2, 1); // variance within [0.5, 1.5]
+    }
+
+    // ========================================
+    // NEW: Issue #24 - PDF Dense Monotonicity Test
+    // ========================================
+
+    /// PDF should decrease as |z| increases from 0 to 6.
+    /// Tests 61 points: z = 0.0, 0.1, 0.2, ..., 6.0
+    /// 
+    /// Note: Uses strict < for z < 5, but <= for z >= 5 where PDF is near zero
+    /// and precision limits may cause ties.
+    /// 
+    /// Issue: #24
+    /// Coverage: 61 points (was 3)
+    #[test]
+    fun test_pdf_monotonic_decrease_dense() {
+        let step: u256 = 100_000_000_000_000_000; // 0.1 WAD
+        let max_z: u256 = 6 * SCALE;
+        let tail_threshold: u256 = 5 * SCALE; // Use non-strict comparison beyond z=5
+        
+        // Start with PDF at z=0 (maximum value)
+        let z_zero = signed_wad::zero();
+        let mut prev_pdf = normal_forward::pdf_standard(&z_zero);
+        
+        // Check monotonic decrease at each step
+        let mut z_mag = step;
+        let mut count: u64 = 0;
+        while (z_mag <= max_z) {
+            let z = signed_wad::from_wad(z_mag);
+            let pdf_val = normal_forward::pdf_standard(&z);
+            
+            // In extreme tail (z >= 5), use non-strict due to precision limits
+            if (z_mag >= tail_threshold) {
+                assert!(pdf_val <= prev_pdf, count);
+            } else {
+                // PDF should STRICTLY decrease in central region
+                assert!(pdf_val < prev_pdf, count);
+            };
+            
+            prev_pdf = pdf_val;
+            z_mag = z_mag + step;
+            count = count + 1;
+        };
+        
+        // Verify we tested 60 points (0.1 to 6.0)
+        assert!(count == 60, 999);
+    }
+
+    // ========================================
+    // NEW: Issue #25 - PPF Fine-grained Fuzzing
+    // ========================================
+
+    /// PPF monotonicity test with 25 evenly-spaced probabilities.
+    /// Uses linear spacing for deterministic, sorted probabilities.
+    /// 
+    /// Issue: #25
+    /// Coverage: 25 points (was 18, ~40% improvement)
+    #[test]
+    fun test_ppf_monotonic_fuzz_fine_grid() {
+        let eps = coefficients::eps();
+        let scale = coefficients::scale();
+        let span = scale - 2 * eps;
+        
+        // Generate 25 evenly-spaced probabilities (already sorted)
+        let n: u128 = 25;
+        let step = span / n;
+        
+        let mut prev = normal_inverse::ppf(eps);
+        let mut i: u128 = 1;
+        while (i < n) {
+            let p = eps + (step * i);
+            let z = normal_inverse::ppf(p);
+            
+            // Strict less than (not <=)
+            assert!(signed_wad::lt(&prev, &z), (i as u64));
+            prev = z;
+            i = i + 1;
+        };
+    }
+
+    // ========================================
+    // NEW: Issue #26 - Sampler Strict Monotonicity
+    // ========================================
+
+    /// Sampler monotonicity test with 20 evenly-spaced seeds.
+    /// Uses linear spacing to avoid expensive sorting.
+    /// 
+    /// Issue: #26
+    /// Coverage: 20 points across the full u64 range
+    #[test]
+    fun test_sampler_monotonicity_strict_randomized() {
+        // Generate 20 evenly-spaced seeds (already sorted)
+        let n: u64 = 20;
+        let step: u64 = 0xFFFFFFFFFFFFFFFF / n;
+        
+        let mut prev = sampling::sample_z_from_u64(0);
+        let mut i: u64 = 1;
+        while (i < n) {
+            let seed = step * i;
+            let z = sampling::sample_z_from_u64(seed);
+            
+            // STRICT less than - catches rounding bugs that cause ties
+            assert!(signed_wad::lt(&prev, &z), i);
+            
+            prev = z;
+            i = i + 1;
+        };
     }
 }
 

@@ -1,12 +1,6 @@
 #!/usr/bin/env python3
 """Generate cross-language Gaussian test vectors for Move unit tests.
 
-This script samples points in both the z-domain and probability domain,
-computes high-precision reference values using mpmath (or Python's
-``statistics.NormalDist`` as a fallback), and emits a Move test module
-that asserts the on-chain implementations of Φ(z), φ(z), and Φ⁻¹(p)
-match the Python references within tight tolerances.
-
 Outputs:
     tests/cross_language_vectors.move  # Auto-generated Move tests
 """
@@ -23,15 +17,51 @@ from typing import Iterable, List, Sequence, Tuple
 
 import numpy as np
 
-WAD = 10 ** 18
-MAX_Z = 6.0
-EPS = 1e-10
-EPS_WAD = int(EPS * WAD)
-P_LOW = 0.02
-P_HIGH = 0.98
-FNV_OFFSET_BASIS_128 = 0x6C62272E07BB014262B821756295C58D
-FNV_PRIME_128 = 0x0000000001000000000000000000013B
-MOD_2_128 = 1 << 128
+# Import shared constants and helpers
+try:
+    from utils import (
+        WAD, MAX_Z, EPS, EPS_WAD, P_LOW, P_HIGH,
+        signed_add, uniform_open_interval_from_u64, apply_mean_std,
+        FNV_OFFSET_BASIS_128, FNV_PRIME_128, MOD_2_128, fnv_update, fnv_checksum_ints
+    )
+except ImportError:
+    # Fallback for standalone execution
+    WAD = 10 ** 18
+    MAX_Z = 6.0
+    EPS = 1e-10
+    EPS_WAD = int(EPS * WAD)
+    P_LOW = 0.02
+    P_HIGH = 0.98
+    FNV_OFFSET_BASIS_128 = 0x6C62272E07BB014262B821756295C58D
+    FNV_PRIME_128 = 0x0000000001000000000000000000013B
+    MOD_2_128 = 1 << 128
+    
+    def signed_add(mag_a: int, neg_a: bool, mag_b: int, neg_b: bool) -> Tuple[int, bool]:
+        if neg_a == neg_b:
+            return mag_a + mag_b, neg_a
+        if mag_a >= mag_b:
+            return mag_a - mag_b, neg_a
+        return mag_b - mag_a, neg_b
+    
+    def apply_mean_std(z: Tuple[int, bool], mean_wad: int, std_wad: int) -> Tuple[int, bool]:
+        z_mag, z_neg = z
+        delta = (std_wad * z_mag) // WAD
+        return signed_add(mean_wad, False, delta, z_neg)
+    
+    def fnv_update(acc: int, value: int) -> int:
+        return (acc ^ value) * FNV_PRIME_128 % MOD_2_128
+    
+    def fnv_checksum_ints(values: Sequence[int]) -> int:
+        acc = FNV_OFFSET_BASIS_128
+        for v in values:
+            acc = fnv_update(acc, int(v) & (MOD_2_128 - 1))
+        return acc
+    
+    def uniform_open_interval_from_u64(u: int) -> int:
+        span = WAD - 2 * EPS_WAD
+        num = (int(u) & ((1 << 64) - 1)) * span
+        frac = num >> 64
+        return frac + EPS_WAD
 
 try:  # Prefer arbitrary precision references when available
     from mpmath import mp
@@ -76,38 +106,22 @@ def signed_wad(value: float) -> Tuple[int, bool]:
     return wad_round(abs(value)), neg
 
 
-def signed_add(mag_a: int, neg_a: bool, mag_b: int, neg_b: bool) -> Tuple[int, bool]:
-    if neg_a == neg_b:
-        return mag_a + mag_b, neg_a
-    if mag_a >= mag_b:
-        return mag_a - mag_b, neg_a
-    return mag_b - mag_a, neg_b
+# Note: apply_mean_std, fnv_update, fnv_checksum_ints, uniform_open_interval_from_u64
+# are now imported from utils.py (with fallback definitions above)
 
 
-def apply_mean_std(z: Tuple[int, bool], mean_wad: int, std_wad: int) -> Tuple[int, bool]:
-    z_mag, z_neg = z
-    delta = (std_wad * z_mag) // WAD
-    return signed_add(mean_wad, False, delta, z_neg)
-
-
-def fnv_update(acc: int, value: int) -> int:
-    return (acc ^ value) * FNV_PRIME_128 % MOD_2_128
-
-
-def fnv_checksum_ints(values: Sequence[int]) -> int:
-    acc = FNV_OFFSET_BASIS_128
-    for v in values:
-        acc = fnv_update(acc, int(v) & (MOD_2_128 - 1))
-    acc = fnv_update(acc, len(values))
-    return acc % MOD_2_128
-
-
-def uniform_open_interval_from_u64(u: int) -> int:
-    """Match Move's uniform_open_interval_from_u64 implementation."""
-    span = WAD - 2 * EPS_WAD
-    num = (int(u) & ((1 << 64) - 1)) * span
-    frac = num >> 64
-    return frac + EPS_WAD
+@dataclass
+class GaussianTestVectors:
+    z_samples: Sequence[Tuple[int, bool]]
+    cdf_targets: Sequence[int]
+    pdf_targets: Sequence[int]
+    p_samples: Sequence[int]
+    ppf_targets: Sequence[Tuple[int, bool]]
+    cdf_tolerance_wad: int
+    pdf_tolerance_wad: int
+    ppf_tolerances_wad: Sequence[int]
+    checksum_prob: int
+    checksum_ppf: int
 
 
 def generate_z_samples(num: int) -> Sequence[float]:

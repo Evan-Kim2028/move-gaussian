@@ -27,9 +27,7 @@ module gaussian::normal_forward {
     use gaussian::math;
     use gaussian::signed_wad::{Self, SignedWad};
 
-    // ========================================
-    // Constants
-    // ========================================
+    // === Constants ===
 
     /// Scale factor: WAD = 10^18
     const SCALE: u256 = 1_000_000_000_000_000_000;
@@ -41,16 +39,12 @@ module gaussian::normal_forward {
     /// Used for PDF normalization check
     const INV_SQRT_2PI_WAD: u256 = 398942280401432700;
 
-    // ========================================
-    // Error codes
-    // ========================================
+    // === Errors ===
 
     /// Denominator evaluated to zero (should not happen with valid coefficients)
     const EDenominatorZero: u64 = 200;
 
-    // ========================================
-    // Internal Horner evaluation
-    // ========================================
+    // === Internal Horner Evaluation ===
 
     /// Evaluate CDF numerator polynomial P(z) using Horner's method.
     /// 
@@ -164,20 +158,30 @@ module gaussian::normal_forward {
         if (result_neg) { 0 } else { ratio }
     }
 
-    // ========================================
-    // Public API
-    // ========================================
+    // === Public API ===
 
-    /// Standard normal CDF Φ(z).
-    /// 
-    /// Returns the probability P(Z ≤ z) where Z ~ N(0, 1).
-    /// Output is WAD-scaled in [0, SCALE].
-    /// 
-    /// For z outside [-6, 6]:
-    /// - z < -6: returns 0 (effectively 0)
-    /// - z > 6: returns SCALE (effectively 1)
-    /// 
-    /// Uses symmetry: Φ(-z) = 1 - Φ(z)
+    /// Standard normal CDF: Φ(z) = P(Z ≤ z) where Z ~ N(0, 1).
+    ///
+    /// # Arguments
+    /// * `z` - z-score as SignedWad (WAD-scaled)
+    ///
+    /// # Returns
+    /// * `u256` - Probability in [0, SCALE] (WAD-scaled)
+    ///
+    /// # Domain Handling
+    /// * z < -6: returns ~0
+    /// * z = 0: returns SCALE/2 (0.5)
+    /// * z > 6: returns ~SCALE (1.0)
+    ///
+    /// # Symmetry
+    /// Uses Φ(-z) = 1 - Φ(z) for negative inputs.
+    ///
+    /// # Example
+    /// ```move
+    /// let z = signed_wad::from_wad(1_000_000_000_000_000_000); // z = 1.0
+    /// let prob = cdf_standard(&z);
+    /// // prob ≈ 841_344_746_068_543_000 (~0.8413)
+    /// ```
     public fun cdf_standard(z: &SignedWad): u256 {
         let z_mag = signed_wad::abs(z);
         let z_neg = signed_wad::is_negative(z);
@@ -196,14 +200,25 @@ module gaussian::normal_forward {
         }
     }
 
-    /// Standard normal PDF φ(z).
-    /// 
-    /// Returns the probability density at z for Z ~ N(0, 1).
-    /// Output is WAD-scaled, non-negative.
-    /// 
-    /// φ(z) = P(z)/Q(z) evaluated via Horner polynomials sourced from
-    /// `gaussian::coefficients`. The approximation is even, so the
-    /// implementation only evaluates |z| and reuses symmetry.
+    /// Standard normal PDF: φ(z) = probability density at z for Z ~ N(0, 1).
+    ///
+    /// # Arguments
+    /// * `z` - z-score as SignedWad (WAD-scaled)
+    ///
+    /// # Returns
+    /// * `u256` - Density value (WAD-scaled, non-negative)
+    ///
+    /// # Properties
+    /// * φ(0) ≈ 0.3989 × SCALE (maximum at z=0, equals 1/√(2π))
+    /// * φ(-z) = φ(z) (symmetric)
+    /// * φ(|z| > 6) ≈ 0 (effectively zero in tails)
+    ///
+    /// # Example
+    /// ```move
+    /// let z = signed_wad::zero();
+    /// let density = pdf_standard(&z);
+    /// // density ≈ 398_942_280_401_432_700 (~0.3989)
+    /// ```
     public fun pdf_standard(z: &SignedWad): u256 {
         let z_mag = signed_wad::abs(z);
         if (z_mag > MAX_Z) {
@@ -218,9 +233,7 @@ module gaussian::normal_forward {
         INV_SQRT_2PI_WAD
     }
 
-    // ========================================
-    // Tests
-    // ========================================
+    // === Tests ===
 
     #[test]
     fun test_cdf_at_zero() {

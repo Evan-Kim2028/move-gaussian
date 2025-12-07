@@ -22,23 +22,24 @@
 module gaussian::signed_wad {
     use gaussian::math;
 
-    // ========================================
-    // Constants
-    // ========================================
+    // === Constants ===
 
-    /// Scale factor: WAD = 10^18
+    /// Maximum representable u256 value.
+    #[allow(unused_const)]
+    const MAX_U256: u256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+
+    #[allow(unused_const)]
     const SCALE: u256 = 1_000_000_000_000_000_000;
 
-    // ========================================
-    // Error codes
-    // ========================================
+    // === Errors ===
 
-    /// Division by zero in signed WAD division.
+    /// Division by zero.
     const EDivisionByZero: u64 = 10;
+    
+    /// Unexpected negative value where only non-negative is allowed.
+    const EUnexpectedNegative: u64 = 11;
 
-    // ========================================
-    // Struct definition
-    // ========================================
+    // === Structs ===
 
     /// Signed WAD value with magnitude and sign flag.
     /// 
@@ -46,14 +47,19 @@ module gaussian::signed_wad {
     /// - PPF returns `SignedWad`
     /// - CDF/PDF take `&SignedWad`
     /// - Sampler can return `SignedWad` or wrap it
+    /// 
+    /// # Normalization
+    /// Zero is always stored as non-negative (negative: false).
     public struct SignedWad has copy, drop, store {
+        /// Absolute value of the number (WAD-scaled, 10^18).
+        /// Example: For -2.5, magnitude = 2_500_000_000_000_000_000
         magnitude: u256,
+        /// Sign flag: true = negative, false = non-negative.
+        /// Note: Zero is always stored with negative = false.
         negative: bool,
     }
 
-    // ========================================
-    // Constructors
-    // ========================================
+    // === Constructors ===
 
     /// Create a new SignedWad from magnitude and sign flag.
     public fun new(magnitude: u256, negative: bool): SignedWad {
@@ -87,9 +93,7 @@ module gaussian::signed_wad {
         }
     }
 
-    // ========================================
-    // Accessors
-    // ========================================
+    // === Accessors ===
 
     /// Get the absolute value (magnitude) of a SignedWad.
     public fun abs(x: &SignedWad): u256 {
@@ -111,9 +115,7 @@ module gaussian::signed_wad {
         x.magnitude
     }
 
-    // ========================================
-    // Unary operations
-    // ========================================
+    // === Unary operations ===
 
     /// Negate a SignedWad: -x.
     public fun negate(x: &SignedWad): SignedWad {
@@ -124,9 +126,7 @@ module gaussian::signed_wad {
         }
     }
 
-    // ========================================
-    // Binary arithmetic operations
-    // ========================================
+    // === Binary arithmetic operations ===
 
     /// Add two SignedWad values.
     /// 
@@ -179,9 +179,7 @@ module gaussian::signed_wad {
         new(result_mag, result_neg)
     }
 
-    // ========================================
-    // Conversion functions
-    // ========================================
+    // === Conversion functions ===
 
     /// Convert to unsigned WAD with clamping: negative values become 0.
     /// 
@@ -198,13 +196,11 @@ module gaussian::signed_wad {
     /// 
     /// Use when negative values indicate an error condition.
     public fun to_wad_checked(x: &SignedWad): u256 {
-        assert!(!x.negative, 11); // EUnexpectedNegative
+        assert!(!x.negative, EUnexpectedNegative);
         x.magnitude
     }
 
-    // ========================================
-    // Comparison functions
-    // ========================================
+    // === Comparison functions ===
 
     /// Compare two SignedWad values.
     /// Returns: -1 if a < b, 0 if a == b, 1 if a > b.
@@ -262,9 +258,7 @@ module gaussian::signed_wad {
         cmp(a, b) == 0
     }
 
-    // ========================================
-    // Tests
-    // ========================================
+    // === Tests ===
 
     #[test]
     fun test_new_normalizes_zero() {

@@ -133,7 +133,7 @@ sui client call \
 
 ---
 
-## 🔐 Security Checklist
+## 🔐 Pre-Deployment Checklist
 
 ### Before Deployment
 
@@ -146,7 +146,6 @@ sui client call \
 ### For Mainnet Deployment
 
 - [ ] Thorough testing on testnet first
-- [ ] Security audit completed (if applicable)
 - [ ] Using a **separate mainnet-only address**
 - [ ] UpgradeCap stored securely (controls future upgrades!)
 - [ ] Deployment record backed up

@@ -136,6 +136,7 @@ module gaussian::coefficients {
         }
     }
 
+    #[allow(unused_const)]
     const CDF_CHECKSUM: u128 = 12428030454182378736638227372090014573;
     const PDF_NUM_LEN: u64 = 21;
     const PDF_DEN_LEN: u64 = 21;
@@ -319,6 +320,7 @@ module gaussian::coefficients {
         }
     }
 
+    #[allow(unused_const)]
     const PDF_CHECKSUM: u128 = 39466689394914504909406767938060234167;
 
     const PPF_CENTRAL_NUM_LEN: u64 = 18;
@@ -479,6 +481,7 @@ module gaussian::coefficients {
         }
     }
 
+    #[allow(unused_const)]
     const PPF_CENTRAL_CHECKSUM: u128 = 333772141461594105586713657887433327624;
     const PPF_TAIL_NUM_LEN: u64 = 6;
     const PPF_TAIL_DEN_LEN: u64 = 6;
@@ -542,6 +545,7 @@ module gaussian::coefficients {
         }
     }
 
+    #[allow(unused_const)]
     const PPF_TAIL_CHECKSUM: u128 = 58896132505575964821144987038370786797;
 
     fun fnv_update(acc: u256, value: u256): u256 {
@@ -549,6 +553,7 @@ module gaussian::coefficients {
         (xored * FNV_PRIME_128) % MOD_2_128
     }
 
+    #[allow(unused_function)]
     fun checksum_cdf_num(): u128 {
         let mut acc: u256 = FNV_OFFSET_BASIS_128;
         let mut i: u64 = 0;
@@ -562,6 +567,7 @@ module gaussian::coefficients {
         (acc % MOD_2_128) as u128
     }
 
+    #[allow(unused_function)]
     fun checksum_cdf_den(): u128 {
         let mut acc: u256 = FNV_OFFSET_BASIS_128;
         let mut i: u64 = 0;
@@ -575,6 +581,7 @@ module gaussian::coefficients {
         (acc % MOD_2_128) as u128
     }
 
+    #[allow(unused_function)]
     fun checksum_pdf_num(): u128 {
         let mut acc: u256 = FNV_OFFSET_BASIS_128;
         let mut i: u64 = 0;
@@ -588,6 +595,7 @@ module gaussian::coefficients {
         (acc % MOD_2_128) as u128
     }
 
+    #[allow(unused_function)]
     fun checksum_pdf_den(): u128 {
         let mut acc: u256 = FNV_OFFSET_BASIS_128;
         let mut i: u64 = 0;
@@ -601,6 +609,7 @@ module gaussian::coefficients {
         (acc % MOD_2_128) as u128
     }
 
+    #[allow(unused_function)]
     fun checksum_ppf_central_num(): u128 {
         let mut acc: u256 = FNV_OFFSET_BASIS_128;
         let mut i: u64 = 0;
@@ -614,6 +623,7 @@ module gaussian::coefficients {
         (acc % MOD_2_128) as u128
     }
 
+    #[allow(unused_function)]
     fun checksum_ppf_central_den(): u128 {
         let mut acc: u256 = FNV_OFFSET_BASIS_128;
         let mut i: u64 = 0;
@@ -627,6 +637,7 @@ module gaussian::coefficients {
         (acc % MOD_2_128) as u128
     }
 
+    #[allow(unused_function)]
     fun checksum_ppf_tail_num(): u128 {
         let mut acc: u256 = FNV_OFFSET_BASIS_128;
         let mut i: u64 = 0;
@@ -640,6 +651,7 @@ module gaussian::coefficients {
         (acc % MOD_2_128) as u128
     }
 
+    #[allow(unused_function)]
     fun checksum_ppf_tail_den(): u128 {
         let mut acc: u256 = FNV_OFFSET_BASIS_128;
         let mut i: u64 = 0;

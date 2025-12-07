@@ -112,6 +112,12 @@ sui move test
 cd scripts && uv run python run_all.py
 ```
 
+### README & metrics sync
+
+- Update `STATUS.md`, `ROADMAP.md`, `docs/GAS_BENCHMARKS.md`, and `docs/test_coverage_review.md` before regenerating the README.
+- Regenerate README: `python scripts/update_readme.py`
+- CI / pre-commit check: `python scripts/update_readme.py --check` (or `scripts/check_readme_sync.sh`)
+
 ### Adding New Approximations
 
 1. Create Python exploration script in `scripts/src/`
