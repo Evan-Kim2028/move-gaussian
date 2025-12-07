@@ -1,0 +1,13 @@
+{
+  "_comment": "Template for deployment records. Copy and fill in after deployment.",
+  "network": "testnet | mainnet | devnet",
+  "package_id": "0x...",
+  "upgrade_cap_id": "0x...",
+  "publisher_id": "0x...",
+  "deployer_address": "0x...",
+  "transaction_digest": "...",
+  "deployed_at": "YYYY-MM-DDTHH:MM:SSZ",
+  "sui_version": "sui x.x.x",
+  "gas_used": "...",
+  "notes": "Initial deployment / Upgrade description"
+}

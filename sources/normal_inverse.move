@@ -241,13 +241,13 @@ module gaussian::normal_inverse {
         let mut term_neg = true; // z is negative
 
         let mut acc_mag = 0u256;
-        let mut acc_neg = false;
+        let mut _acc_neg = false;
 
         let mut n: u64 = 1;
         while (n <= 5) {
             // term / n
             let div_mag = term_mag / (n as u256);
-            (acc_mag, acc_neg) = signed_add_128_internal(acc_mag, acc_neg, div_mag, term_neg);
+            (acc_mag, _acc_neg) = signed_add_128_internal(acc_mag, _acc_neg, div_mag, term_neg);
 
             // next term: term *= z
             term_mag = (term_mag * z_wad) / scale;
@@ -257,7 +257,7 @@ module gaussian::normal_inverse {
 
         // Subtract k * ln(2)
         let k_ln2 = (LN_2_WAD as u256) * (k as u256);
-        (acc_mag, acc_neg) = signed_add_128_internal(acc_mag, acc_neg, k_ln2, true);
+        (acc_mag, _acc_neg) = signed_add_128_internal(acc_mag, _acc_neg, k_ln2, true);
 
         // Sign should be negative for p < 1, positive for p > 1. Zero stays non-negative.
         let is_neg = if (acc_mag == 0) { false } else { p < SCALE };
@@ -428,6 +428,15 @@ module gaussian::normal_inverse {
     // ========================================
     // Tests
     // ========================================
+
+    #[test]
+    fun test_constants_match_coefficients() {
+        assert!(SCALE == coefficients::scale(), 0);
+        assert!(EPS == coefficients::eps(), 1);
+        assert!(P_LOW == coefficients::p_low(), 2);
+        assert!(P_HIGH == coefficients::p_high(), 3);
+        assert!(MAX_Z == coefficients::max_z(), 4);
+    }
 
     #[test]
     fun test_ppf_at_half() {

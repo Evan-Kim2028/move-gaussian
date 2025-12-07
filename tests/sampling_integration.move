@@ -103,10 +103,16 @@ module gaussian::sampling_integration {
         let seed_chk = checksum_seeds();
         let seed_low = (seed_chk & CHECKSUM_MASK) as u64;
         assert!(seed_low == SEED_CHECKSUM_LOW, seed_low);
-        let z_chk = checksum_signed_vectors(&Z_MAGS, &Z_NEG);
+
+        let z_mags = Z_MAGS;
+        let z_neg = Z_NEG;
+        let z_chk = checksum_signed_vectors(&z_mags, &z_neg);
         let z_low = (z_chk & CHECKSUM_MASK) as u64;
         assert!(z_low == Z_CHECKSUM_LOW, z_low);
-        let n_chk = checksum_signed_vectors(&N_MAGS, &N_NEG);
+
+        let n_mags = N_MAGS;
+        let n_neg = N_NEG;
+        let n_chk = checksum_signed_vectors(&n_mags, &n_neg);
         let n_low = (n_chk & CHECKSUM_MASK) as u64;
         assert!(n_low == N_CHECKSUM_LOW, n_low);
     }

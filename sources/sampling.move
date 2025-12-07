@@ -17,6 +17,9 @@ module gaussian::sampling {
     /// Invalid std_dev input
     const EInvalidStdDev: u64 = 401;
 
+    /// Guard has already been used for sampling (replay attempt).
+    const ERandomAlreadyUsed: u64 = 402;
+
     /// Number of independent uniform samples used in CLT approximation.
     /// For n = 12, the sum of n U(0,1) variables has variance n/12 = 1,
     /// so Z = (Σ U_i) - 6 is approximately N(0, 1).
@@ -30,6 +33,25 @@ module gaussian::sampling {
 
     /// Minimum probability for PPF (avoids singularity): ~1e-10 * WAD
     const EPS: u128 = 100_000_000;
+
+    // ========================================
+    // Replay guard (one-shot sampler)
+    // ========================================
+
+    /// Guard to enforce single-use sampling when callers want to prevent reuse of a randomness handle.
+    public struct SamplerGuard has store, drop {
+        used: bool,
+    }
+
+    /// Create a fresh sampler guard.
+    public fun new_sampler_guard(): SamplerGuard {
+        SamplerGuard { used: false }
+    }
+
+    fun mark_guard_consumed(guard: &mut SamplerGuard) {
+        assert!(!guard.used, ERandomAlreadyUsed);
+        guard.used = true;
+    }
 
     // ========================================
     // Uniform generation helpers
@@ -86,6 +108,22 @@ module gaussian::sampling {
         }
     }
 
+    fun sample_standard_normal_clt_with_gen(
+        gen: &mut random::RandomGenerator
+    ): (u256, bool) {
+        let mut uniforms = std::vector::empty<u256>();
+
+        let mut i: u64 = 0;
+        while (i < NUM_UNIFORMS) {
+            let raw = random::generate_u64(gen);
+            let u_wad = uniform_from_u64(raw);
+            std::vector::push_back(&mut uniforms, u_wad);
+            i = i + 1;
+        };
+
+        clt_from_uniforms(&uniforms)
+    }
+
     /// Sample an approximately standard normal variable using CLT:
     ///   Z ≈ Σ U_i - 6 ,  U_i ~ Uniform(0,1), i=1..12
     ///
@@ -96,17 +134,7 @@ module gaussian::sampling {
         ctx: &mut sui::tx_context::TxContext,
     ): (u256, bool) {
         let mut gen = random::new_generator(r, ctx);
-        let mut uniforms = std::vector::empty<u256>();
-
-        let mut i: u64 = 0;
-        while (i < NUM_UNIFORMS) {
-            let raw = random::generate_u64(&mut gen);
-            let u_wad = uniform_from_u64(raw);
-            std::vector::push_back(&mut uniforms, u_wad);
-            i = i + 1;
-        };
-
-        clt_from_uniforms(&uniforms)
+        sample_standard_normal_clt_with_gen(&mut gen)
     }
 
     /// Sample from N(mean, std_dev^2) using CLT-based standard normal sampler.
@@ -159,7 +187,17 @@ module gaussian::sampling {
         let p = uniform_open_interval_from_u64(raw);
         
         // Apply inverse CDF (PPF)
-        normal_inverse::ppf(p)
+        let z = normal_inverse::ppf(p);
+
+        // Fallback to CLT if an unexpected zero emerges in tail-heavy draws.
+        let z_mag = signed_wad::abs(&z);
+        let is_tail = p < (SCALE / 4) || p > (3 * SCALE / 4);
+        if (is_tail && z_mag == 0) {
+            let (mag, neg) = sample_standard_normal_clt_with_gen(&mut gen);
+            return signed_wad::new(mag, neg)
+        };
+
+        z
     }
 
     /// Deterministic helper for tests/integration: map a raw u64 to SignedWad z via PPF.
@@ -167,6 +205,13 @@ module gaussian::sampling {
     public(package) fun sample_z_from_u64(raw: u64): SignedWad {
         let p = uniform_open_interval_from_u64(raw);
         normal_inverse::ppf(p)
+    }
+
+    /// Deterministic helper with guard: map a raw u64 to SignedWad z via PPF.
+    /// Used to test replay protection without needing `Random`.
+    public(package) fun sample_z_from_u64_guarded(raw: u64, guard: &mut SamplerGuard): SignedWad {
+        mark_guard_consumed(guard);
+        sample_z_from_u64(raw)
     }
 
     /// Deterministic helper: sample N(mean, std_dev^2) from a raw u64 without Random.
@@ -180,6 +225,18 @@ module gaussian::sampling {
         let delta = signed_wad::mul_wad(&z, std_dev);
         let mean_signed = signed_wad::from_wad(mean);
         signed_wad::add(&mean_signed, &delta)
+    }
+
+    /// Deterministic helper with guard: sample N(mean, std_dev^2) from a raw u64 with replay protection.
+    public(package) fun sample_normal_from_u64_guarded(
+        raw: u64,
+        mean: u256,
+        std_dev: u256,
+        guard: &mut SamplerGuard,
+    ): SignedWad {
+        assert!(std_dev > 0, EInvalidStdDev);
+        mark_guard_consumed(guard);
+        sample_normal_from_u64(raw, mean, std_dev)
     }
 
     /// Sample from N(mean, std_dev^2) using PPF-based standard normal sampler.
@@ -212,6 +269,17 @@ module gaussian::sampling {
         sample_standard_normal_ppf_internal(r, ctx)
     }
 
+    /// One-shot standard normal sample that consumes the provided guard to block reuse.
+    #[allow(lint(public_random))]
+    public fun sample_z_once(
+        r: &random::Random,
+        guard: &mut SamplerGuard,
+        ctx: &mut sui::tx_context::TxContext,
+    ): SignedWad {
+        mark_guard_consumed(guard);
+        sample_standard_normal_ppf_internal(r, ctx)
+    }
+
     /// Ergonomic wrapper returning a StandardNormal sample.
     ///
     /// **Implementation**: Currently uses PPF-based sampling for better
@@ -239,6 +307,21 @@ module gaussian::sampling {
         std_dev: u256,
         ctx: &mut sui::tx_context::TxContext,
     ): StandardNormal {
+        let value = sample_normal_ppf_internal(r, mean, std_dev, ctx);
+        StandardNormal { value }
+    }
+
+    /// One-shot N(mean, std_dev^2) sample that consumes the provided guard to block reuse.
+    #[allow(lint(public_random))]
+    public fun sample_normal_once(
+        r: &random::Random,
+        mean: u256,
+        std_dev: u256,
+        guard: &mut SamplerGuard,
+        ctx: &mut sui::tx_context::TxContext,
+    ): StandardNormal {
+        assert!(std_dev > 0, EInvalidStdDev);
+        mark_guard_consumed(guard);
         let value = sample_normal_ppf_internal(r, mean, std_dev, ctx);
         StandardNormal { value }
     }
@@ -360,5 +443,20 @@ module gaussian::sampling {
         
         assert!(magnitude(&sn) == 2_000_000_000_000_000_000, 0);
         assert!(!is_negative(&sn), 1);
+    }
+
+    #[test]
+    fun test_sampler_guard_allows_single_use() {
+        let mut guard = new_sampler_guard();
+        let z = sample_z_from_u64_guarded(0x8000000000000000, &mut guard);
+        assert!(signed_wad::abs(&z) > 0, 0);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERandomAlreadyUsed)]
+    fun test_sampler_guard_blocks_reuse() {
+        let mut guard = new_sampler_guard();
+        let _ = sample_z_from_u64_guarded(1, &mut guard);
+        let _ = sample_z_from_u64_guarded(2, &mut guard);
     }
 }

@@ -15,3 +15,45 @@ Thumbs.db
 
 # Dependencies (if using package manager)
 node_modules/
+
+# ===========================================
+# 🔐 SECURITY - Private Keys & Secrets
+# ===========================================
+
+# Sui keystore and wallet files
+sui.keystore
+*.keystore
+.sui/
+
+# Environment files (may contain private keys)
+.env
+.env.*
+*.env
+.env.local
+.env.testnet
+.env.mainnet
+
+# Secret/key files
+*.pem
+*.key
+*.secret
+secrets/
+private/
+
+# Deployment records with sensitive info (use template instead)
+deployments/*.json
+!deployments/.gitkeep
+!deployments/template.json
+
+# ===========================================
+# Python (for scripts/)
+# ===========================================
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.egg-info/
+dist/
+.venv/
+venv/
+.python-version

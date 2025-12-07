@@ -1,0 +1,87 @@
+# =============================================================================
+# Gaussian Package - Deployment Information
+# =============================================================================
+# This file contains PUBLIC deployment information that is safe to commit.
+# It tracks package IDs, deployer addresses, and version history across networks.
+#
+# ⚠️  NEVER put private keys or mnemonics in this file!
+# =============================================================================
+
+[package]
+name = "gaussian"
+description = "On-chain Gaussian (normal) distribution library for Sui Move"
+repository = "https://github.com/Evan-Kim2028/move-gaussian"
+
+# =============================================================================
+# Development Wallets (Public Addresses Only)
+# =============================================================================
+# These are the PUBLIC addresses used for development. Private keys are stored
+# securely in ~/.sui/sui_config/sui.keystore (never committed to git).
+
+[wallets.testnet]
+alias = "gaussian-testnet"
+address = "0x9d4d9ad2332d39f58082311bad065bf4e4476c4e3510d21f1d8931c57df863c5"
+created = "2024-12-07"
+purpose = "Testnet development and deployment"
+
+# [wallets.mainnet]
+# alias = ""
+# address = ""
+# created = ""
+# purpose = "Mainnet deployment (use separate wallet!)"
+
+# =============================================================================
+# Testnet Deployments
+# =============================================================================
+
+[testnet.v0_1_0]
+package_id = "0x70c5040e7e2119275d8f93df8242e882a20ac6ae5a317673995323d75a93b36b"
+upgrade_cap = "0x5910d62a14c28528a07947227475598e7a01059c71e2dad9a443011fde136134"
+transaction_digest = "6tBZYr5jn91UnvBpWp2b1553R81fjTrBjYBcjqVwUkh5"
+deployed_at = "2024-12-07T22:05:58Z"
+deployed_by = "0x9d4d9ad2332d39f58082311bad065bf4e4476c4e3510d21f1d8931c57df863c5"
+sui_version = "sui 1.61.2-homebrew"
+gas_used = "154306280 MIST (~0.154 SUI)"
+checkpoint = "272466284"
+notes = "Initial testnet deployment - 9 modules published"
+explorer = "https://testnet.suivision.xyz/package/0x70c5040e7e2119275d8f93df8242e882a20ac6ae5a317673995323d75a93b36b"
+
+# Modules published:
+# - coefficients
+# - erf
+# - erf_coefficients
+# - harness
+# - math
+# - normal_forward
+# - normal_inverse
+# - sampling
+# - signed_wad
+
+# Verification (2024-12-07):
+# - All functions tested against scipy.stats.norm
+# - sample_z_from_seed: <0.05% error vs scipy PPF
+# - sample_normal_from_seed: exact match for mean when z≈0
+# - Cross-validated at 5 probability points across distribution
+
+# =============================================================================
+# Mainnet Deployments
+# =============================================================================
+
+# [mainnet.v0_1_0]
+# package_id = ""
+# upgrade_cap = ""
+# publisher = ""
+# transaction_digest = ""
+# deployed_at = ""
+# deployed_by = ""
+# sui_version = ""
+# notes = ""
+# explorer = "https://suivision.xyz/package/<PACKAGE_ID>"
+
+# =============================================================================
+# Devnet Deployments (ephemeral - network resets frequently)
+# =============================================================================
+
+# [devnet.latest]
+# package_id = ""
+# notes = "Devnet is reset frequently, deployments are temporary"

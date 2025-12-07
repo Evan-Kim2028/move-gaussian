@@ -93,6 +93,24 @@ public fun my_defi_app(r: &Random, ctx: &mut TxContext) {
 
 PPF + sampling are implemented (beta); keep using these APIs while we finish gas/validation on devnet.
 
+### Randomness semantics & replay safety
+
+- Entropy comes from `sui::random`; seeds are **never** user-supplied.
+- Prefer one-shot guarded sampling in entry functions to avoid accidental reuse:
+
+```move
+use gaussian::sampling;
+
+public entry fun my_defi_app(r: &sui::random::Random, ctx: &mut sui::tx_context::TxContext) {
+    let mut guard = sampling::new_sampler_guard();
+    let z = sampling::sample_z_once(r, &mut guard, ctx);
+    // use z ...
+}
+```
+
+- Deterministic helpers (`sample_z_from_u64`, `sample_normal_from_u64`) are package-scoped for tests; `gaussian::harness` entries are DevInspect-only and should not be exposed in production.
+- See [notes/gaussian/sampler.md](notes/gaussian/sampler.md) for lifecycle guidance and anti-patterns.
+
 ---
 
 ## 🔬 Technical Approach
@@ -520,6 +538,8 @@ Only 11 multiplications instead of 66 (for degree 11).
 | [notes/gaussian/02-implementation-guide.md](notes/gaussian/02-implementation-guide.md) | AAA algorithm deep dive | Implementers |
 | [notes/gaussian/03-applications-and-use-cases.md](notes/gaussian/03-applications-and-use-cases.md) | DeFi/GameFi/NFT applications | Product managers |
 | [notes/gaussian/04-move-development-practices.md](notes/gaussian/04-move-development-practices.md) | Move conventions, droids, testing | Move developers |
+| [notes/gaussian/sampler.md](notes/gaussian/sampler.md) | Randomness lifecycle, guardrails | Integrators |
+| [notes/gaussian/approx-error.md](notes/gaussian/approx-error.md) | Error budget and bias notes | Risk/quant |
 
 ---
 
