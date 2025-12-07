@@ -7,18 +7,18 @@
                     │    core     │  ← Facade (single import point)
                     └─────┬───────┘
                           │
-          ┌───────────────┼───────────────┐
-          ▼               ▼               ▼
-    ┌──────────┐   ┌─────────────┐   ┌─────────┐
-    │ sampling │   │normal_forward│   │   erf   │
-    └────┬─────┘   └──────┬──────┘   └────┬────┘
-         │                │               │
-         ▼                ▼               ▼
-    ┌──────────┐   ┌─────────────┐   ┌───────────────┐
-    │  events  │   │normal_inverse│   │erf_coefficients│
-    └──────────┘   └──────┬──────┘   └───────────────┘
-                          │
-          ┌───────────────┼───────────────┐
+          ┌───────────────┼───────────────┬─────────────────┐
+          ▼               ▼               ▼                 ▼
+    ┌──────────┐   ┌─────────────┐   ┌─────────┐   ┌───────────────┐
+    │ sampling │   │normal_forward│   │   erf   │   │transcendental │
+    └────┬─────┘   └──────┬──────┘   └────┬────┘   └───────┬───────┘
+         │                │               │                │
+         ▼                ▼               ▼                │
+    ┌──────────┐   ┌─────────────┐   ┌───────────────┐     │
+    │  events  │   │normal_inverse│   │erf_coefficients│   │
+    └──────────┘   └──────┬──────┘   └───────────────┘     │
+                          │                                │
+          ┌───────────────┼───────────────┬────────────────┘
           ▼               ▼               ▼
     ┌──────────┐   ┌─────────────┐   ┌──────────┐
     │signed_wad│   │ coefficients│   │   math   │
@@ -41,6 +41,7 @@
 | **normal_forward.move** | CDF Φ(z) and PDF φ(z) | `cdf_standard`, `pdf_standard` |
 | **normal_inverse.move** | Inverse CDF Φ⁻¹(p) | `ppf`, `ppf_aaa` |
 | **erf.move** | Error function | `erf`, `erfc`, `phi` |
+| **transcendental.move** | ln, exp, sqrt | `ln_wad`, `exp_wad`, `sqrt_wad` |
 
 ### Infrastructure
 

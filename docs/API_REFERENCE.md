@@ -20,7 +20,8 @@
 10. [Module: erf](#module-erf)
 11. [Module: signed_wad](#module-signed_wad)
 12. [Module: math](#module-math)
-13. [Error Codes](#error-codes)
+13. [Module: transcendental](#module-transcendental) *(NEW in v1.1)*
+14. [Error Codes](#error-codes)
 
 ---
 
@@ -1081,6 +1082,224 @@ public fun clamp_to_unit(value: u256): u256
 ```
 
 Clamp value to [0, SCALE].
+
+---
+
+## Module: transcendental
+
+Transcendental functions for fixed-point arithmetic, essential for financial mathematics like option pricing.
+
+### Overview
+
+This module provides:
+- **`ln_wad(x)`** - Natural logarithm for x > 0
+- **`exp_wad(x)`** - Exponential function e^x
+- **`sqrt_wad(x)`** - Square root
+
+All functions use WAD scaling (10^18) for fixed-point precision.
+
+### Use Cases
+
+- Black-Scholes option pricing: `ln(S/K)`, `e^(-rT)`
+- Compound interest calculations
+- Geometric Brownian motion simulations
+- Risk metrics (VaR, etc.)
+
+### Constants
+
+```move
+const LN_2: u256 = 693_147_180_559_945_309;   // ln(2) in WAD
+const E: u256 = 2_718_281_828_459_045_235;    // e in WAD
+const INV_E: u256 = 367_879_441_171_442_321;  // 1/e in WAD
+const MAX_EXP_INPUT: u256 = 20_000_000_000_000_000_000; // |x| ≤ 20
+```
+
+### Functions
+
+#### `ln_wad`
+
+```move
+public fun ln_wad(x: u256): SignedWad
+```
+
+Natural logarithm ln(x) for WAD-scaled x > 0.
+
+**Parameters:**
+- `x`: Positive value in WAD scaling (x > 0)
+
+**Returns:** SignedWad representing ln(x), which can be negative for x < 1
+
+**Errors:**
+- `ELnNonPositive` (500) - if x ≤ 0
+
+**Example:**
+```move
+use gaussian::transcendental;
+
+let x = 2_000_000_000_000_000_000; // 2.0
+let result = transcendental::ln_wad(x);
+// result ≈ 693_147_180_559_945_309 (ln(2) ≈ 0.693)
+
+let y = 500_000_000_000_000_000; // 0.5
+let result = transcendental::ln_wad(y);
+// result ≈ -693_147_180_559_945_309 (ln(0.5) = -ln(2))
+```
+
+**Precision:** < 1% error for x ∈ [0.001, 1000] WAD
+
+---
+
+#### `exp_wad`
+
+```move
+public fun exp_wad(x: &SignedWad): u256
+```
+
+Exponential function e^x for SignedWad input.
+
+**Parameters:**
+- `x`: Exponent as SignedWad (can be negative)
+
+**Returns:** e^x in WAD scaling (always positive)
+
+**Errors:**
+- `EExpOverflow` (501) - if |x| > 20 WAD (result would overflow)
+
+**Example:**
+```move
+use gaussian::{transcendental, signed_wad};
+
+// e^1 = e ≈ 2.718
+let x = signed_wad::from_wad(1_000_000_000_000_000_000);
+let result = transcendental::exp_wad(&x);
+// result ≈ 2_718_281_828_459_045_235
+
+// e^-1 = 1/e ≈ 0.368
+let x = signed_wad::new(1_000_000_000_000_000_000, true);
+let result = transcendental::exp_wad(&x);
+// result ≈ 367_879_441_171_442_321
+```
+
+**Precision:** < 1% error for x ∈ [-20, 20] WAD
+
+---
+
+#### `sqrt_wad`
+
+```move
+public fun sqrt_wad(x: u256): u256
+```
+
+Square root of WAD-scaled value using Newton-Raphson iteration.
+
+**Parameters:**
+- `x`: Non-negative value in WAD scaling
+
+**Returns:** sqrt(x) in WAD scaling
+
+**Example:**
+```move
+use gaussian::transcendental;
+
+let x = 4_000_000_000_000_000_000; // 4.0
+let result = transcendental::sqrt_wad(x);
+// result = 2_000_000_000_000_000_000 (2.0)
+
+let x = 2_000_000_000_000_000_000; // 2.0
+let result = transcendental::sqrt_wad(x);
+// result ≈ 1_414_213_562_373_095_048 (√2 ≈ 1.414)
+```
+
+**Precision:** Exact to WAD precision (Newton-Raphson converges)
+
+---
+
+#### `exp_neg_wad`
+
+```move
+public fun exp_neg_wad(x: u256): u256
+```
+
+Convenience function for e^(-x) where x is positive. Common in finance for discount factors.
+
+**Parameters:**
+- `x`: Positive exponent in WAD scaling
+
+**Returns:** e^(-x) in WAD scaling
+
+**Example:**
+```move
+// Discount factor: e^(-0.05 * 1) for 5% rate, 1 year
+let rate_time = 50_000_000_000_000_000; // 0.05
+let discount = transcendental::exp_neg_wad(rate_time);
+// discount ≈ 951_229_424_500_714_000 (~0.9512)
+```
+
+---
+
+#### `ln_ratio`
+
+```move
+public fun ln_ratio(a: u256, b: u256): SignedWad
+```
+
+Natural logarithm of a ratio: ln(a/b). More accurate than computing ln(a) - ln(b) separately.
+
+**Parameters:**
+- `a`: Numerator in WAD scaling (a > 0)
+- `b`: Denominator in WAD scaling (b > 0)
+
+**Returns:** ln(a/b) as SignedWad
+
+**Example:**
+```move
+// ln(S/K) for Black-Scholes where S=105, K=100
+let spot = 105_000_000_000_000_000_000;   // 105.0
+let strike = 100_000_000_000_000_000_000; // 100.0
+let ln_moneyness = transcendental::ln_ratio(spot, strike);
+// ln_moneyness ≈ 48_790_164_169_432_057 (ln(1.05) ≈ 0.0488)
+```
+
+---
+
+#### Constant Accessors
+
+```move
+public fun ln_2(): u256   // Returns ln(2) ≈ 0.693 in WAD
+public fun e(): u256      // Returns e ≈ 2.718 in WAD
+public fun inv_e(): u256  // Returns 1/e ≈ 0.368 in WAD
+```
+
+### Error Codes
+
+| Code | Name | Description |
+|------|------|-------------|
+| 500 | `ELnNonPositive` | Input must be positive for ln |
+| 501 | `EExpOverflow` | Exponent too large (|x| > 20) |
+
+### Precision & Accuracy
+
+| Function | Domain | Max Error |
+|----------|--------|-----------|
+| `ln_wad` | x ∈ [0.001, 1000] WAD | < 1% |
+| `exp_wad` | x ∈ [-20, 20] WAD | < 1% |
+| `sqrt_wad` | x ≥ 0 | Exact (Newton) |
+
+### Implementation Notes
+
+**ln_wad:**
+- Uses range reduction: ln(x) = ln(m × 2^k) = ln(m) + k×ln(2)
+- Taylor series for ln(1 + u) where u ∈ [0, 1)
+- 12 terms for convergence
+
+**exp_wad:**
+- Uses range reduction: e^x = 2^k × e^f where f ∈ [0, ln(2))
+- Taylor series for e^f
+- 12 terms for convergence
+
+**sqrt_wad:**
+- Newton-Raphson iteration: guess = (guess + n/guess) / 2
+- Converges to exact WAD precision
 
 ---
 
