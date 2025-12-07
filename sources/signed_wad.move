@@ -26,15 +26,22 @@ module gaussian::signed_wad {
     // Constants
     // ========================================
 
-    /// Scale factor: WAD = 10^18
+    /// Maximum representable u256 value.
+    #[allow(unused_const)]
+    const MAX_U256: u256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+
+    #[allow(unused_const)]
     const SCALE: u256 = 1_000_000_000_000_000_000;
 
     // ========================================
     // Error codes
     // ========================================
 
-    /// Division by zero in signed WAD division.
+    /// Division by zero.
     const EDivisionByZero: u64 = 10;
+    
+    /// Unexpected negative value where only non-negative is allowed.
+    const EUnexpectedNegative: u64 = 11;
 
     // ========================================
     // Struct definition
@@ -198,7 +205,7 @@ module gaussian::signed_wad {
     /// 
     /// Use when negative values indicate an error condition.
     public fun to_wad_checked(x: &SignedWad): u256 {
-        assert!(!x.negative, 11); // EUnexpectedNegative
+        assert!(!x.negative, EUnexpectedNegative);
         x.magnitude
     }
 

@@ -20,6 +20,9 @@ module gaussian::sampling {
 
     /// Guard has already been used for sampling (replay attempt).
     const ERandomAlreadyUsed: u64 = 402;
+    
+    /// Invalid number of uniform samples for CLT (expected exactly 12).
+    const EInvalidUniformsLength: u64 = 403;
 
     /// Number of independent uniform samples used in CLT approximation.
     /// For n = 12, the sum of n U(0,1) variables has variance n/12 = 1,
@@ -90,7 +93,7 @@ module gaussian::sampling {
     /// which is approximately N(0, 1).
     public fun clt_from_uniforms(uniforms: &vector<u256>): (u256, bool) {
         let n = std::vector::length(uniforms);
-        assert!(n == NUM_UNIFORMS, 0);
+        assert!(n == NUM_UNIFORMS, EInvalidUniformsLength);
 
         let mut sum: u256 = 0;
         let mut i: u64 = 0;
