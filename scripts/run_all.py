@@ -1,80 +1,14 @@
 #!/usr/bin/env python3
 """
-One-shot pipeline runner for move-gaussian coefficient generation and test vectors.
-
-Steps:
-1) Extract forward coefficients (erf/erfc/phi)
-2) Scale to fixed-point
-3) Extract PPF coefficients (central + tail)
-4) Export Move modules
-5) Regenerate cross-language and sampling vectors
-6) Copy generated Move coefficients into sources
-
-Usage:
-    python3 run_all.py
-"""
-
-import subprocess
-from pathlib import Path
-import shutil
-import sys
-
-ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-OUTPUT = ROOT / "outputs"
-ARTIFACTS = ROOT.parents[0] / "artifacts" / "move_generated"
-
-
-def run(cmd: list[str], cwd: Path):
-    print(f"\n=== Running: {' '.join(cmd)} ===")
-    result = subprocess.run(cmd, cwd=cwd)
-    if result.returncode != 0:
-        sys.exit(result.returncode)
-
-
-def main():
-    run(["python3", str(SRC / "02_extract_coefficients.py")], cwd=ROOT)
-    run(["python3", str(SRC / "03_scale_fixed_point.py")], cwd=ROOT)
-    run(["python3", str(SRC / "02b_extract_ppf_coefficients.py")], cwd=ROOT)
-    run(["python3", str(SRC / "07_export_for_move_gaussian.py")], cwd=ROOT)
-    run(["python3", str(SRC / "10_cross_language_vectors.py")], cwd=ROOT)
-
-    # Copy generated coefficients into package sources
-    coeff_src = ARTIFACTS / "coefficients.move"
-    coeff_dest = ROOT.parents[0] / "sources" / "coefficients.move"
-    if coeff_src.exists():
-        shutil.copy(coeff_src, coeff_dest)
-        print(f"Copied {coeff_src} -> {coeff_dest}")
-    else:
-        print("WARNING: coefficients.move not found; export step may have failed")
-
-    print("\nPipeline complete. Consider running `sui move test` from package root.")
-
-
-if __name__ == "__main__":
-    main()
-#!/usr/bin/env python3
-"""
-Run All Pipeline Steps
-
-Executes the complete Gaussian approximation pipeline:
-1. AAA exploration for erf/erfc/phi (high-precision mpmath sampling)
-1b. AAA exploration for inverse CDF (PPF)
-2. Extract polynomial coefficients
-3. Scale to fixed-point integers  
-4. Validate Horner evaluation
-5. Run comprehensive test harness
-5b. Run precision limit validation
-6. (Reserved for property tests)
-7. Export for Move
+Gaussian approximation pipeline runner.
 
 Usage:
     python run_all.py [--skip-aaa] [--include-ppf] [--precision-check]
 
 Options:
-    --skip-aaa        Skip AAA exploration steps if coefficients already exist
-    --include-ppf     Include PPF (inverse CDF) coefficient generation
-    --precision-check Include precision limit validation (slower, thorough)
+    --skip-aaa        Skip AAA exploration (use existing coefficients)
+    --include-ppf     Include PPF coefficient generation
+    --precision-check Include precision limit validation (slower)
 """
 
 import subprocess
@@ -93,19 +27,17 @@ CORE_STEPS = [
     ("07_export_for_move.py", "Step 7: Export for Move"),
 ]
 
-# Optional PPF step
-PPF_STEP = ("01b_aaa_ppf.py", "Step 1b: AAA Exploration (PPF/inverse CDF)")
-
-# Optional precision validation
-PRECISION_STEP = ("05b_test_precision_limits.py", "Step 5b: Precision Limit Validation")
+# Optional steps
+PPF_STEP = ("01b_aaa_ppf.py", "Step 1b: AAA Exploration (PPF)")
+PRECISION_STEP = ("05b_test_precision_limits.py", "Step 5b: Precision Validation")
 
 
 def run_step(script: str, description: str) -> bool:
     """Run a pipeline step and return success status."""
-    print(f"\n{'='*70}")
+    print(f"\n{'='*60}")
     print(f"  {description}")
     print(f"  Script: {script}")
-    print('='*70)
+    print('='*60)
     
     script_path = SCRIPTS_DIR / script
     if not script_path.exists():
@@ -126,20 +58,20 @@ def run_step(script: str, description: str) -> bool:
 
 
 def main():
-    print("="*70)
+    print("="*60)
     print("  GAUSSIAN APPROXIMATION PIPELINE")
-    print("  High-Precision Edition (mpmath 50 digits)")
-    print("="*70)
+    print("="*60)
     
     # Parse options
     skip_aaa = "--skip-aaa" in sys.argv
     include_ppf = "--include-ppf" in sys.argv
     precision_check = "--precision-check" in sys.argv
     
-    print(f"\n  Options:")
-    print(f"    Skip AAA: {skip_aaa}")
-    print(f"    Include PPF: {include_ppf}")
-    print(f"    Precision check: {precision_check}")
+    if "--help" in sys.argv or "-h" in sys.argv:
+        print(__doc__)
+        sys.exit(0)
+    
+    print(f"\n  Options: skip_aaa={skip_aaa}, include_ppf={include_ppf}, precision_check={precision_check}")
     
     results = []
     
@@ -150,11 +82,9 @@ def main():
             continue
         steps.append((script, desc))
         
-        # Insert PPF step after 01_aaa_exploration.py
         if script == "01_aaa_exploration.py" and include_ppf:
             steps.append(PPF_STEP)
         
-        # Insert precision check after 05_test_harness.py
         if script == "05_test_harness.py" and precision_check:
             steps.append(PRECISION_STEP)
     
@@ -168,34 +98,19 @@ def main():
             break
     
     # Summary
-    print("\n" + "="*70)
-    print("  PIPELINE SUMMARY")
-    print("="*70)
+    print("\n" + "="*60)
+    print("  SUMMARY")
+    print("="*60)
     
-    all_passed = True
+    all_passed = all(success for _, success in results)
     for script, success in results:
-        status = "✓ PASS" if success else "✗ FAIL"
-        print(f"  {status}: {script}")
-        if not success:
-            all_passed = False
+        status = "✓" if success else "✗"
+        print(f"  {status} {script}")
     
     if all_passed:
-        print("\n  ✓ ALL STEPS COMPLETED SUCCESSFULLY")
-        print("\n  Generated files:")
-        print("    - outputs/coefficients.json")
-        print("    - outputs/scaled_coefficients.json")
-        print("    - outputs/test_vectors.json")
-        print("    - outputs/test_results.json")
-        if include_ppf:
-            print("    - outputs/ppf_aaa_results.json")
-        if precision_check:
-            print("    - outputs/precision_limit_results.json")
-        print("\n  Next steps:")
-        print("    1. Review outputs/ directory")
-        print("    2. Copy generated Move files to sources/")
-        print("    3. Run: sui move test")
+        print("\n  ✓ Pipeline complete. Run `sui move test` to verify.")
     else:
-        print("\n  ✗ PIPELINE FAILED")
+        print("\n  ✗ Pipeline failed.")
         sys.exit(1)
 
 

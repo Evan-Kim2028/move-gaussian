@@ -1,20 +1,12 @@
 #!/usr/bin/env python3
 """
-Step 4: Horner Evaluation in Fixed-Point Arithmetic
+Horner evaluation in fixed-point arithmetic.
 
-Implements polynomial and rational function evaluation using integer-only
-arithmetic. This must match the Move implementation exactly.
-
-Key principle: Use ONLY integer division, track signs explicitly.
+Implements polynomial/rational function evaluation using integer-only
+arithmetic, matching the Move implementation exactly.
 
 Usage:
     python 04_horner_python.py
-
-Input:
-    ../outputs/scaled_coefficients.json
-
-Output:
-    Validation results (printed)
 """
 
 import json
@@ -23,30 +15,22 @@ from typing import Tuple, List
 from scipy.special import erf as scipy_erf
 import numpy as np
 
-# WAD = 10^18 (must match scaling)
-WAD = 10**18
-
-
-def signed_add(a_mag: int, a_neg: bool, b_mag: int, b_neg: bool) -> Tuple[int, bool]:
-    """
-    Add two signed magnitudes.
+# Import shared constants and helpers
+try:
+    from utils import WAD, signed_add
+except ImportError:
+    # Fallback for standalone execution
+    WAD = 10**18
     
-    Args:
-        a_mag, a_neg: First value (magnitude, is_negative)
-        b_mag, b_neg: Second value (magnitude, is_negative)
-    
-    Returns:
-        (result_mag, result_neg): Sum as signed magnitude
-    """
-    if a_neg == b_neg:
-        # Same sign: add magnitudes, keep sign
-        return a_mag + b_mag, a_neg
-    else:
-        # Different signs: subtract magnitudes
-        if a_mag >= b_mag:
-            return a_mag - b_mag, a_neg
+    def signed_add(a_mag: int, a_neg: bool, b_mag: int, b_neg: bool) -> Tuple[int, bool]:
+        """Add two signed magnitudes."""
+        if a_neg == b_neg:
+            return a_mag + b_mag, a_neg
         else:
-            return b_mag - a_mag, b_neg
+            if a_mag >= b_mag:
+                return a_mag - b_mag, a_neg
+            else:
+                return b_mag - a_mag, b_neg
 
 
 def horner_eval_signed(

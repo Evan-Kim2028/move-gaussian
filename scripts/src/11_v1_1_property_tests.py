@@ -2,29 +2,11 @@
 """
 v1.1 Property Tests with Hypothesis
 
-Comprehensive property-based tests for the Gaussian library v1.1:
-- PPF (inverse CDF) monotonicity and accuracy
-- CDF properties (bounds, symmetry, monotonicity)
-- Sampler distribution properties
-- Round-trip CDF ↔ PPF consistency
-
-These tests complement the Move-side property tests by:
-1. Testing vastly more samples (100,000+ via Hypothesis)
-2. Using high-precision scipy as oracle
-3. Catching edge cases that fixed test vectors might miss
+Property-based tests for PPF, CDF, PDF, sampler, and erf functions.
 
 Usage:
-    # Run all tests
     pytest scripts/src/11_v1_1_property_tests.py -v
-    
-    # Run specific test category
     pytest scripts/src/11_v1_1_property_tests.py -v -k "ppf"
-    
-    # Run with more examples (thorough)
-    pytest scripts/src/11_v1_1_property_tests.py -v --hypothesis-seed=42
-
-Requirements:
-    pip install hypothesis pytest scipy numpy mpmath
 
 Issue: #27
 """
@@ -56,16 +38,30 @@ except ImportError:
 import numpy as np
 from scipy.stats import norm
 from scipy.special import erf as scipy_erf, erfc as scipy_erfc
-import json
 
-# ============================================================
-# Constants (match Move implementation)
-# ============================================================
+# Import shared constants and helpers
+try:
+    from utils import WAD, EPS_WAD, MAX_Z, wad_to_float, float_to_wad, uniform_open_interval
+    EPS = EPS_WAD  # Alias for compatibility
+except ImportError:
+    # Fallback for standalone execution
+    WAD = 10**18
+    EPS = 10**8
+    EPS_WAD = EPS
+    MAX_Z = 6
+    
+    def wad_to_float(x: int) -> float:
+        return x / WAD
+    
+    def float_to_wad(x: float) -> int:
+        return int(x * WAD)
+    
+    def uniform_open_interval(u: int) -> int:
+        span = WAD - 2 * EPS
+        frac = (u * span) >> 64
+        return frac + EPS
 
-WAD = 10**18  # Scale factor
 MAX_U256 = 2**256 - 1
-EPS = 10**8  # Minimum probability ~1e-10
-MAX_Z = 6  # Maximum |z| supported
 
 # Create global evaluator
 evaluator = FixedPointErf()
@@ -75,32 +71,10 @@ evaluator = FixedPointErf()
 # Helper Functions
 # ============================================================
 
-def wad_to_float(x: int) -> float:
-    """Convert WAD-scaled integer to float."""
-    return x / WAD
-
-def float_to_wad(x: float) -> int:
-    """Convert float to WAD-scaled integer."""
-    return int(x * WAD)
-
-def uniform_open_interval(u: int) -> int:
-    """
-    Map u64 → WAD in open interval (EPS, SCALE-EPS).
-    Mirrors Move implementation in sampling.move.
-    """
-    span = WAD - 2 * EPS
-    # (u / 2^64) * span + EPS
-    frac = (u * span) >> 64
-    return frac + EPS
-
 def ppf_reference(p_wad: int) -> float:
-    """
-    Reference PPF implementation using scipy.
-    Input: p in WAD scaling
-    Output: z as float
-    """
+    """Reference PPF using scipy. Input: p in WAD scaling."""
     p_float = wad_to_float(p_wad)
-    p_float = max(1e-15, min(1 - 1e-15, p_float))  # Clamp to avoid infinities
+    p_float = max(1e-15, min(1 - 1e-15, p_float))
     return norm.ppf(p_float)
 
 def cdf_reference(z: float) -> float:
