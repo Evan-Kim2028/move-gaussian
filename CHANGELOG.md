@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Technical Documentation** (`docs/DESIGN.md`): Comprehensive technical deep dive
+  - Full story on AAA rational approximation algorithm (2018)
+  - Comparison to Solidity implementations (solstat, solgauss, Morpheus PM-AMM)
+  - Mathematical trade-offs and precision analysis
+  - Implementation pipeline: Python → Move workflow
+  - Historical context and "why Move" narrative
+
+- **CI Quality Tools Guide** (`docs/CI_QUALITY_TOOLS.md`): Quality assurance reference
+  - Currently implemented: Sui Move linter, warnings-as-errors, Python linting, artifact drift detection, property-based testing
+  - Available tools: Sui Prover (formal verification), Move Analyzer, gas profiling, coverage tracking
+  - Priority recommendations with implementation examples
+
+- **Enhanced CI/CD Pipeline**: Move linter integration in GitHub Actions
+  - `sui move build --lint` - catch unused variables, deprecated patterns, style violations
+  - `sui move test --lint` - enforce code quality during testing
+  - `sui move build --lint --warnings-as-errors` - strict zero-tolerance mode
+  - CI now runs on feature branches for faster feedback
+
+### Changed
+
+- **README.md**: Simplified for practitioners, added link to technical deep dive
+  - Removed AAA technical breadcrumbs from opening line
+  - Added explicit signpost to `docs/DESIGN.md` for technical background
+  - Clearer separation: README = "how to use", DESIGN = "why this way"
+
+- **Documentation Claims**: Removed production-ready and security assertions
+  - Replaced "Security" sections with "Testing" sections
+  - Changed "audit trails" → "event tracking/monitoring" (3 occurrences)
+  - Removed "SAFE FOR MAINNET DEPLOYMENT" and security audit references
+  - More neutral language about API stability
+
+### Fixed
+
+- **Linter Warnings**: Resolved all 14 Move linter warnings → 0 warnings
+  - Added `#[allow(unused_const)]` to checksum constants (used only in tests)
+  - Added `#[allow(unused_function)]` to checksum validation functions
+  - Replaced magic error numbers with named constants:
+    - `EUnexpectedNegative` in `signed_wad.move` (was `11`)
+    - `EInvalidUniformsLength` in `sampling.move` (was `0`)
+  - All linter checks now pass: build, test, and strict warnings-as-errors mode
+
+---
+
 ## [1.1.0] - 2025-12-XX
 
 ### Added
