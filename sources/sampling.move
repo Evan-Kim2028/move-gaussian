@@ -2,6 +2,7 @@ module gaussian::sampling {
     use gaussian::math;
     use gaussian::signed_wad::{Self, SignedWad};
     use gaussian::normal_inverse;
+    use gaussian::events;
     use sui::random;
 
     /// Standard normal sample stored as a SignedWad value.
@@ -128,19 +129,26 @@ module gaussian::sampling {
     ///   Z ≈ Σ U_i - 6 ,  U_i ~ Uniform(0,1), i=1..12
     ///
     /// Returns (magnitude, negative) in WAD scaling.
+    /// Emits a GaussianSampleEvent.
     #[allow(lint(public_random))]
     public fun sample_standard_normal_clt(
         r: &random::Random,
         ctx: &mut sui::tx_context::TxContext,
     ): (u256, bool) {
         let mut gen = random::new_generator(r, ctx);
-        sample_standard_normal_clt_with_gen(&mut gen)
+        let (z_mag, z_neg) = sample_standard_normal_clt_with_gen(&mut gen);
+        
+        // Emit event
+        events::emit_gaussian_sample(z_mag, z_neg, sui::tx_context::sender(ctx));
+        
+        (z_mag, z_neg)
     }
 
     /// Sample from N(mean, std_dev^2) using CLT-based standard normal sampler.
     ///
     /// - `mean` and `std_dev` are WAD-scaled.
     /// - Returns (magnitude, negative) representing the sampled value in WAD.
+    /// - Emits a NormalSampleEvent.
     #[allow(lint(public_random))]
     public fun sample_normal_clt(
         r: &random::Random,
@@ -149,12 +157,13 @@ module gaussian::sampling {
         ctx: &mut sui::tx_context::TxContext,
     ): (u256, bool) {
         assert!(std_dev > 0, EInvalidStdDev);
-        let (z_mag, z_neg) = sample_standard_normal_clt(r, ctx);
+        let mut gen = random::new_generator(r, ctx);
+        let (z_mag, z_neg) = sample_standard_normal_clt_with_gen(&mut gen);
 
         // delta = std_dev * z / SCALE
         let delta = math::mul_div(std_dev, z_mag);
 
-        if (!z_neg) {
+        let (value_mag, value_neg) = if (!z_neg) {
             (mean + delta, false)
         } else {
             if (mean >= delta) {
@@ -163,7 +172,17 @@ module gaussian::sampling {
                 // Magnitude exceeds mean; result is negative
                 (delta - mean, true)
             }
-        }
+        };
+
+        // Emit event
+        events::emit_normal_sample(
+            z_mag, z_neg,
+            mean, std_dev,
+            value_mag, value_neg,
+            sui::tx_context::sender(ctx)
+        );
+
+        (value_mag, value_neg)
     }
 
     // ========================================
@@ -242,18 +261,19 @@ module gaussian::sampling {
     /// Sample from N(mean, std_dev^2) using PPF-based standard normal sampler.
     ///
     /// - `mean` and `std_dev` are WAD-scaled.
-    /// - Returns SignedWad representing the sampled value in WAD.
-    fun sample_normal_ppf_internal(
+    /// - Returns (z, value) where z is the standard normal and value = mean + std_dev * z.
+    fun sample_normal_ppf_internal_with_z(
         r: &random::Random,
         mean: u256,
         std_dev: u256,
         ctx: &mut sui::tx_context::TxContext,
-    ): SignedWad {
+    ): (SignedWad, SignedWad) {
         assert!(std_dev > 0, EInvalidStdDev);
         let z = sample_standard_normal_ppf_internal(r, ctx);
         let delta = signed_wad::mul_wad(&z, std_dev);
         let mean_signed = signed_wad::from_wad(mean);
-        signed_wad::add(&mean_signed, &delta)
+        let value = signed_wad::add(&mean_signed, &delta);
+        (z, value)
     }
 
     // ========================================
@@ -261,15 +281,26 @@ module gaussian::sampling {
     // ========================================
 
     /// Direct SignedWad standard normal sample ("sample_z" helper).
+    /// Emits a GaussianSampleEvent.
     #[allow(lint(public_random))]
     public fun sample_z(
         r: &random::Random,
         ctx: &mut sui::tx_context::TxContext,
     ): SignedWad {
-        sample_standard_normal_ppf_internal(r, ctx)
+        let z = sample_standard_normal_ppf_internal(r, ctx);
+        
+        // Emit event
+        events::emit_gaussian_sample(
+            signed_wad::abs(&z),
+            signed_wad::is_negative(&z),
+            sui::tx_context::sender(ctx)
+        );
+        
+        z
     }
 
     /// One-shot standard normal sample that consumes the provided guard to block reuse.
+    /// Emits a GaussianSampleEvent.
     #[allow(lint(public_random))]
     public fun sample_z_once(
         r: &random::Random,
@@ -277,10 +308,20 @@ module gaussian::sampling {
         ctx: &mut sui::tx_context::TxContext,
     ): SignedWad {
         mark_guard_consumed(guard);
-        sample_standard_normal_ppf_internal(r, ctx)
+        let z = sample_standard_normal_ppf_internal(r, ctx);
+        
+        // Emit event
+        events::emit_gaussian_sample(
+            signed_wad::abs(&z),
+            signed_wad::is_negative(&z),
+            sui::tx_context::sender(ctx)
+        );
+        
+        z
     }
 
     /// Ergonomic wrapper returning a StandardNormal sample.
+    /// Emits a GaussianSampleEvent.
     ///
     /// **Implementation**: Currently uses PPF-based sampling for better
     /// accuracy, especially in the tails. Falls back to CLT if needed.
@@ -294,10 +335,19 @@ module gaussian::sampling {
     ): StandardNormal {
         // Use PPF-based sampling (more accurate)
         let value = sample_standard_normal_ppf_internal(r, ctx);
+        
+        // Emit event
+        events::emit_gaussian_sample(
+            signed_wad::abs(&value),
+            signed_wad::is_negative(&value),
+            sui::tx_context::sender(ctx)
+        );
+        
         StandardNormal { value }
     }
 
     /// Ergonomic wrapper for N(mean, std_dev^2) returning a StandardNormal.
+    /// Emits a NormalSampleEvent.
     ///
     /// **Implementation**: Uses PPF-based sampling internally.
     #[allow(lint(public_random))]
@@ -307,11 +357,23 @@ module gaussian::sampling {
         std_dev: u256,
         ctx: &mut sui::tx_context::TxContext,
     ): StandardNormal {
-        let value = sample_normal_ppf_internal(r, mean, std_dev, ctx);
+        let (z, value) = sample_normal_ppf_internal_with_z(r, mean, std_dev, ctx);
+        
+        // Emit event
+        events::emit_normal_sample(
+            signed_wad::abs(&z),
+            signed_wad::is_negative(&z),
+            mean, std_dev,
+            signed_wad::abs(&value),
+            signed_wad::is_negative(&value),
+            sui::tx_context::sender(ctx)
+        );
+        
         StandardNormal { value }
     }
 
     /// One-shot N(mean, std_dev^2) sample that consumes the provided guard to block reuse.
+    /// Emits a NormalSampleEvent.
     #[allow(lint(public_random))]
     public fun sample_normal_once(
         r: &random::Random,
@@ -322,7 +384,18 @@ module gaussian::sampling {
     ): StandardNormal {
         assert!(std_dev > 0, EInvalidStdDev);
         mark_guard_consumed(guard);
-        let value = sample_normal_ppf_internal(r, mean, std_dev, ctx);
+        let (z, value) = sample_normal_ppf_internal_with_z(r, mean, std_dev, ctx);
+        
+        // Emit event
+        events::emit_normal_sample(
+            signed_wad::abs(&z),
+            signed_wad::is_negative(&z),
+            mean, std_dev,
+            signed_wad::abs(&value),
+            signed_wad::is_negative(&value),
+            sui::tx_context::sender(ctx)
+        );
+        
         StandardNormal { value }
     }
 

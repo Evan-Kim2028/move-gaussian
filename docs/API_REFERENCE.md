@@ -1,6 +1,6 @@
 # Gaussian Package API Reference
 
-**Version**: 1.0.0  
+**Version**: 1.1.0  
 **Package ID (Testnet)**: `0x70c5040e7e2119275d8f93df8242e882a20ac6ae5a317673995323d75a93b36b`  
 **License**: MIT
 
@@ -11,13 +11,16 @@
 1. [Overview](#overview)
 2. [Constants](#constants)
 3. [Types](#types)
-4. [Module: sampling](#module-sampling)
-5. [Module: normal_forward](#module-normal_forward)
-6. [Module: normal_inverse](#module-normal_inverse)
-7. [Module: erf](#module-erf)
-8. [Module: signed_wad](#module-signed_wad)
-9. [Module: math](#module-math)
-10. [Error Codes](#error-codes)
+4. [Module: core](#module-core) *(NEW in v1.1)*
+5. [Module: events](#module-events) *(NEW in v1.1)*
+6. [Module: profile](#module-profile) *(NEW in v1.1)*
+7. [Module: sampling](#module-sampling)
+8. [Module: normal_forward](#module-normal_forward)
+9. [Module: normal_inverse](#module-normal_inverse)
+10. [Module: erf](#module-erf)
+11. [Module: signed_wad](#module-signed_wad)
+12. [Module: math](#module-math)
+13. [Error Codes](#error-codes)
 
 ---
 
@@ -32,6 +35,14 @@ The Gaussian package provides on-chain Gaussian (normal) distribution functions 
 - **PPF** (Percent Point Function / Inverse CDF): `Φ⁻¹(p)` - z-score for probability p
 - **Sampling**: Generate Gaussian random samples using `sui::random`
 - **Error Function**: `erf(x)` and `erfc(x)` implementations
+- **Events**: On-chain audit trail for all sampling operations *(NEW in v1.1)*
+- **Profile**: On-chain version metadata *(NEW in v1.1)*
+
+### What's New in v1.1
+
+- **Core Facade** (`gaussian::core`): Single import point with shorter function names
+- **Events** (`gaussian::events`): All sampling functions emit events by default
+- **Profile** (`gaussian::profile`): On-chain version tracking and configuration
 
 ### WAD Scaling Convention
 
@@ -95,6 +106,394 @@ public struct StandardNormal has copy, drop, store {
 ```
 
 A sample from the standard normal distribution N(0, 1).
+
+---
+
+## Module: core
+
+A facade module providing a single import point for common Gaussian operations. All functions in this module emit events by default.
+
+### Functions
+
+#### `sample_z`
+
+```move
+#[allow(lint(public_random))]
+public fun sample_z(
+    r: &random::Random,
+    ctx: &mut TxContext,
+): SignedWad
+```
+
+Sample from standard normal distribution N(0, 1).
+
+**Parameters:**
+- `r`: Reference to Sui's Random object
+- `ctx`: Transaction context
+
+**Returns:** SignedWad z-score
+
+**Example:**
+```move
+use gaussian::core;
+
+public entry fun my_function(r: &Random, ctx: &mut TxContext) {
+    let z = core::sample_z(r, ctx);
+    // z is a SignedWad sample from N(0,1)
+}
+```
+
+---
+
+#### `sample_standard_normal`
+
+```move
+#[allow(lint(public_random))]
+public fun sample_standard_normal(
+    r: &random::Random,
+    ctx: &mut TxContext,
+): StandardNormal
+```
+
+Sample from N(0, 1), returning a `StandardNormal` wrapper.
+
+**Parameters:**
+- `r`: Reference to Sui's Random object
+- `ctx`: Transaction context
+
+**Returns:** StandardNormal struct containing the sample
+
+---
+
+#### `sample_normal`
+
+```move
+#[allow(lint(public_random))]
+public fun sample_normal(
+    r: &random::Random,
+    mean: u256,
+    std_dev: u256,
+    ctx: &mut TxContext,
+): StandardNormal
+```
+
+Sample from custom normal distribution N(μ, σ²).
+
+**Parameters:**
+- `r`: Reference to Sui's Random object
+- `mean`: μ in WAD scaling (e.g., 1.5 × 10^18 for μ=1.5)
+- `std_dev`: σ in WAD scaling (must be > 0)
+- `ctx`: Transaction context
+
+**Returns:** StandardNormal struct
+
+**Aborts:** `EInvalidStdDev` (401) if `std_dev == 0`
+
+**Example:**
+```move
+// Sample from N(100, 15²) - like an IQ distribution
+let mean = 100_000_000_000_000_000_000; // 100.0
+let std_dev = 15_000_000_000_000_000_000; // 15.0
+let sample = core::sample_normal(r, mean, std_dev, ctx);
+```
+
+---
+
+#### `cdf`
+
+```move
+public fun cdf(z: &SignedWad): u256
+```
+
+Standard normal CDF: Φ(z) = P(Z ≤ z)
+
+**Parameters:**
+- `z`: z-score as SignedWad
+
+**Returns:** Probability in [0, SCALE] (WAD-scaled)
+
+**Example:**
+```move
+let z = core::signed_from_wad(1_000_000_000_000_000_000); // z = 1.0
+let prob = core::cdf(&z);
+// prob ≈ 841_344_746_068_543_000 (~0.8413)
+```
+
+---
+
+#### `pdf`
+
+```move
+public fun pdf(z: &SignedWad): u256
+```
+
+Standard normal PDF: φ(z) = probability density at z
+
+**Parameters:**
+- `z`: z-score as SignedWad
+
+**Returns:** Density value (WAD-scaled, non-negative)
+
+---
+
+#### `ppf`
+
+```move
+public fun ppf(p: u128): SignedWad
+```
+
+Inverse CDF / Percent Point Function: Φ⁻¹(p)
+
+**Parameters:**
+- `p`: Probability in (0, 1) as u128 WAD-scaled
+
+**Returns:** z-score such that Φ(z) ≈ p
+
+**Example:**
+```move
+let p: u128 = 975_000_000_000_000_000; // 0.975
+let z = core::ppf(p);
+// z ≈ 1.96 (97.5th percentile)
+```
+
+---
+
+#### `erf`
+
+```move
+public fun erf(x: u256): u256
+```
+
+Error function: erf(x) = (2/√π) ∫₀ˣ e^(-t²) dt
+
+**Parameters:**
+- `x`: Non-negative WAD-scaled value
+
+**Returns:** erf(x) in [0, SCALE]
+
+---
+
+#### `erfc`
+
+```move
+public fun erfc(x: u256): u256
+```
+
+Complementary error function: erfc(x) = 1 - erf(x)
+
+---
+
+### SignedWad Utilities
+
+The core module also re-exports common SignedWad utilities:
+
+```move
+public fun signed_new(magnitude: u256, negative: bool): SignedWad
+public fun signed_zero(): SignedWad
+public fun signed_from_wad(x: u256): SignedWad
+public fun signed_abs(x: &SignedWad): u256
+public fun signed_is_negative(x: &SignedWad): bool
+public fun signed_is_zero(x: &SignedWad): bool
+```
+
+---
+
+### Constants
+
+```move
+public fun scale(): u256  // Returns 10^18 (WAD)
+```
+
+---
+
+## Module: events
+
+On-chain events emitted by all sampling functions. Events enable off-chain indexing, verification, and audit trails.
+
+### Event Structs
+
+#### `GaussianSampleEvent`
+
+```move
+public struct GaussianSampleEvent has copy, drop {
+    z_magnitude: u256,
+    z_negative: bool,
+    caller: address,
+}
+```
+
+Emitted on every standard normal N(0,1) sample.
+
+**Fields:**
+- `z_magnitude`: Absolute value of z-score (WAD-scaled, 10^18)
+- `z_negative`: Sign of z-score (true = negative)
+- `caller`: Address that initiated the sample
+
+**Decoding:**
+```
+z = (z_negative ? -1 : 1) * z_magnitude / 10^18
+```
+
+---
+
+#### `NormalSampleEvent`
+
+```move
+public struct NormalSampleEvent has copy, drop {
+    z_magnitude: u256,
+    z_negative: bool,
+    mean: u256,
+    std_dev: u256,
+    value_magnitude: u256,
+    value_negative: bool,
+    caller: address,
+}
+```
+
+Emitted on every custom normal N(μ,σ²) sample.
+
+**Fields:**
+- `z_magnitude`: z-score magnitude (WAD-scaled)
+- `z_negative`: z-score sign (true = negative)
+- `mean`: Mean parameter μ (WAD-scaled)
+- `std_dev`: Standard deviation σ (WAD-scaled)
+- `value_magnitude`: Final sample value |μ + σ·z| (WAD-scaled)
+- `value_negative`: Final sample sign (true = negative)
+- `caller`: Address that initiated the sample
+
+### Internal Functions
+
+These functions are `public(package)` and not intended for direct use:
+
+```move
+public(package) fun emit_gaussian_sample(z_magnitude: u256, z_negative: bool, caller: address)
+public(package) fun emit_normal_sample(z_magnitude: u256, z_negative: bool, mean: u256, std_dev: u256, value_magnitude: u256, value_negative: bool, caller: address)
+```
+
+### Usage Example
+
+Events are emitted automatically. Off-chain systems can subscribe:
+
+```typescript
+// TypeScript SDK example
+const events = await client.subscribeEvent({
+    filter: { MoveEventType: `${packageId}::events::GaussianSampleEvent` }
+});
+```
+
+---
+
+## Module: profile
+
+On-chain metadata object for library version tracking. Created automatically on package deployment.
+
+### Types
+
+#### `GaussianProfile`
+
+```move
+public struct GaussianProfile has key, store {
+    id: UID,
+    version: u32,
+    precision_class: u8,
+    max_z_wad: u256,
+}
+```
+
+Immutable metadata about the Gaussian library configuration. Created once at package deployment and shared for public read access.
+
+**Fields:**
+- `version`: Library version as semantic version integer (encoding: `major * 10000 + minor * 100 + patch`)
+- `precision_class`: Precision class (0 = standard, 1 = high, 2 = fast/LUT)
+- `max_z_wad`: Maximum supported |z| value (WAD-scaled, currently 6e18)
+
+### Version Encoding
+
+Version is encoded as: `major * 10000 + minor * 100 + patch`
+
+| Version | Encoded |
+|---------|---------|
+| v1.0.0 | 10000 |
+| v1.1.0 | 10100 |
+| v2.3.1 | 20301 |
+
+### Constants
+
+```move
+const VERSION: u32 = 10100;           // v1.1.0
+const PRECISION_STANDARD: u8 = 0;     // AAA polynomial approximation
+const PRECISION_HIGH: u8 = 1;         // Future: more Newton iterations
+const PRECISION_FAST: u8 = 2;         // Future: LUT-based
+const MAX_Z_WAD: u256 = 6_000_000_000_000_000_000; // |z| ≤ 6.0
+```
+
+### Accessor Functions
+
+#### `version`
+
+```move
+public fun version(p: &GaussianProfile): u32
+```
+
+Get the library version as semantic version integer.
+
+---
+
+#### `precision_class`
+
+```move
+public fun precision_class(p: &GaussianProfile): u8
+```
+
+Get the precision class (0 = standard, 1 = high, 2 = fast).
+
+---
+
+#### `max_z_wad`
+
+```move
+public fun max_z_wad(p: &GaussianProfile): u256
+```
+
+Get the maximum supported |z| value (WAD-scaled).
+
+---
+
+#### `version_major` / `version_minor` / `version_patch`
+
+```move
+public fun version_major(p: &GaussianProfile): u32
+public fun version_minor(p: &GaussianProfile): u32
+public fun version_patch(p: &GaussianProfile): u32
+```
+
+Extract individual version components.
+
+---
+
+#### `is_standard_precision` / `is_high_precision` / `is_fast_precision`
+
+```move
+public fun is_standard_precision(p: &GaussianProfile): bool
+public fun is_high_precision(p: &GaussianProfile): bool
+public fun is_fast_precision(p: &GaussianProfile): bool
+```
+
+Check precision class.
+
+### Usage Example
+
+```move
+use gaussian::profile::{Self, GaussianProfile};
+
+public fun my_function(profile: &GaussianProfile) {
+    // Verify version >= 1.1.0
+    assert!(profile::version(profile) >= 10100, EOutdatedLibrary);
+    
+    // Check precision class
+    assert!(profile::is_standard_precision(profile), EWrongPrecision);
+}
+```
 
 ---
 

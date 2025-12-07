@@ -63,3 +63,4 @@ venv/
 # ===========================================
 docs/internal/
 RELEASE_NOTES_*.md
+.hypothesis/
