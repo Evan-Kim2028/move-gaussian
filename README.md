@@ -3,7 +3,7 @@
 **On-chain Gaussian distribution library for Sui Move** - Built with AAA-derived rational approximations for maximum accuracy.
 
 [![Status](https://img.shields.io/badge/status-Phase%201%20Complete-green)](STATUS.md)
-[![Tests](https://img.shields.io/badge/tests-117%2F117%20passing-brightgreen)](#test-results)
+[![Tests](https://img.shields.io/badge/tests-182%2F182%20passing-brightgreen)](#test-results)
 [![Accuracy](https://img.shields.io/badge/accuracy-5.67e--11-blue)](#accuracy)
 [![Progress](https://img.shields.io/badge/progress-40%25-orange)](ROADMAP.md)
 
@@ -12,15 +12,15 @@
 ## 📊 Project Status (2025-12-06)
 
 ```
-████████████░░░░░░░░░░░░  40% Complete
+██████████████░░░░░░░░░  60% Complete
 
 ✅ Phase 1: Forward Functions (COMPLETE)
-⬜ Phase 2: Inverse CDF (PPF) - 4 weeks remaining
-⬜ Phase 3: Sampling API
+✅ Phase 2: Inverse CDF (PPF) (COMPLETE)
+✅ Phase 3: Sampling API (beta)
 ⬜ Phase 4: Production Release
 ```
 
-**Current Release**: v0.4.0 (Forward functions only)  
+**Current Release**: v0.6.0 (PPF + sampling beta)  
 **Target Release**: v1.0.0 - January 6, 2025  
 **See**: [ROADMAP.md](ROADMAP.md) for detailed timeline
 
@@ -68,29 +68,30 @@ Move solves the **randomness problem** that plagues Solidity:
 ```bash
 # Use in your project - add to Move.toml:
 [dependencies]
-gaussian = { git = "https://github.com/Evan-Kim2028/move-gaussian.git", rev = "v0.4.0" }
+gaussian = { git = "https://github.com/Evan-Kim2028/move-gaussian.git", rev = "v0.6.0" }
 ```
 
-### What You CAN'T Do Yet (Coming in 4 Weeks)
+### Sampling API (PPF-backed)
 
 ```move
-// ❌ These don't exist yet:
-use gaussian::ppf;           // Inverse CDF - Week 2
-use gaussian::gaussian_sampler;  // Sampling API - Week 3
+use gaussian::sampling;
+use gaussian::signed_wad;
 
-entry fun my_defi_app(r: &Random, ctx: &mut TxContext) {
-    // Sample from N(0,1)
-    let (z_mag, z_neg) = gaussian_sampler::sample_standard_normal(r, ctx);
-    
-    // Price options with Monte Carlo
-    let option_value = black_scholes_monte_carlo(z_mag, z_neg, ...);
-    
-    // Generate Gaussian NFT rarity
-    let rarity = classify_rarity(z_mag);  // Common/Rare/Epic based on σ
+public fun my_defi_app(r: &Random, ctx: &mut TxContext) {
+    // Standard normal sample (SignedWad)
+    let z = sampling::sample_z(r, ctx);
+
+    // Custom normal N(mean, std^2) with WAD inputs
+    let mean = 1_000_000_000_000_000_000; // 1.0
+    let std  = 200_000_000_000_000_000;   // 0.2
+    let n = sampling::sample_normal(r, mean, std, ctx);
+
+    // Use SignedWad helpers to branch on sign / magnitude
+    if (signed_wad::is_negative(&n)) { /* handle negative */ };
 }
 ```
 
-**See**: [ROADMAP.md](ROADMAP.md) for implementation timeline
+PPF + sampling are implemented (beta); keep using these APIs while we finish gas/validation on devnet.
 
 ---
 
@@ -159,15 +160,20 @@ packages/gaussian/
 
 ```bash
 # Build the package
-sui move build
+sui move build --lint
 
 # Run all tests
-sui move test
+sui move test --lint
 
 # Use in your project - add to Move.toml:
 [dependencies]
 gaussian = { git = "https://github.com/Evan-Kim2028/move-gaussian.git", rev = "v0.4.0" }
 ```
+
+### Toolchain and linting
+
+- Install the Sui CLI with `suiup install stable` and ensure `~/.sui/bin` is on your `PATH`.
+- CI runs `sui move build --lint` and `sui move test --lint` on the `stable` and `latest` channels; run the same locally to match diagnostics.
 
 ### Example: Computing Probabilities
 
@@ -219,60 +225,24 @@ let result = erf::phi(0);
 
 **Status**: Production-ready for probability calculations!
 
-### Phase 2: Inverse CDF (Week of Dec 9-20)
+### Phase 2: Inverse CDF ✅ COMPLETE
+- Piecewise AAA Φ⁻¹ with Newton refinement
+- `ln_wad` + `sqrt_wad` helpers and dense-tail checks
+- Cross-language vectors and property fuzzing in place
 
-**Goal**: Implement Φ⁻¹(p) for Gaussian sampling
+### Phase 3: Sampling API ✅ COMPLETE (beta)
+- Integrated with `sui::random`
+- `sampling::sample_z` and `sampling::sample_normal` stable API
+- PPF-backed sampler preferred; CLT kept as fallback
+- Pending: gas/bench validation and doc polish for GA
 
-**Critical Dependencies**:
-- [ ] Implement `sqrt_wad()` (Newton-Raphson)
-- [ ] Implement `ln_wad()` (Padé approximation)
-- [ ] Port PPF coefficients from Python (already discovered!)
-- [ ] Implement piecewise evaluation (3 regions)
+### Phase 4: Devnet readiness (current)
+- [ ] Capture gas for erf/ppf/sampler (central + tail) and publish short summary
+- [ ] Devnet dry-runs of sampler for a few seeds and record gas/output
+- [ ] Finalize docs/integration guide and regression checksums
+- [ ] Security checklist (bounded loops, no external calls, error codes)
 
-**Python Research Status**: ✅ Complete!
-```json
-{
-  "central": {
-    "domain": [0.02, 0.98],
-    "degree": [18, 18],
-    "max_error": 3.97e-14
-  },
-  "lower_tail": {
-    "domain": [1e-10, 0.02],
-    "degree": [5, 5],
-    "max_error": 2.03e-13,
-    "transform": "t = sqrt(-2*ln(p))"
-  },
-  "upper_tail": {
-    "method": "Symmetry: Φ⁻¹(p) = -Φ⁻¹(1-p)"
-  }
-}
-```
-
-**See**: [IMPLEMENTATION_SPEC.md](IMPLEMENTATION_SPEC.md) for detailed technical plan
-
-### Phase 3: Sampling API (Week of Dec 23-27)
-
-- [ ] Integration with `sui::random`
-- [ ] `sample_standard_normal()` entry function
-- [ ] `sample_normal(μ, σ)` with custom parameters
-- [ ] Gas benchmarks on devnet
-- [ ] Performance optimization
-
-**Target Gas Costs**:
-- erf(x): < 1000 gas
-- ppf(p): < 5000 gas
-- sample(): < 10000 gas
-
-### Phase 4: Production Release (Week of Dec 30-Jan 3)
-
-- [ ] Validation report (1M test points vs mpmath)
-- [ ] Example applications (Black-Scholes, Gaussian NFTs)
-- [ ] Integration guide
-- [ ] Security review checklist
-- [ ] v1.0.0 release
-
-**Target**: January 6, 2025
+**Target**: v1.0.0 after devnet validation (Jan 2025)
 
 ---
 
@@ -285,43 +255,79 @@ let result = erf::phi(0);
 | **erf(x)** | ✅ | ✅ | ✅ 100+ | ✅ | DONE |
 | **erfc(x)** | ✅ | ✅ | ✅ 10+ | ✅ | DONE |
 | **phi(x)** | ✅ | ✅ | ✅ 10+ | ✅ | DONE |
-| **sqrt(x)** | ✅ | ⬜ | ⬜ | ⬜ | Week 1 |
-| **ln(x)** | ✅ | ⬜ | ⬜ | ⬜ | Week 1 |
-| **ppf(p)** | ✅ | ⬜ | ⬜ | ⬜ | Week 2 |
-| **sample()** | N/A | ⬜ | ⬜ | ⬜ | Week 3 |
+| **sqrt(x)** | ✅ | ✅ | ✅ (used by PPF) | ⬜ | DONE |
+| **ln(x)** | ✅ | ✅ | ✅ (used by PPF) | ⬜ | DONE |
+| **ppf(p)** | ✅ | ✅ | ✅ 15+ | ⬜ | DONE |
+| **sample()** | N/A | ✅ | ✅ 12 integration | ⬜ | Beta |
+
+### Gas & benchmarking (beta)
+- Targets: erf < 1k gas, ppf < 5k, sample < 10k.
+- How to measure: run `sui move test` and capture per-test gas stats if available; on devnet, call the app entry that wraps `sampling::sample_z` / `sample_normal` and record gas for central and tail seeds.
+- Status: benchmarking pending; tune tail degree/Newton iterations if over budget. Record gas for central vs tail inputs separately.
+
+### Devnet readiness checklist
+- Run `sui move test` (done) and capture gas if tooling available; keep warnings limited to known implicit_const_copy/unused assignment or suppress explicitly.
+- If your app exposes an entry, dry-run `sui client call` on devnet with 2–3 seeds (central + tail) and record gas + outputs vs fixtures.
+- Regenerate coefficients/tests after pipeline changes: `python scripts/src/07_export_for_move_gaussian.py && python scripts/src/10_cross_language_vectors.py && sui move test`.
+- Keep regression checksums in `coefficients.move` intact; update only after regeneration.
+- Post-deploy: watch abort codes and gas spikes; keep a rollback (previous build hash) handy.
+
+### Monitoring & rollback quick checklist
+- Log abort codes from sampler/PPF paths; alert on unexpected frequency.
+- Track gas for sampler calls (central + tail) and alert on deviations.
+- Maintain a rollback plan (previous package revision and app flag to disable sampler if needed).
 
 ### Test Coverage
 
 ```
-✅ PASSING (117/117 tests)
+✅ PASSING (184/184 tests)
 
-Current Test Suite:
-  • Math module                12 tests ✅
-  • ERF module (manual)        10 tests ✅
-  • ERF module (generated)    100 tests ✅
-  • Error code validation       3 tests ✅
+Current Test Suite Highlights:
+  • Math + signed_wad modules           30 tests ✅
+  • Erf / erfc / Φ regressions         110 tests ✅
+  • Normal inverse unit + Newton checks 12 tests ✅
+  • Cross-language Φ/φ/Φ⁻¹ vectors       2 tests ✅ (24 samples / domain)
+  • Sampling integration vectors         2 tests ✅ (12 seeds, mean/std applied)
 
 Planned for v1.0 (Week 4):
-  • PPF module                 60 tests
-  • Integration tests          15 tests
-  • Property-based tests       20 tests
-  • Statistical validation      5 tests
+  • Extended PPF edge cases             60 tests
+  • Integration tests                   15 tests
+  • Property-based tests                20 tests
+  • Statistical validation               5 tests
 
 TARGET: 222 tests for v1.0
+```
+
+### Cross-Language Validation (New)
+
+- `tests/cross_language_vectors.move` compares Φ, φ, and Φ⁻¹ against 24 high-precision reference samples (central + tail-band probabilities and ±6σ magnitudes).
+- `tests/sampling_integration.move` drives deterministic seeds through the PPF-based sampler (`sample_z`, `sample_normal`) to mirror a front-end caller.
+- Source vectors/fixtures are generated by `scripts/src/10_cross_language_vectors.py`, which can also emit CSV references (`--csv-out`). Tolerances remain explicit and region-aware; adjust in the script if coefficient fits change.
+- Regenerate after changing coefficients: `python scripts/src/07_export_for_move_gaussian.py && python scripts/src/10_cross_language_vectors.py && sui move test`.
+
+### Integration quick start (sampling)
+```move
+// Sample standard normal
+let sn = gaussian::sampling::sample_z(&random, ctx);
+// Sample N(mean, std_dev^2); inputs WAD-scaled
+let mean = 1_000_000_000_000_000_000; // 1.0
+let std  = 200_000_000_000_000_000;   // 0.2
+let n  = gaussian::sampling::sample_normal(&random, mean, std, ctx);
 ```
 
 ---
 
 ## ⚠️ Current Limitations
 
-### What's Missing (Critical)
+### Open Items
 
-1. **❌ No inverse CDF** → Can't sample from Gaussian distribution yet
-2. **❌ No sqrt() primitive** → Needed for PPF tail transform
-3. **❌ No ln() primitive** → Needed for PPF tail transform  
-4. **❌ No sampling API** → No integration with `sui::random`
+1. **Gas benchmarks** → Devnet measurements for PPF tail + sampler still needed.
+2. **Property-based coverage** → Add focused tests for `ln_wad` / `sqrt_wad` precision.
+3. **Docs refresh** → Finalize Phase 3/4 guidance (usage + integration examples).
+4. **Regression guards** → Reintroduced checksum asserts; keep updated after regenerations.
+5. **Security checklist** → Document bounded loops, no external calls; review before prod.
 
-**Impact**: Library is currently **read-only** (probabilities from values, not sampling)
+**Impact**: Sampling is available (beta) but requires perf validation before production.
 
 ### What's Missing (Nice-to-Have)
 
@@ -381,8 +387,8 @@ cp outputs/move_generated/erf_tests.move ../tests/
 
 # 4. Rebuild and test
 cd ..
-sui move build
-sui move test
+sui move build --lint
+sui move test --lint
 ```
 
 ### Normal Development
@@ -391,8 +397,8 @@ For most changes (API updates, bug fixes):
 
 ```bash
 # Edit sources/*.move
-sui move build
-sui move test
+sui move build --lint
+sui move test --lint
 ```
 
 ---
@@ -552,8 +558,8 @@ python run_all.py
 
 # Move package
 cd ..
-sui move build
-sui move test
+sui move build --lint
+sui move test --lint
 ```
 
 ---

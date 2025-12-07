@@ -12,11 +12,14 @@
 |----------|--------|------------|
 | Accuracy (vs scipy) | ✅ 5.68e-11 max error | **HIGH** - 1000x better than 1e-7 target |
 | Accuracy (vs mpmath) | ✅ 5.68e-11 max error | **HIGH** - Matches arbitrary precision |
+| PPF Accuracy (central/tail) | ✅ 3.97e-14 / 2.03e-13 | **HIGH** - Central + tail bands pass region tolerances |
 | Edge Cases | ✅ All 12 pass | **HIGH** - Covers x=0 to x=6 |
 | Bounds [0,1] | ✅ No violations | **HIGH** - 10,000 points tested |
 | Monotonicity | ✅ Minor rounding only | **MEDIUM-HIGH** - See note below |
 | Overflow Safety | ✅ All fit in u256 | **HIGH** - Max intermediate ~2.6e22 |
 | Horner Implementation | ✅ Validated | **HIGH** - Matches Move semantics |
+| Cross-language vectors | ✅ Generated | **HIGH** - Φ/φ/Φ⁻¹ tolerances encoded in Move tests |
+| Sampling integration | ✅ Smoke stats match | **HIGH** - Seeds → deterministic z/normal vectors |
 
 ---
 
@@ -40,6 +43,26 @@ Target:              1.00e-07
 - Error is **1,760x better than target** (5.68e-11 vs 1e-7)
 - Error vs scipy and mpmath are identical → our approximation is the limiting factor, not reference precision
 - Error is uniform across domain (no problematic regions)
+
+**Confidence**: **HIGH** ✅
+
+---
+
+### 1b. PPF / Inverse CDF
+
+**Test**: Region-aware AAA fits with high-precision references (mpmath).
+
+**Results**:
+```
+Central band (p ∈ [0.02, 0.98]): max error ≈ 3.97e-14
+Lower tail (p ∈ [1e-10, 0.02]): max error ≈ 2.03e-13
+Upper tail: symmetry Φ⁻¹(p) = -Φ⁻¹(1-p)
+```
+
+**Analysis**:
+- Errors are 3–4 orders tighter than the 1e-7 target.
+- Piecewise domains are exported with explicit tolerances in Move tests.
+- Sign handling and WAD scaling validated during extraction (u256 headroom retained).
 
 **Confidence**: **HIGH** ✅
 
@@ -146,47 +169,32 @@ u256 max:              1.16e77
 
 ## What's NOT Tested
 
-### 1. Inverse CDF (ppf)
-- We only implemented erf, erfc, and Φ (CDF)
-- ppf (percent-point function / inverse CDF) is NOT implemented
-- ppf is needed for Gaussian sampling from uniform random
+### 1. Gas Costs
+- Python doesn't measure gas; Move benchmarks still pending for PPF tail and sampling entrypoints.
 
-**Status**: **TODO** for Phase 2
+**Status**: Pending Move benchmarking
 
-### 2. Negative x
-- Implementation only handles x ≥ 0
-- Symmetry (erf(-x) = -erf(x)) documented but not implemented in fixed-point
+### 2. Property fuzzing for ln/sqrt
+- `ln_wad` / `sqrt_wad` now ship and are covered indirectly via PPF tests,
+  but they still need property-based sweeps for tail stability.
 
-**Status**: Easy to add in Move wrapper
+**Status**: Recommended (Phase 4)
 
-### 3. x > 6
-- Domain is [0, 6]
-- For x > 6, we return 1.0 (correct, since erf(6) ≈ 1 - 2e-17)
+### 3. Extended tail monotonicity
+- Cross-language vectors cover 24 probabilities; add denser tail grids for
+  stricter monotonicity proof if required.
 
-**Status**: Handled by clamping
-
-### 4. Gas Costs
-- Python doesn't measure gas
-- Need to benchmark in Move
-
-**Status**: Pending Move implementation
+**Status**: Recommended (Phase 4)
 
 ---
 
 ## Recommendations
 
-### Before Move Implementation
+### After Move Implementation
 
-1. **Add a `run_all.py` script** to execute the full pipeline with one command
-2. **Add numerical stability documentation** explaining the monotonicity caveat
-3. **Consider adding ppf (inverse CDF)** if needed for Gaussian sampling
-
-### For Move Implementation
-
-1. **Implement exact same Horner logic** as `04_horner_python.py`
-2. **Use the exported test vectors** from `test_vectors.json`
-3. **Add wrapper for negative x** using symmetry property
-4. **Consider clamping for strict monotonicity** if users require it
+1. **Benchmark gas** for `ppf` and sampling entrypoints.
+2. **Add property fuzzing** for `ln_wad` / `sqrt_wad` on tail domain.
+3. **Optional**: tighten tolerances + checksum guards if regression-proofing is needed.
 
 ---
 
@@ -206,13 +214,16 @@ The only caveat is minor monotonicity noise in the saturation region, which is 1
 ## Test Commands
 
 ```bash
-# Run full pipeline
 cd packages/gaussian/scripts
-python3 src/02_extract_coefficients.py
-python3 src/03_scale_fixed_point.py
-python3 src/04_horner_python.py
-python3 src/05_test_harness.py
+pip install -r requirements.txt
 
-# Or with pytest (if hypothesis installed)
+# Full pipeline (forward + PPF + export + vectors)
+python run_all.py
+
+# Harness + properties only (no regen)
+python src/05_test_harness.py
 pytest src/06_property_tests.py -v
+
+# Refresh cross-language + sampling Move tests
+python src/10_cross_language_vectors.py
 ```

@@ -1,5 +1,60 @@
 #!/usr/bin/env python3
 """
+One-shot pipeline runner for move-gaussian coefficient generation and test vectors.
+
+Steps:
+1) Extract forward coefficients (erf/erfc/phi)
+2) Scale to fixed-point
+3) Extract PPF coefficients (central + tail)
+4) Export Move modules
+5) Regenerate cross-language and sampling vectors
+6) Copy generated Move coefficients into sources
+
+Usage:
+    python3 run_all.py
+"""
+
+import subprocess
+from pathlib import Path
+import shutil
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+OUTPUT = ROOT / "outputs"
+ARTIFACTS = ROOT.parents[0] / "artifacts" / "move_generated"
+
+
+def run(cmd: list[str], cwd: Path):
+    print(f"\n=== Running: {' '.join(cmd)} ===")
+    result = subprocess.run(cmd, cwd=cwd)
+    if result.returncode != 0:
+        sys.exit(result.returncode)
+
+
+def main():
+    run(["python3", str(SRC / "02_extract_coefficients.py")], cwd=ROOT)
+    run(["python3", str(SRC / "03_scale_fixed_point.py")], cwd=ROOT)
+    run(["python3", str(SRC / "02b_extract_ppf_coefficients.py")], cwd=ROOT)
+    run(["python3", str(SRC / "07_export_for_move_gaussian.py")], cwd=ROOT)
+    run(["python3", str(SRC / "10_cross_language_vectors.py")], cwd=ROOT)
+
+    # Copy generated coefficients into package sources
+    coeff_src = ARTIFACTS / "coefficients.move"
+    coeff_dest = ROOT.parents[0] / "sources" / "coefficients.move"
+    if coeff_src.exists():
+        shutil.copy(coeff_src, coeff_dest)
+        print(f"Copied {coeff_src} -> {coeff_dest}")
+    else:
+        print("WARNING: coefficients.move not found; export step may have failed")
+
+    print("\nPipeline complete. Consider running `sui move test` from package root.")
+
+
+if __name__ == "__main__":
+    main()
+#!/usr/bin/env python3
+"""
 Run All Pipeline Steps
 
 Executes the complete Gaussian approximation pipeline:
