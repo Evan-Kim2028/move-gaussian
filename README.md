@@ -7,7 +7,6 @@ On-chain Gaussian distribution library for Sui Move (AAA-derived CDF/PPF + sampl
 - **Changelog**: [CHANGELOG.md](CHANGELOG.md)
 - **Gas benchmarks**: [docs/GAS_BENCHMARKS.md](docs/GAS_BENCHMARKS.md)
 - **Test coverage**: [docs/test_coverage_review.md](docs/test_coverage_review.md)
-- **Security review**: [docs/SECURITY_REVIEW.md](docs/SECURITY_REVIEW.md)
 - **Status**: [STATUS.md](STATUS.md)
 - **Roadmap**: [ROADMAP.md](ROADMAP.md)
 
@@ -138,15 +137,12 @@ gaussian/
     └── SECURITY_REVIEW.md
 ```
 
-## Security
+## Testing
 
-**Verdict: SAFE FOR MAINNET DEPLOYMENT**
-
-- All 9 division points protected against zero
-- u256 intermediates prevent overflow in all arithmetic paths
-- 0 Critical, 0 High, 0 Medium severity findings
-
-See [docs/SECURITY_REVIEW.md](docs/SECURITY_REVIEW.md) for full audit.
+- 228 Move tests covering CDF, PDF, PPF, and sampling functions
+- 24 Python property tests with Hypothesis framework
+- All division operations protected against zero divisor
+- Comprehensive test coverage including edge cases and property-based tests
 
 ## Contributing
 

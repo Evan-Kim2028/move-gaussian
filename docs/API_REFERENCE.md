@@ -35,7 +35,7 @@ The Gaussian package provides on-chain Gaussian (normal) distribution functions 
 - **PPF** (Percent Point Function / Inverse CDF): `Φ⁻¹(p)` - z-score for probability p
 - **Sampling**: Generate Gaussian random samples using `sui::random`
 - **Error Function**: `erf(x)` and `erfc(x)` implementations
-- **Events**: On-chain audit trail for all sampling operations *(NEW in v1.1)*
+- **Events**: On-chain event tracking for all sampling operations *(NEW in v1.1)*
 - **Profile**: On-chain version metadata *(NEW in v1.1)*
 
 ### What's New in v1.1
@@ -308,7 +308,7 @@ public fun scale(): u256  // Returns 10^18 (WAD)
 
 ## Module: events
 
-On-chain events emitted by all sampling functions. Events enable off-chain indexing, verification, and audit trails.
+On-chain events emitted by all sampling functions. Events enable off-chain indexing and monitoring.
 
 ### Event Structs
 
@@ -802,7 +802,7 @@ Raw AAA-based inverse CDF (no Newton refinement).
 
 **Returns:** z-score (less accurate than `ppf`)
 
-**Note:** Use `ppf` for production; `ppf_aaa` is the raw approximation.
+**Note:** `ppf` includes Newton refinement for higher accuracy; `ppf_aaa` is the raw approximation.
 
 ---
 
@@ -1126,6 +1126,6 @@ At ~0.001 SUI per sample, you can perform ~1,000 Gaussian samples per SUI.
 
 ## See Also
 
-- [SECURITY_REVIEW.md](./SECURITY_REVIEW.md) - Security audit results
 - [GAS_BENCHMARKS.md](./GAS_BENCHMARKS.md) - Detailed gas measurements
 - [DEPLOYMENT.md](../DEPLOYMENT.md) - Deployment instructions
+- [test_coverage_review.md](./test_coverage_review.md) - Test coverage details

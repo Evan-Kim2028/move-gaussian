@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **On-chain Events** (#21): All sampling functions now emit events by default
   - `GaussianSampleEvent` for N(0,1) samples (z-score, sign, caller)
   - `NormalSampleEvent` for N(μ,σ²) samples (z, mean, std_dev, value, caller)
-  - Enables off-chain indexing, verification, and audit trails
+  - Enables off-chain indexing and monitoring
   - Events emitted from ALL sampling functions (PPF and CLT)
 
 - **Core Facade Module** (#22): Single import point for public API
@@ -44,9 +44,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - None
 
-### Security
+### Testing
 
-- No security-related changes
+- All existing tests continue to pass with new features
 
 ---
 

@@ -277,7 +277,7 @@ module gaussian::sampling {
     }
 
     // ========================================
-    // Public API (stable interface)
+    // Public API
     // ========================================
 
     /// Direct SignedWad standard normal sample ("sample_z" helper).
@@ -326,8 +326,8 @@ module gaussian::sampling {
     /// **Implementation**: Currently uses PPF-based sampling for better
     /// accuracy, especially in the tails. Falls back to CLT if needed.
     ///
-    /// The API is stable - internal implementation may change without
-    /// affecting callers.
+    /// Internal implementation may change in future versions without
+    /// affecting the public API.
     #[allow(lint(public_random))]
     public fun sample_standard_normal(
         r: &random::Random,

@@ -1,11 +1,10 @@
 # =============================================================================
 # Gaussian Package - Deployment Information
 # =============================================================================
-# This file contains PUBLIC deployment information that is safe to commit.
+# This file contains PUBLIC deployment information.
 # It tracks package IDs, deployer addresses, and version history across networks.
 #
 # ⚠️  NEVER put private keys or mnemonics in this file!
-# =============================================================================
 
 [package]
 name = "gaussian"

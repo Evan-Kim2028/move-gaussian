@@ -1,3 +1,3 @@
 # This directory contains deployment records.
-# Actual deployment JSON files are gitignored for security.
+# Actual deployment JSON files are gitignored to avoid committing sensitive data.
 # Use template.json as a reference for creating deployment records.

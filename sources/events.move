@@ -3,7 +3,7 @@
 /// # Overview
 /// 
 /// This module defines events emitted by all sampling functions in the Gaussian
-/// library. Events enable off-chain indexing, verification, and audit trails.
+/// library. Events enable off-chain indexing and monitoring.
 /// 
 /// # Events
 /// 
@@ -15,8 +15,8 @@
 /// Events are emitted automatically by sampling functions. Off-chain systems
 /// can subscribe to these events for:
 /// - Analytics and usage tracking
-/// - Verification of sampling behavior
-/// - Audit trails for DeFi protocols
+/// - Monitoring of sampling behavior
+/// - Event tracking for DeFi protocols
 /// - Debugging complex transactions
 module gaussian::events {
     use sui::event;

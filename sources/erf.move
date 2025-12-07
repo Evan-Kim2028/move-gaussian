@@ -29,7 +29,7 @@
 /// achieve better AAA approximation but lose precision during the barycentric
 /// to polynomial conversion. See notes/gaussian/precision-limits-and-roadmap.md.
 /// 
-/// # Production Cycle
+/// # Development Cycle
 /// 
 /// This code is part of a Python → Move pipeline:
 /// 1. Python: AAA algorithm finds optimal P(x)/Q(x) coefficients (mpmath 50-digit sampling)
