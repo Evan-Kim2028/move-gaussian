@@ -52,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.1.0] - 2025-12-XX
+## [0.7.0] - 2025-12-XX
 
 ### Added
 
@@ -70,8 +70,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Profile Metadata Object** (#23): On-chain version tracking
   - `GaussianProfile` shared object created automatically on deploy
-  - Tracks: version (1.1.0 = 10100), precision_class (0 = standard), max_z_wad (6e18)
+  - Tracks: version (0.7.0 = 700), precision_class (0 = standard), max_z_wad (6e18)
   - Enables protocols to verify library version on-chain
+
+- **Transcendental Functions**: ln, exp, sqrt for financial mathematics
+  - `ln_wad(x)` - Natural logarithm for x > 0
+  - `exp_wad(x)` - Exponential function e^x
+  - `sqrt_wad(x)` - Square root via Newton-Raphson
+  - Enables Black-Scholes option pricing (see issue #30)
 
 - **Dense Property Tests**: Significantly improved test coverage
   - PDF monotonicity test: 60 points (was 3) - 20× improvement (#24)

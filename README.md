@@ -245,7 +245,7 @@ sample_z: ~1,000,000 compute + 988,000 storage = 1.988M MIST
 
 ## Package Info
 
-- **Version**: 1.1.0
+- **Version**: 0.7.0
 - **Testnet Package ID**: `0x70c5040e7e2119275d8f93df8242e882a20ac6ae5a317673995323d75a93b36b`
 - **Tests**: 228 Move + 24 Python property tests
 - **License**: MIT

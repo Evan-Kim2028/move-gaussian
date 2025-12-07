@@ -1,6 +1,6 @@
 # Gaussian Package API Reference
 
-**Version**: 1.1.0  
+**Version**: 0.7.0  
 **Package ID (Testnet)**: `0x70c5040e7e2119275d8f93df8242e882a20ac6ae5a317673995323d75a93b36b`  
 **License**: MIT
 
@@ -11,16 +11,16 @@
 1. [Overview](#overview)
 2. [Constants](#constants)
 3. [Types](#types)
-4. [Module: core](#module-core) *(NEW in v1.1)*
-5. [Module: events](#module-events) *(NEW in v1.1)*
-6. [Module: profile](#module-profile) *(NEW in v1.1)*
+4. [Module: core](#module-core) *(NEW in v0.7)*
+5. [Module: events](#module-events) *(NEW in v0.7)*
+6. [Module: profile](#module-profile) *(NEW in v0.7)*
 7. [Module: sampling](#module-sampling)
 8. [Module: normal_forward](#module-normal_forward)
 9. [Module: normal_inverse](#module-normal_inverse)
 10. [Module: erf](#module-erf)
 11. [Module: signed_wad](#module-signed_wad)
 12. [Module: math](#module-math)
-13. [Module: transcendental](#module-transcendental) *(NEW in v1.1)*
+13. [Module: transcendental](#module-transcendental) *(NEW in v0.7)*
 14. [Error Codes](#error-codes)
 
 ---
@@ -36,10 +36,10 @@ The Gaussian package provides on-chain Gaussian (normal) distribution functions 
 - **PPF** (Percent Point Function / Inverse CDF): `Φ⁻¹(p)` - z-score for probability p
 - **Sampling**: Generate Gaussian random samples using `sui::random`
 - **Error Function**: `erf(x)` and `erfc(x)` implementations
-- **Events**: On-chain event tracking for all sampling operations *(NEW in v1.1)*
-- **Profile**: On-chain version metadata *(NEW in v1.1)*
+- **Events**: On-chain event tracking for all sampling operations *(NEW in v0.7)*
+- **Profile**: On-chain version metadata *(NEW in v0.7)*
 
-### What's New in v1.1
+### What's New in v0.7
 
 - **Core Facade** (`gaussian::core`): Single import point with shorter function names
 - **Events** (`gaussian::events`): All sampling functions emit events by default
@@ -183,7 +183,7 @@ public struct GaussianProfile has key, store {
     id: UID,
     /// Library version as semantic version integer.
     /// Encoding: major * 10000 + minor * 100 + patch
-    /// Example: v1.1.0 = 10100, v2.3.1 = 20301
+    /// Example: v0.7.0 = 700, v2.3.1 = 20301
     version: u32,
     /// Precision class indicating the approximation method:
     /// - 0 = standard (AAA polynomial approximation)
@@ -502,14 +502,14 @@ Version is encoded as: `major * 10000 + minor * 100 + patch`
 
 | Version | Encoded |
 |---------|---------|
+| v0.7.0 | 700 |
 | v1.0.0 | 10000 |
-| v1.1.0 | 10100 |
 | v2.3.1 | 20301 |
 
 ### Constants
 
 ```move
-const VERSION: u32 = 10100;           // v1.1.0
+const VERSION: u32 = 700;           // v0.7.0
 const PRECISION_STANDARD: u8 = 0;     // AAA polynomial approximation
 const PRECISION_HIGH: u8 = 1;         // Future: more Newton iterations
 const PRECISION_FAST: u8 = 2;         // Future: LUT-based
@@ -576,8 +576,8 @@ Check precision class.
 use gaussian::profile::{Self, GaussianProfile};
 
 public fun my_function(profile: &GaussianProfile) {
-    // Verify version >= 1.1.0
-    assert!(profile::version(profile) >= 10100, EOutdatedLibrary);
+    // Verify version >= 0.7.0
+    assert!(profile::version(profile) >= 700, EOutdatedLibrary);
     
     // Check precision class
     assert!(profile::is_standard_precision(profile), EWrongPrecision);

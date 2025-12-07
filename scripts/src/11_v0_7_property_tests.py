@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-v1.1 Property Tests with Hypothesis
+v0.7 Property Tests with Hypothesis
 
 Property-based tests for PPF, CDF, PDF, sampler, and erf functions.
 
 Usage:
-    pytest scripts/src/11_v1_1_property_tests.py -v
-    pytest scripts/src/11_v1_1_property_tests.py -v -k "ppf"
+    pytest scripts/src/11_v0_7_property_tests.py -v
+    pytest scripts/src/11_v0_7_property_tests.py -v -k "ppf"
 
 Issue: #27
 """
@@ -417,7 +417,7 @@ class TestErfProperties:
 def run_summary():
     """Print test summary and usage instructions."""
     print("="*70)
-    print("  v1.1 Property Tests for Gaussian Library")
+    print("  v0.7 Property Tests for Gaussian Library")
     print("="*70)
     print()
     print("Test Categories:")

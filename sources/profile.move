@@ -15,24 +15,24 @@
 /// use gaussian::profile::GaussianProfile;
 /// 
 /// public fun my_function(profile: &GaussianProfile, ...) {
-///     // Verify version >= 1.1.0
-///     assert!(gaussian::profile::version(profile) >= 10100, EOutdatedLibrary);
+///     // Verify version >= 0.7.0
+///     assert!(gaussian::profile::version(profile) >= 700, EOutdatedLibrary);
 /// }
 /// ```
 /// 
 /// # Version Encoding
 /// 
 /// Version is encoded as: `major * 10000 + minor * 100 + patch`
+/// - v0.7.0 = 700
 /// - v1.0.0 = 10000
-/// - v1.1.0 = 10100
 /// - v2.3.1 = 20301
 module gaussian::profile {
 
     // === Constants ===
 
-    /// Current library version: v1.1.0
+    /// Current library version: v0.7.0
     /// Encoding: major * 10000 + minor * 100 + patch
-    const VERSION: u32 = 10100;
+    const VERSION: u32 = 700;
 
     /// Standard precision class (AAA polynomial approximation)
     const PRECISION_STANDARD: u8 = 0;
@@ -57,7 +57,7 @@ module gaussian::profile {
         id: UID,
         /// Library version as semantic version integer.
         /// Encoding: major * 10000 + minor * 100 + patch
-        /// Example: v1.1.0 = 10100, v2.3.1 = 20301
+        /// Example: v0.7.0 = 700, v2.3.1 = 20301
         version: u32,
         /// Precision class indicating the approximation method:
         /// - 0 = standard (AAA polynomial approximation)
@@ -166,16 +166,16 @@ module gaussian::profile {
 
     #[test]
     fun test_version_encoding() {
-        // v1.1.0 = 10100
-        assert!(VERSION == 10100, 0);
+        // v0.7.0 = 700
+        assert!(VERSION == 700, 0);
         
         // Decode test
         let major = VERSION / 10000;
         let minor = (VERSION / 100) % 100;
         let patch = VERSION % 100;
         
-        assert!(major == 1, 1);
-        assert!(minor == 1, 2);
+        assert!(major == 0, 1);
+        assert!(minor == 7, 2);
         assert!(patch == 0, 3);
     }
 
@@ -209,7 +209,7 @@ module gaussian::profile {
 
     #[test]
     fun test_current_version() {
-        assert!(current_version() == 10100, 0);
+        assert!(current_version() == 700, 0);
     }
 
     #[test]
@@ -240,11 +240,11 @@ module gaussian::profile {
         let mut ctx = sui::tx_context::dummy();
         let profile = create_test_profile(&mut ctx);
         
-        assert!(version(&profile) == 10100, 0);
+        assert!(version(&profile) == 700, 0);
         assert!(precision_class(&profile) == 0, 1);
         assert!(max_z_wad(&profile) == 6_000_000_000_000_000_000, 2);
-        assert!(version_major(&profile) == 1, 3);
-        assert!(version_minor(&profile) == 1, 4);
+        assert!(version_major(&profile) == 0, 3);
+        assert!(version_minor(&profile) == 7, 4);
         assert!(version_patch(&profile) == 0, 5);
         assert!(is_standard_precision(&profile), 6);
         assert!(!is_high_precision(&profile), 7);
