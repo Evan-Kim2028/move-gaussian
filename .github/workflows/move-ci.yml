@@ -72,16 +72,16 @@ jobs:
           sui --version
 
       - name: Run security audit tests
-        run: sui move test --filter security_audit
+        run: sui move test security_audit
 
       - name: Run boundary exploit tests
-        run: sui move test --filter boundary_exploit
+        run: sui move test boundary_exploit
 
       - name: Run economic exploit tests
-        run: sui move test --filter economic_exploit
+        run: sui move test economic_exploit
 
       - name: Run DeFi exploit scenario tests
-        run: sui move test --filter defi_exploit_scenarios
+        run: sui move test defi_exploit_scenarios
 
       - name: Run advanced adversarial tests
-        run: sui move test --filter advanced_adversarial
+        run: sui move test advanced_adversarial
