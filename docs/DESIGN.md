@@ -344,7 +344,7 @@ AAA lets us choose polynomial degree:
 - [x] AAA algorithm for erf, erfc, Φ (forward functions)
 - [x] Python→Move coefficient generation pipeline
 - [x] Fixed-point arithmetic (WAD scaling)
-- [x] Comprehensive test coverage (228 Move tests, 24 Python property tests)
+- [x] Comprehensive test coverage (388 Move tests, 24 Python property tests)
 - [x] On-chain events for sampling operations
 - [x] Core facade API
 

@@ -53,32 +53,31 @@ module gaussian::signed_wad {
     public struct SignedWad has copy, drop, store {
         /// Absolute value of the number (WAD-scaled, 10^18).
         /// Example: For -2.5, magnitude = 2_500_000_000_000_000_000
-        magnitude: u256,
+        mag: u256,
         /// Sign flag: true = negative, false = non-negative.
         /// Note: Zero is always stored with negative = false.
-        negative: bool,
+        neg: bool,
     }
 
     // === Constructors ===
 
     /// Create a new SignedWad from magnitude and sign flag.
-    public fun new(magnitude: u256, negative: bool): SignedWad {
-        // Normalize: zero is never negative
-        if (magnitude == 0) {
-            SignedWad { magnitude: 0, negative: false }
-        } else {
-            SignedWad { magnitude, negative }
-        }
+    /// 
+    /// Note: Zero is always normalized to non-negative (negative zero → positive zero).
+    public fun new(mag: u256, is_negative: bool): SignedWad {
+        // Normalize: zero is always non-negative
+        let normalized_neg = if (mag == 0) { false } else { is_negative };
+        SignedWad { mag, neg: normalized_neg }
     }
 
     /// Create a zero SignedWad.
     public fun zero(): SignedWad {
-        SignedWad { magnitude: 0, negative: false }
+        SignedWad { mag: 0, neg: false }
     }
 
     /// Create a non-negative SignedWad from an unsigned WAD value.
     public fun from_wad(x: u256): SignedWad {
-        SignedWad { magnitude: x, negative: false }
+        SignedWad { mag: x, neg: false }
     }
 
     /// Create a SignedWad from the difference of two unsigned WADs.
@@ -87,9 +86,9 @@ module gaussian::signed_wad {
     /// Useful for Newton iteration: `err = cdf(z) - p`.
     public fun from_difference(a: u256, b: u256): SignedWad {
         if (a >= b) {
-            SignedWad { magnitude: a - b, negative: false }
+            SignedWad { mag: a - b, neg: false }
         } else {
-            SignedWad { magnitude: b - a, negative: true }
+            SignedWad { mag: b - a, neg: true }
         }
     }
 
@@ -97,32 +96,32 @@ module gaussian::signed_wad {
 
     /// Get the absolute value (magnitude) of a SignedWad.
     public fun abs(x: &SignedWad): u256 {
-        x.magnitude
+        x.mag
     }
 
     /// Check if a SignedWad is negative.
     public fun is_negative(x: &SignedWad): bool {
-        x.negative
+        x.neg
     }
 
     /// Check if a SignedWad is zero.
     public fun is_zero(x: &SignedWad): bool {
-        x.magnitude == 0
+        x.mag == 0
     }
 
     /// Get the magnitude (for internal use or struct access).
     public fun magnitude(x: &SignedWad): u256 {
-        x.magnitude
+        x.mag
     }
 
     // === Unary operations ===
 
     /// Negate a SignedWad: -x.
     public fun negate(x: &SignedWad): SignedWad {
-        if (x.magnitude == 0) {
+        if (x.mag == 0) {
             zero()
         } else {
-            SignedWad { magnitude: x.magnitude, negative: !x.negative }
+            SignedWad { mag: x.mag, neg: !x.neg }
         }
     }
 
@@ -133,10 +132,10 @@ module gaussian::signed_wad {
     /// Delegates to `math::signed_add` for sign handling.
     public fun add(a: &SignedWad, b: &SignedWad): SignedWad {
         let (mag, neg) = math::signed_add(
-            a.magnitude,
-            a.negative,
-            b.magnitude,
-            b.negative
+            a.mag,
+            a.neg,
+            b.mag,
+            b.neg
         );
         new(mag, neg)
     }
@@ -154,8 +153,8 @@ module gaussian::signed_wad {
     /// `mul_wad(a, k)` returns a * k / SCALE.
     /// The result has the same sign as `a`.
     public fun mul_wad(a: &SignedWad, k: u256): SignedWad {
-        let result_mag = math::mul_div(a.magnitude, k);
-        new(result_mag, a.negative)
+        let result_mag = math::mul_div(a.mag, k);
+        new(result_mag, a.neg)
     }
 
     /// Multiply two SignedWad values.
@@ -163,8 +162,8 @@ module gaussian::signed_wad {
     /// `mul(a, b)` returns (a * b) / SCALE.
     /// Sign is XOR of input signs.
     public fun mul(a: &SignedWad, b: &SignedWad): SignedWad {
-        let result_mag = math::mul_div(a.magnitude, b.magnitude);
-        let result_neg = a.negative != b.negative; // XOR for sign
+        let result_mag = math::mul_div(a.mag, b.mag);
+        let result_neg = a.neg != b.neg; // XOR for sign
         new(result_mag, result_neg)
     }
 
@@ -173,9 +172,9 @@ module gaussian::signed_wad {
     /// `div_wad(a, b)` returns (a * SCALE) / b.
     /// Aborts if b is zero.
     public fun div_wad(a: &SignedWad, b: &SignedWad): SignedWad {
-        assert!(b.magnitude > 0, EDivisionByZero);
-        let result_mag = math::div_scaled(a.magnitude, b.magnitude);
-        let result_neg = a.negative != b.negative; // XOR for sign
+        assert!(b.mag > 0, EDivisionByZero);
+        let result_mag = math::div_scaled(a.mag, b.mag);
+        let result_neg = a.neg != b.neg; // XOR for sign
         new(result_mag, result_neg)
     }
 
@@ -185,10 +184,10 @@ module gaussian::signed_wad {
     /// 
     /// Useful for functions that must return non-negative values (e.g., PDF).
     public fun to_wad_clamped(x: &SignedWad): u256 {
-        if (x.negative) {
+        if (x.neg) {
             0
         } else {
-            x.magnitude
+            x.mag
         }
     }
 
@@ -196,8 +195,8 @@ module gaussian::signed_wad {
     /// 
     /// Use when negative values indicate an error condition.
     public fun to_wad_checked(x: &SignedWad): u256 {
-        assert!(!x.negative, EUnexpectedNegative);
-        x.magnitude
+        assert!(!x.neg, EUnexpectedNegative);
+        x.mag
     }
 
     // === Comparison functions ===
@@ -206,27 +205,27 @@ module gaussian::signed_wad {
     /// Returns: -1 if a < b, 0 if a == b, 1 if a > b.
     public fun cmp(a: &SignedWad, b: &SignedWad): u8 {
         // Handle sign differences
-        if (!a.negative && b.negative) {
+        if (!a.neg && b.neg) {
             // a >= 0, b < 0 => a > b (unless both zero)
-            if (a.magnitude == 0 && b.magnitude == 0) { return 0 };
+            if (a.mag == 0 && b.mag == 0) { return 0 };
             return 1
         };
-        if (a.negative && !b.negative) {
+        if (a.neg && !b.neg) {
             // a < 0, b >= 0 => a < b (unless both zero)
-            if (a.magnitude == 0 && b.magnitude == 0) { return 0 };
+            if (a.mag == 0 && b.mag == 0) { return 0 };
             return 2 // represents -1 (we use 2 to avoid signed return)
         };
 
         // Same sign
-        if (!a.negative) {
+        if (!a.neg) {
             // Both non-negative
-            if (a.magnitude > b.magnitude) { 1 }
-            else if (a.magnitude < b.magnitude) { 2 }
+            if (a.mag > b.mag) { 1 }
+            else if (a.mag < b.mag) { 2 }
             else { 0 }
         } else {
             // Both negative: larger magnitude means smaller value
-            if (a.magnitude > b.magnitude) { 2 }
-            else if (a.magnitude < b.magnitude) { 1 }
+            if (a.mag > b.mag) { 2 }
+            else if (a.mag < b.mag) { 1 }
             else { 0 }
         }
     }
@@ -263,49 +262,49 @@ module gaussian::signed_wad {
     #[test]
     fun test_new_normalizes_zero() {
         let z = new(0, true); // Negative zero
-        assert!(z.magnitude == 0, 0);
-        assert!(z.negative == false, 1); // Should be normalized to positive
+        assert!(z.mag == 0, 0);
+        assert!(z.neg == false, 1); // Should be normalized to positive
     }
 
     #[test]
     fun test_from_wad() {
         let x = from_wad(SCALE);
-        assert!(x.magnitude == SCALE, 0);
-        assert!(x.negative == false, 1);
+        assert!(x.mag == SCALE, 0);
+        assert!(x.neg == false, 1);
     }
 
     #[test]
     fun test_from_difference_positive() {
         let x = from_difference(3 * SCALE, 1 * SCALE);
-        assert!(x.magnitude == 2 * SCALE, 0);
-        assert!(x.negative == false, 1);
+        assert!(x.mag == 2 * SCALE, 0);
+        assert!(x.neg == false, 1);
     }
 
     #[test]
     fun test_from_difference_negative() {
         let x = from_difference(1 * SCALE, 3 * SCALE);
-        assert!(x.magnitude == 2 * SCALE, 0);
-        assert!(x.negative == true, 1);
+        assert!(x.mag == 2 * SCALE, 0);
+        assert!(x.neg == true, 1);
     }
 
     #[test]
     fun test_negate() {
         let pos = from_wad(SCALE);
         let neg = negate(&pos);
-        assert!(neg.magnitude == SCALE, 0);
-        assert!(neg.negative == true, 1);
+        assert!(neg.mag == SCALE, 0);
+        assert!(neg.neg == true, 1);
 
         let back = negate(&neg);
-        assert!(back.magnitude == SCALE, 2);
-        assert!(back.negative == false, 3);
+        assert!(back.mag == SCALE, 2);
+        assert!(back.neg == false, 3);
     }
 
     #[test]
     fun test_negate_zero() {
         let z = zero();
         let neg_z = negate(&z);
-        assert!(neg_z.magnitude == 0, 0);
-        assert!(neg_z.negative == false, 1); // -0 = 0
+        assert!(neg_z.mag == 0, 0);
+        assert!(neg_z.neg == false, 1); // -0 = 0
     }
 
     #[test]
@@ -313,8 +312,8 @@ module gaussian::signed_wad {
         let a = from_wad(2 * SCALE);
         let b = from_wad(3 * SCALE);
         let c = add(&a, &b);
-        assert!(c.magnitude == 5 * SCALE, 0);
-        assert!(c.negative == false, 1);
+        assert!(c.mag == 5 * SCALE, 0);
+        assert!(c.neg == false, 1);
     }
 
     #[test]
@@ -322,8 +321,8 @@ module gaussian::signed_wad {
         let a = from_wad(5 * SCALE);
         let b = new(3 * SCALE, true); // -3
         let c = add(&a, &b);          // 5 + (-3) = 2
-        assert!(c.magnitude == 2 * SCALE, 0);
-        assert!(c.negative == false, 1);
+        assert!(c.mag == 2 * SCALE, 0);
+        assert!(c.neg == false, 1);
     }
 
     #[test]
@@ -331,8 +330,8 @@ module gaussian::signed_wad {
         let a = from_wad(SCALE);
         let b = new(SCALE, true); // -1
         let c = add(&a, &b);      // 1 + (-1) = 0
-        assert!(c.magnitude == 0, 0);
-        assert!(c.negative == false, 1);
+        assert!(c.mag == 0, 0);
+        assert!(c.neg == false, 1);
     }
 
     #[test]
@@ -340,28 +339,28 @@ module gaussian::signed_wad {
         let a = from_wad(5 * SCALE);
         let b = from_wad(3 * SCALE);
         let c = sub(&a, &b); // 5 - 3 = 2
-        assert!(c.magnitude == 2 * SCALE, 0);
-        assert!(c.negative == false, 1);
+        assert!(c.mag == 2 * SCALE, 0);
+        assert!(c.neg == false, 1);
 
         let d = sub(&b, &a); // 3 - 5 = -2
-        assert!(d.magnitude == 2 * SCALE, 2);
-        assert!(d.negative == true, 3);
+        assert!(d.mag == 2 * SCALE, 2);
+        assert!(d.neg == true, 3);
     }
 
     #[test]
     fun test_mul_wad() {
         let a = from_wad(2 * SCALE); // 2.0
         let result = mul_wad(&a, 3 * SCALE); // 2.0 * 3.0 = 6.0
-        assert!(result.magnitude == 6 * SCALE, 0);
-        assert!(result.negative == false, 1);
+        assert!(result.mag == 6 * SCALE, 0);
+        assert!(result.neg == false, 1);
     }
 
     #[test]
     fun test_mul_wad_negative() {
         let a = new(2 * SCALE, true); // -2.0
         let result = mul_wad(&a, 3 * SCALE); // -2.0 * 3.0 = -6.0
-        assert!(result.magnitude == 6 * SCALE, 0);
-        assert!(result.negative == true, 1);
+        assert!(result.mag == 6 * SCALE, 0);
+        assert!(result.neg == true, 1);
     }
 
     #[test]
@@ -369,8 +368,8 @@ module gaussian::signed_wad {
         let a = from_wad(2 * SCALE); // 2.0
         let b = from_wad(3 * SCALE); // 3.0
         let c = mul(&a, &b);         // 6.0
-        assert!(c.magnitude == 6 * SCALE, 0);
-        assert!(c.negative == false, 1);
+        assert!(c.mag == 6 * SCALE, 0);
+        assert!(c.neg == false, 1);
     }
 
     #[test]
@@ -378,14 +377,14 @@ module gaussian::signed_wad {
         let a = from_wad(2 * SCALE);   // 2.0
         let b = new(3 * SCALE, true);  // -3.0
         let c = mul(&a, &b);           // -6.0
-        assert!(c.magnitude == 6 * SCALE, 0);
-        assert!(c.negative == true, 1);
+        assert!(c.mag == 6 * SCALE, 0);
+        assert!(c.neg == true, 1);
 
         // Negative * negative = positive
         let d = new(2 * SCALE, true);  // -2.0
         let e = mul(&d, &b);           // -2.0 * -3.0 = 6.0
-        assert!(e.magnitude == 6 * SCALE, 2);
-        assert!(e.negative == false, 3);
+        assert!(e.mag == 6 * SCALE, 2);
+        assert!(e.neg == false, 3);
     }
 
     #[test]
@@ -393,8 +392,8 @@ module gaussian::signed_wad {
         let a = from_wad(6 * SCALE); // 6.0
         let b = from_wad(2 * SCALE); // 2.0
         let c = div_wad(&a, &b);     // 3.0
-        assert!(c.magnitude == 3 * SCALE, 0);
-        assert!(c.negative == false, 1);
+        assert!(c.mag == 3 * SCALE, 0);
+        assert!(c.neg == false, 1);
     }
 
     #[test]
@@ -402,8 +401,8 @@ module gaussian::signed_wad {
         let a = from_wad(6 * SCALE);  // 6.0
         let b = new(2 * SCALE, true); // -2.0
         let c = div_wad(&a, &b);      // -3.0
-        assert!(c.magnitude == 3 * SCALE, 0);
-        assert!(c.negative == true, 1);
+        assert!(c.mag == 3 * SCALE, 0);
+        assert!(c.neg == true, 1);
     }
 
     #[test]

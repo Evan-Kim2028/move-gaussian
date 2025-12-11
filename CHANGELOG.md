@@ -5,6 +5,58 @@ All notable changes to the Gaussian package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2025-12-11
+
+### ⚠️ BREAKING CHANGES
+
+- **`ppf(p)` now strictly validates input domain** - Previously clamped out-of-range probabilities to `[EPS, 1-EPS]`. Now **aborts with `EProbOutOfDomain` (302)** if `p < EPS` or `p > SCALE - EPS`.
+  - **Migration**: Use `ppf_aaa(p)` for the old clamping behavior, or use `ppf_from_u64(u)` for sampling scenarios.
+
+- **`SignedWad` struct fields renamed** - Internal field names changed from `magnitude`/`negative` to `mag`/`neg` for brevity.
+  - **Migration**: This only affects direct struct access. Use accessor methods (`abs()`, `is_negative()`) which are unchanged.
+
+- **`SignedWad::new(0, true)` now normalizes to positive zero** - Creating "negative zero" now returns positive zero.
+  - **Migration**: Unlikely to affect most code. Zero comparisons work correctly.
+
+### Added
+
+- **`core::ppf_from_u64(u: u64): SignedWad`** - New convenience function that maps any u64 seed into the valid probability domain `(EPS, 1-EPS)` before computing PPF. Safe for all inputs (never aborts).
+
+- **`validate_prob(p)` internal helper** - Domain enforcement for PPF in `normal_inverse` module.
+
+- **`EProbOutOfDomain` error code (302)** - New error for invalid probability inputs to `ppf()`.
+
+- **Centralized 128-bit math helpers** in `gaussian::math`:
+  - `mul_div_128(a, b)` - Fixed-point multiply for u128
+  - `div_scaled_128(a, b)` - Fixed-point division for u128
+  - `signed_add_128(...)` - Signed addition for u128 magnitudes
+
+- **11 new tests** for PPF domain validation and `ppf_from_u64`:
+  - `test_ppf_at_eps_boundary_succeeds`
+  - `test_ppf_at_one_minus_eps_boundary_succeeds`
+  - `test_ppf_below_eps_aborts`
+  - `test_ppf_above_one_minus_eps_aborts`
+  - `test_ppf_at_zero_aborts`
+  - `test_ppf_at_scale_aborts`
+  - `test_ppf_from_u64_at_midpoint`
+  - `test_ppf_from_u64_at_low_seed`
+  - `test_ppf_from_u64_at_high_seed`
+  - `test_ppf_from_u64_never_aborts`
+  - `test_ppf_from_u64_monotonic`
+
+### Changed
+
+- **Move 2024 syntax updates** - Method-friendly accessors, updated code examples
+- **README** - Added PPF domain validation section, `ppf_from_u64` examples, randomness best practices
+- **Test count** - 399 tests (up from 388)
+
+### Fixed
+
+- **`SignedWad::new()` zero normalization** - Negative zero is now correctly normalized to positive zero
+- **Structural issue in `normal_inverse.move`** - Internal helpers (`ln_wad`, `sqrt_wad`, `signed_add_128_internal`) were accidentally placed outside module scope; now correctly nested inside module
+
+---
+
 ## [0.8.0] - 2025-12-11
 
 ### Added

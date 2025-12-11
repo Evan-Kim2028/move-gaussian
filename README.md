@@ -12,9 +12,22 @@ Generate random samples from normal distributions, compute probabilities, and pe
 | **CDF** | Cumulative distribution function Φ(z) = P(Z ≤ z) | `core::cdf(&z)` |
 | **PDF** | Probability density function φ(z) | `core::pdf(&z)` |
 | **PPF** | Inverse CDF / quantile function Φ⁻¹(p) | `core::ppf(p)` |
+| **PPF (from seed)** | Convenient PPF from u64 seed | `core::ppf_from_u64(u)` |
 | **erf / erfc** | Error function and complement | `core::erf(x)` |
 
 All functions achieve **<0.05% error** vs scipy reference.
+
+## ⚠️ Breaking Changes in v0.9.0
+
+If upgrading from v0.8.x:
+
+1. **`ppf(p)` now aborts on invalid input** - Previously clamped out-of-range probabilities. Now aborts with `EProbOutOfDomain` (302) if `p < EPS` or `p > SCALE - EPS`.
+   - **Fix**: Use `ppf_from_u64(seed)` for sampling, or `ppf_aaa(p)` for clamping behavior.
+
+2. **`SignedWad` fields renamed** - `magnitude` → `mag`, `negative` → `neg`
+   - **Fix**: Use accessor methods (`abs()`, `is_negative()`) instead of direct field access.
+
+See [CHANGELOG.md](CHANGELOG.md) for full details.
 
 ## Installation
 
@@ -31,40 +44,6 @@ Then build:
 sui move build
 ```
 
-## Using as a Dependency (Deployed Package)
-
-If you want to depend on an already-deployed version of gaussian (recommended for production), use address substitution to point to the on-chain package:
-
-### Testnet
-
-```toml
-[dependencies]
-gaussian = { 
-    git = "https://github.com/Evan-Kim2028/move-gaussian.git", 
-    rev = "v0.7.0",
-    addr_subst = { "gaussian" = "0xa3cf304af5b168686db4bff7e28072490bfd154fb1da50af84919ae20df12938" }
-}
-```
-
-### Deployed Addresses
-
-| Network | Version | Package ID |
-|---------|---------|------------|
-| Testnet | v0.7.0 | `0xa3cf304af5b168686db4bff7e28072490bfd154fb1da50af84919ae20df12938` |
-| Testnet | v0.6.0 | `0x70c5040e7e2119275d8f93df8242e882a20ac6ae5a317673995323d75a93b36b` |
-
-### Shared Objects
-
-Your contract may need to reference these shared objects:
-
-| Object | ID (Testnet v0.7.0) | Purpose |
-|--------|---------------------|---------|
-| GaussianProfile | `0xc50129aa9173920304033e20b43ad9925f44a4a3bf1d344b030dc53ea2eb661b` | Version metadata |
-
-### Example Consumer Package
-
-See [`deployment_test/test_harness/`](deployment_test/test_harness/) for a complete example of how to consume the gaussian library from another package.
-
 ## Quick Start
 
 ```move
@@ -76,14 +55,22 @@ public entry fun example(r: &Random, ctx: &mut TxContext) {
     // Sample from standard normal N(0,1)
     let z: SignedWad = core::sample_z(r, ctx);
     
+    // Use method syntax for SignedWad accessors
+    let z_magnitude = z.abs();           // Get absolute value
+    let is_neg = z.is_negative();        // Check sign
+    
     // Compute probability P(Z ≤ z)
     let prob: u256 = core::cdf(&z);
     
     // Compute density at z
     let density: u256 = core::pdf(&z);
     
-    // Find z-score for 95th percentile
+    // Find z-score for 95th percentile (p must be in valid domain)
     let z_95: SignedWad = core::ppf(950_000_000_000_000_000); // p = 0.95
+    
+    // For sampling: use ppf_from_u64 which handles domain automatically
+    let random_seed: u64 = 12345; // from sui::random or other source
+    let z_from_seed: SignedWad = core::ppf_from_u64(random_seed);
 }
 ```
 
@@ -101,6 +88,66 @@ public entry fun custom_distribution(r: &Random, ctx: &mut TxContext) {
 }
 ```
 
+## PPF Domain & Best Practices
+
+### Domain Validation (v0.9.0+)
+
+The `ppf(p)` function **strictly validates** input probabilities. Input must be in the range `(EPS, 1-EPS)` where `EPS ≈ 1e-10`:
+
+```move
+// ✅ Valid: p in (EPS, 1-EPS)
+let z = core::ppf(500_000_000_000_000_000);  // p = 0.5, works!
+let z = core::ppf(950_000_000_000_000_000);  // p = 0.95, works!
+
+// ❌ Invalid: aborts with EProbOutOfDomain (302)
+let z = core::ppf(0);                         // p = 0 is out of domain
+let z = core::ppf(1_000_000_000_000_000_000); // p = 1 is out of domain
+```
+
+### Recommended: Use `ppf_from_u64` for Sampling
+
+For sampling scenarios, use `ppf_from_u64(u)` which automatically maps any `u64` seed into the valid probability range:
+
+```move
+// ✅ Safe: any u64 is valid input (no abort possible)
+let z = core::ppf_from_u64(random_seed);  // Maps to valid (EPS, 1-EPS)
+```
+
+### Randomness Security
+
+When using `sui::random` for sampling:
+
+1. **Wrap in private entry functions** - Don't expose `Random` directly to prevent composition attacks
+2. **Use `SamplerGuard`** for single-use protection - Prevents reusing the same randomness handle
+3. **Ensure "unhappy paths" aren't cheaper** - Attackers may revert if random outcome is unfavorable
+
+```move
+// Good: Single-use guard prevents replay
+let mut guard = sampling::new_sampler_guard();
+let z = sampling::sample_z_once(r, &mut guard, ctx);
+// Second call would abort with ERandomAlreadyUsed
+```
+
+See [Sui Randomness Documentation](https://docs.sui.io/guides/developer/advanced/randomness-onchain) for more details.
+
+## Error Codes
+
+| Code | Name | Module | Description |
+|------|------|--------|-------------|
+| 2 | `EDivisionByZero` | math | Division by zero |
+| 10 | `EDivisionByZero` | signed_wad | Division by zero in `div_wad` |
+| 11 | `EUnexpectedNegative` | signed_wad | Negative value in `to_wad_checked` |
+| 100 | `EDenominatorZero` | erf | Denominator Q(x) = 0 |
+| 101 | `EInputTooLarge` | erf | Input > 6×SCALE in strict functions |
+| 200 | `EDenominatorZero` | normal_forward | Denominator zero in rational |
+| 301 | `EDenominatorZero` | normal_inverse | Denominator zero in rational |
+| **302** | **`EProbOutOfDomain`** | **normal_inverse** | **Probability outside (EPS, 1-EPS)** |
+| 401 | `EInvalidStdDev` | sampling | std_dev = 0 |
+| 402 | `ERandomAlreadyUsed` | sampling | SamplerGuard reuse |
+| 403 | `EInvalidUniformsLength` | sampling | CLT requires exactly 12 uniforms |
+| 500 | `ELnNonPositive` | transcendental | ln(x) requires x > 0 |
+| 501 | `EExpOverflow` | transcendental | exp(x) overflow (\|x\| > 20) |
+
 ## WAD Scaling
 
 All values use **WAD scaling** (10¹⁸) for fixed-point precision:
@@ -111,175 +158,44 @@ All values use **WAD scaling** (10¹⁸) for fixed-point precision:
 | 0.5 | `500_000_000_000_000_000` |
 | -2.5 | SignedWad { mag: `2_500_000_000_000_000_000`, neg: true } |
 
-## Architecture: 256-bit Native Arithmetic
+## Architecture
 
-This library uses **native 256-bit integers** (u256) with fixed-point scaling, not floating-point arithmetic. This design choice provides advantages over EVM libraries like DegeGauss (which uses ABDK 128-bit IEEE-754 floating-point):
+This library uses **native 256-bit integers** (u256) with fixed-point scaling, not floating-point arithmetic.
 
-| Aspect | Move-Gaussian (u256 fixed-point) | EVM ABDK (128-bit float) |
-|--------|-----------------------------------|--------------------------|
-| **Precision** | ~77 decimal digits (intermediate) | ~34 decimal digits |
-| **Gas cost** | ~1M MIST (benchmarked) | ~53,000 gas (DegeGauss reported) |
-| **Complexity** | ~450 lines | 2348 lines (full FP lib) |
-| **Conversion overhead** | **Zero** (native u256) | High (int ↔ float boundaries) |
-| **Error source** | Approximation only | Rounding + conversion |
-| **Best for** | DeFi (bounded domain) | Scientific computing (extreme ranges) |
+| Aspect | Move-Gaussian | EVM (ABDK) |
+|--------|---------------|------------|
+| **Precision** | ~77 decimal digits | ~34 decimal digits |
+| **Complexity** | ~450 lines | 2348+ lines |
+| **Conversion overhead** | Zero (native u256) | High (int ↔ float) |
 
-**Key Insight**: Move's 256-bit arithmetic provides higher intermediate precision than 128-bit floating-point with zero conversion overhead, making it well-suited for financial applications where |z| ≤ 6σ (99.9999% of the Gaussian distribution).
+**Key advantages over EVM:**
+- **Native randomness** - `sui::random` enables single-TX sampling (vs multi-TX Chainlink VRF)
+- **Overflow safety** - Move aborts on overflow by default
+- **Gas predictability** - Deterministic metering (no SSTORE variance)
 
-**Implementation Details**:
-```move
-// All operations stay in u256 - no floating-point conversions!
-public fun mul_div(a: u256, x: u256): u256 {
-    (a * x) / SCALE  // Native integer ops
-}
-
-public fun div_scaled(a: u256, b: u256): u256 {
-    (a * SCALE) / b  // Still u256
-}
-```
-
-For a detailed comparison, see [notes/gaussian/abdk-vs-move-arithmetic-comparison.md](../../notes/gaussian/abdk-vs-move-arithmetic-comparison.md).
-
-## Sui Move vs EVM Advantages
-
-Move-Gaussian leverages Sui-specific features that differentiate it from EVM implementations:
-
-### 1. Native Randomness (`sui::random`)
-
-**Sui**:
-```move
-// Single-transaction Gaussian sampling
-public entry fun sample_and_use(r: &Random, ctx: &mut TxContext) {
-    let z = core::sample_z(r, ctx);  // One transaction
-    // Use z immediately in same TX
-}
-```
-
-**EVM**: Requires external oracle like Chainlink VRF (multi-transaction):
-```solidity
-// Transaction 1: Request randomness
-function requestRandom() public {
-    requestId = COORDINATOR.requestRandomWords(...);
-}
-
-// Transaction 2: Callback (separate TX, user can't use immediately)
-function fulfillRandomWords(uint256[] memory randomWords) internal {
-    // Process randomness
-}
-```
-
-**Advantage**: Sui's deterministic randomness enables **atomic sampling** (request + use in one TX), unlocking use cases like:
-- On-chain game mechanics (loot drops, damage rolls)
-- Generative art with immediate minting
-- Randomized DeFi mechanisms (Gaussian lotteries)
-
-### 2. 256-bit Native Operations
-
-**Sui**: Full u256/i256 support with native arithmetic
-```move
-let product = a * b;  // u256 × u256 = u256 (no overflow if < 2^256)
-let quotient = (a * SCALE) / b;  // Native division
-```
-
-**EVM**: 256-bit operations exist but libraries often use 64-bit or 128-bit for "optimization"
-- Solidity: Native u256 but floating-point requires custom libraries (ABDK)
-- Fixed-point precision often limited to 64.64 or 128.128 formats
-
-**Advantage**: Move's native u256 arithmetic eliminates the need for complex floating-point emulation, providing higher intermediate precision (~77 decimal digits vs ABDK's 34).
-
-### 3. Safer Arithmetic (No Silent Overflows)
-
-**Sui**: Move aborts on overflow by default
-```move
-let x: u256 = U256_MAX;
-let y = x + 1;  // ❌ ABORTS (safe!)
-```
-
-**EVM**: Solidity 0.8+ has overflow checks, but legacy code and assembly can bypass them
-```solidity
-uint256 x = type(uint256).max;
-uint256 y = x + 1;  // ✅ Reverts in Solidity 0.8+
-// But assembly can bypass: unchecked { y = x + 1; }  // Silent overflow!
-```
-
-**Advantage**: Move's design makes unsafe operations **impossible**, not just "opt-in safe".
-
-### 4. Cleaner Generics
-
-**Sui**: Type-safe generics with phantom types
-```move
-public fun create_gaussian_nft<T: key + store>(
-    r: &Random,
-    ctx: &mut TxContext
-): T {
-    let rarity = core::sample_z(r, ctx);  // Type-safe!
-    // Use rarity to create NFT
-}
-```
-
-**EVM**: Limited generics, requires inheritance or interfaces
-```solidity
-// Can't easily parameterize over NFT types
-function createGaussianNFT(address nftContract) public {
-    // Must use low-level calls or complex inheritance
-}
-```
-
-**Advantage**: Composability - Gaussian functions work seamlessly with any Move type.
-
-### 5. Gas Predictability
-
-**Sui**: Deterministic gas metering (computation + storage separated)
-```
-Total Cost = Computation (fixed) + Storage (state size)
-sample_z: ~1,000,000 compute + 988,000 storage = 1.988M MIST
-```
-
-**EVM**: Gas varies with state (SSTORE costs change based on storage history)
-```solidity
-// Same operation costs different gas depending on:
-// - First write vs update (20k vs 5k gas)
-// - Refund mechanics (complex!)
-```
-
-**Advantage**: Predictable costs for financial applications (users know exact fees upfront).
-
-### Summary Table
-
-| Feature | Sui Move-Gaussian | EVM (Solidity) |
-|---------|-------------------|----------------|
-| **Randomness** | Native (`sui::random`) | External oracle (Chainlink VRF) |
-| **Sampling** | Single TX | Multi-TX (request → callback) |
-| **Arithmetic** | Native u256 (~77 digits intermediate) | ABDK 128-bit float (~34 digits) |
-| **Gas cost** | ~1,000,000 MIST (~0.001 SUI) | Varies by implementation |
-| **Overflow safety** | Guaranteed (aborts) | Opt-in (Solidity 0.8+) |
-| **Code complexity** | ~450 lines | 2348+ lines (ABDK) |
-| **Gas predictability** | Deterministic | Variable (storage refunds) |
-
-**Use Sui Move if**: Building DeFi, GameFi, or generative art requiring Gaussian distributions  
-**Stick with EVM if**: Already deployed on Ethereum and can't migrate
+For detailed comparison, see [docs/DESIGN.md](docs/DESIGN.md).
 
 ## Performance
 
-| Function | Computation | Storage | Total | Accuracy |
-|----------|-------------|---------|-------|----------|
-| `sample_z` | 1,000,000 (0.001 SUI) | 988,000 (0.000988 SUI) | 1,988,000 MIST (0.00199 SUI) | - |
-| `sample_normal` | 1,000,000 (0.001 SUI) | 988,000 (0.000988 SUI) | 1,988,000 MIST (0.00199 SUI) | - |
-| `cdf` | ~500,000 (0.0005 SUI) | ~500,000 (0.0005 SUI) | ~1,000,000 MIST (0.001 SUI) | < 0.05% |
-| `pdf` | ~500,000 (0.0005 SUI) | ~500,000 (0.0005 SUI) | ~1,000,000 MIST (0.001 SUI) | < 0.1% |
-| `ppf` | ~1,000,000 (0.001 SUI) | ~988,000 (0.000988 SUI) | ~1,988,000 MIST (0.00199 SUI) | < 0.05% |
+| Function | Gas Cost | Accuracy |
+|----------|----------|----------|
+| `sample_z` | ~2M MIST (~0.002 SUI) | - |
+| `cdf` | ~1M MIST (~0.001 SUI) | < 0.05% |
+| `pdf` | ~1M MIST (~0.001 SUI) | < 0.1% |
+| `ppf` | ~2M MIST (~0.002 SUI) | < 0.05% |
 
-*1 SUI = 1,000,000,000 MIST. Benchmarked on Sui testnet.*
+*Benchmarked on Sui testnet. 1 SUI = 1,000,000,000 MIST.*
 
 ## Documentation
 
 - [API Reference](docs/API_REFERENCE.md) - Complete function documentation
+- [Design Doc](docs/DESIGN.md) - Technical deep dive
 - [Changelog](CHANGELOG.md) - Version history
 - [Contributing](CONTRIBUTING.md) - Development guidelines
 
 ## Package Info
 
-- **Version**: 0.7.0
-- **Testnet Package ID**: `0x70c5040e7e2119275d8f93df8242e882a20ac6ae5a317673995323d75a93b36b`
-- **Tests**: 228 Move + 24 Python property tests
+- **Version**: 0.9.0
+- **Latest Deployed (Testnet)**: v0.7.0 - `0xa3cf304af5b168686db4bff7e28072490bfd154fb1da50af84919ae20df12938`
+- **Tests**: 399 Move + 24 Python property tests
 - **License**: MIT

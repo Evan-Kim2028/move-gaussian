@@ -400,25 +400,16 @@ module gaussian::security_audit {
         assert!(z_mag <= expected_max, 2);
     }
     
-    /// Test that probabilities even smaller than EPS are handled (clamped).
+    /// Test PPF with probability below EPS.
     /// 
-    /// Attack scenario: Try to underflow with p = 0 or very small.
-    /// 
-    /// Expected: Clamped to EPS, returns valid result.
+    /// Expected: Now aborts with EProbOutOfDomain (v0.9.0 modernization).
+    /// Use ppf_aaa() for clamping behavior.
     #[test]
+    #[expected_failure(abort_code = gaussian::normal_inverse::EProbOutOfDomain)]
     fun test_ppf_below_eps_clamped() {
         // Try p = 1 (below EPS)
         let p_tiny: u128 = 1;
-        let z = normal_inverse::ppf(p_tiny);
-        
-        // Should return same as ppf(EPS) due to clamping
-        let z_at_eps = normal_inverse::ppf(EPS);
-        
-        let z_mag = signed_wad::abs(&z);
-        let z_eps_mag = signed_wad::abs(&z_at_eps);
-        
-        // Should be equal (clamped)
-        assert!(z_mag == z_eps_mag, 0);
+        let _z = normal_inverse::ppf(p_tiny);  // Should abort, not clamp
     }
     
     /// Test Newton iteration stability across tail region.

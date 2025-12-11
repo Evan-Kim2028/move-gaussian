@@ -29,7 +29,7 @@
 /// Each coefficient Pi may be positive or negative.
 module gaussian::math {
     
-    /// Scale factor: WAD = 10^18 (standard DeFi fixed-point)
+    /// Scale factor: WAD = 10^18 as u256
     const SCALE: u256 = 1_000_000_000_000_000_000;
     
     /// Maximum value for domain [0, 6]
@@ -145,6 +145,46 @@ module gaussian::math {
             SCALE
         } else {
             value
+        }
+    }
+
+    /// Fixed-point multiplication: (a * b) / SCALE for u128.
+    /// Uses u256 intermediates to preserve precision before scaling back.
+    public(package) fun mul_div_128(a: u128, b: u128): u128 {
+        let a256 = (a as u256);
+        let b256 = (b as u256);
+        let scale256 = SCALE;
+        ((a256 * b256) / scale256) as u128
+    }
+
+    /// Fixed-point division: (a * SCALE) / b for u128.
+    /// Aborts if b is zero; denominator is not truncated before division.
+    public(package) fun div_scaled_128(a: u128, b: u128): u128 {
+        assert!(b > 0, EDivisionByZero);
+        let a256 = (a as u256);
+        let b256 = (b as u256);
+        let scale256 = SCALE;
+        ((a256 * scale256) / b256) as u128
+    }
+
+    /// Signed addition for u128 magnitudes with separate sign flags.
+    /// Returns (magnitude, is_negative).
+    public(package) fun signed_add_128(
+        a_mag: u128,
+        a_neg: bool,
+        b_mag: u128,
+        b_neg: bool,
+    ): (u128, bool) {
+        if (a_neg == b_neg) {
+            // Same sign: add magnitudes
+            (a_mag + b_mag, a_neg)
+        } else {
+            // Different signs: subtract magnitudes
+            if (a_mag >= b_mag) {
+                (a_mag - b_mag, a_neg)
+            } else {
+                (b_mag - a_mag, b_neg)
+            }
         }
     }
     
