@@ -1,9 +1,9 @@
 [package]
 name = "gaussian"
-version = "0.8.0"
+version = "0.9.0"
 edition = "2024"
-# published-at points to the deployed testnet package
-published-at = "0xa3cf304af5b168686db4bff7e28072490bfd154fb1da50af84919ae20df12938"
+# published-at points to the deployed testnet package (v0.9.0)
+published-at = "0x66f9087a3d9ae3fe07a5f3c1475d503f1b0ea508d3b83b73b0b8637b57629f7f"
 
 [dependencies]
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "testnet-v1.62.0" }
