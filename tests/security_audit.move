@@ -19,6 +19,7 @@
 /// sui move test --filter security_audit
 /// ```
 #[test_only]
+#[allow(unused_variable)]
 module gaussian::security_audit {
     use gaussian::coefficients;
     use gaussian::math;

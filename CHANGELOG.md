@@ -5,11 +5,11 @@ All notable changes to the Gaussian package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.8.0] - 2025-12-11
 
 ### Added
 
-- **Comprehensive Security Audit Test Suite** (v0.8.0-security-audit branch)
+- **Comprehensive Security Audit Test Suite** (160+ new tests)
   - `tests/security_audit.move`: 25+ tests covering 7 attack vectors
     - Randomness composition attack validation (SamplerGuard replay protection)
     - Tail boundary discontinuity tests at P_LOW (0.02) and P_HIGH (0.98)
@@ -29,6 +29,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Probability threshold precision verification
     - Roundtrip error accumulation testing
     - Rounding bias detection across operations
+  - `tests/defi_exploit_scenarios.move`: 21 tests for real-world DeFi exploit simulations
+    - Rounding direction attacks (Balancer-style)
+    - Flash loan attack vectors (Euler Finance-style)
+    - Sandwich attack scenarios
+    - Precision loss exploitation
+    - First depositor / donation attacks
+    - Gas griefing / DoS vectors
+  - `tests/advanced_adversarial.move`: Nation-state threat model testing
+    - Statistical distinguisher attacks
+    - Seed correlation analysis
+    - Coefficient integrity verification
 
 ### Security Audit Findings
 
@@ -47,7 +58,7 @@ The security audit validated the following:
 2. **Event Information Leak**: Sample values are emitted on-chain (transparency feature)
 3. **Composition Attack Risk**: Documented in module - consumers must wrap in entry functions
 
-**Test Results:** 336 tests passing (108 new security-focused tests)
+**Test Results:** 388 tests passing (160+ new security-focused tests)
 
 ### Added
 
