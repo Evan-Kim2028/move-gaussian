@@ -31,6 +31,40 @@ Then build:
 sui move build
 ```
 
+## Using as a Dependency (Deployed Package)
+
+If you want to depend on an already-deployed version of gaussian (recommended for production), use address substitution to point to the on-chain package:
+
+### Testnet
+
+```toml
+[dependencies]
+gaussian = { 
+    git = "https://github.com/Evan-Kim2028/move-gaussian.git", 
+    rev = "v0.7.0",
+    addr_subst = { "gaussian" = "0xa3cf304af5b168686db4bff7e28072490bfd154fb1da50af84919ae20df12938" }
+}
+```
+
+### Deployed Addresses
+
+| Network | Version | Package ID |
+|---------|---------|------------|
+| Testnet | v0.7.0 | `0xa3cf304af5b168686db4bff7e28072490bfd154fb1da50af84919ae20df12938` |
+| Testnet | v0.6.0 | `0x70c5040e7e2119275d8f93df8242e882a20ac6ae5a317673995323d75a93b36b` |
+
+### Shared Objects
+
+Your contract may need to reference these shared objects:
+
+| Object | ID (Testnet v0.7.0) | Purpose |
+|--------|---------------------|---------|
+| GaussianProfile | `0xc50129aa9173920304033e20b43ad9925f44a4a3bf1d344b030dc53ea2eb661b` | Version metadata |
+
+### Example Consumer Package
+
+See [`deployment_test/test_harness/`](deployment_test/test_harness/) for a complete example of how to consume the gaussian library from another package.
+
 ## Quick Start
 
 ```move

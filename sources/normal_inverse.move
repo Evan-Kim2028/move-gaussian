@@ -627,15 +627,16 @@ module gaussian::normal_inverse {
             10000000000000000, // 1e-2
             20000000000000000  // 0.02
         ];
-        let mut i = 1;
-        while (i < 8) {
-            let p_prev = *std::vector::borrow(&probs, i - 1);
-            let p_cur = *std::vector::borrow(&probs, i);
+        // Check monotonicity: z(p_prev) < z(p_cur) for all consecutive pairs
+        let len = probs.length();
+        (len - 1).do!(|idx| {
+            let i = idx + 1; // Start from 1
+            let p_prev = probs[i - 1];
+            let p_cur = probs[i];
             let z_prev = ppf(p_prev);
             let z_cur = ppf(p_cur);
-            assert!(signed_wad::lt(&z_prev, &z_cur), i as u64);
-            i = i + 1;
-        };
+            assert!(signed_wad::lt(&z_prev, &z_cur), i);
+        });
     }
 
     #[test]

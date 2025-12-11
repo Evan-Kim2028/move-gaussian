@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  SUI_VERSION: v1.39.3
+  SUI_VERSION: v1.62.0
 
 jobs:
   lint-and-build:
