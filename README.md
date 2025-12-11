@@ -193,10 +193,33 @@ For detailed comparison, see [docs/DESIGN.md](docs/DESIGN.md).
 - [Changelog](CHANGELOG.md) - Version history
 - [Contributing](CONTRIBUTING.md) - Development guidelines
 
+## Example: Black-Scholes Option Pricing
+
+The [move-black-scholes](https://github.com/Evan-Kim2028/move-black-scholes) package demonstrates real-world usage of this library for option pricing and Greeks calculations.
+
+### Live Testnet Transactions
+
+**Option Pricing (ATM Call/Put)**
+- **TX**: [`CdAxPyw1T7tF4xMPpfVqVhJMDL4Xy6zeyC24YeQxpjJt`](https://suiscan.xyz/testnet/tx/CdAxPyw1T7tF4xMPpfVqVhJMDL4Xy6zeyC24YeQxpjJt)
+- Inputs: S=$100, K=$100, T=1yr, r=5%, σ=20%
+- Results: Call=$10.45, Put=$5.57, Parity=✓
+
+**Greeks Calculation**
+- **TX**: [`48TFYV87TXRJMUuCzoMZ4T5CLVsFgQoT1fptR2w7NXPv`](https://suiscan.xyz/testnet/tx/48TFYV87TXRJMUuCzoMZ4T5CLVsFgQoT1fptR2w7NXPv)
+- Results: Δ=0.637, Γ=0.019, ν=37.52, θ=-6.41, ρ=53.23
+
+### Black-Scholes Package
+
+| Field | Value |
+|-------|-------|
+| **Package** | [`0x1637ddc0495a8833ebd580224dad7154dfb33477f73d2c7fb41e2b350efa55b3`](https://suiscan.xyz/testnet/object/0x1637ddc0495a8833ebd580224dad7154dfb33477f73d2c7fb41e2b350efa55b3) |
+| **Version** | v0.2.0 |
+| **Depends On** | gaussian v0.9.0 |
+
 ## Package Info
 
 - **Version**: 0.9.0
-- **Latest Deployed (Testnet)**: `0x66f9087a3d9ae3fe07a5f3c1475d503f1b0ea508d3b83b73b0b8637b57629f7f`
-- **GaussianProfile Object**: `0x0676c9fb51af076b1a24cb872d9f6844bb97ebe0f7e96e1c1d8da5a12b534381`
+- **Latest Deployed (Testnet)**: [`0x66f9087a3d9ae3fe07a5f3c1475d503f1b0ea508d3b83b73b0b8637b57629f7f`](https://suiscan.xyz/testnet/object/0x66f9087a3d9ae3fe07a5f3c1475d503f1b0ea508d3b83b73b0b8637b57629f7f)
+- **GaussianProfile Object**: [`0x0676c9fb51af076b1a24cb872d9f6844bb97ebe0f7e96e1c1d8da5a12b534381`](https://suiscan.xyz/testnet/object/0x0676c9fb51af076b1a24cb872d9f6844bb97ebe0f7e96e1c1d8da5a12b534381)
 - **Tests**: 399 Move + 24 Python property tests
 - **License**: MIT
