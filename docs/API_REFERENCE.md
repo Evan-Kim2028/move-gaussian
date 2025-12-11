@@ -1,7 +1,7 @@
 # Gaussian Package API Reference
 
-**Version**: 0.7.0  
-**Package ID (Testnet)**: `0x70c5040e7e2119275d8f93df8242e882a20ac6ae5a317673995323d75a93b36b`  
+**Version**: 0.9.0  
+**Latest Deployed (Testnet)**: v0.7.0 - `0xa3cf304af5b168686db4bff7e28072490bfd154fb1da50af84919ae20df12938`  
 **License**: MIT
 
 ---
@@ -11,16 +11,16 @@
 1. [Overview](#overview)
 2. [Constants](#constants)
 3. [Types](#types)
-4. [Module: core](#module-core) *(NEW in v0.7)*
-5. [Module: events](#module-events) *(NEW in v0.7)*
-6. [Module: profile](#module-profile) *(NEW in v0.7)*
+4. [Module: core](#module-core)
+5. [Module: events](#module-events)
+6. [Module: profile](#module-profile)
 7. [Module: sampling](#module-sampling)
 8. [Module: normal_forward](#module-normal_forward)
 9. [Module: normal_inverse](#module-normal_inverse)
 10. [Module: erf](#module-erf)
 11. [Module: signed_wad](#module-signed_wad)
 12. [Module: math](#module-math)
-13. [Module: transcendental](#module-transcendental) *(NEW in v0.7)*
+13. [Module: transcendental](#module-transcendental)
 14. [Error Codes](#error-codes)
 
 ---
@@ -36,15 +36,15 @@ The Gaussian package provides on-chain Gaussian (normal) distribution functions 
 - **PPF** (Percent Point Function / Inverse CDF): `Φ⁻¹(p)` - z-score for probability p
 - **Sampling**: Generate Gaussian random samples using `sui::random`
 - **Error Function**: `erf(x)` and `erfc(x)` implementations
-- **Events**: On-chain event tracking for all sampling operations *(NEW in v0.7)*
-- **Profile**: On-chain version metadata *(NEW in v0.7)*
+- **Events**: On-chain event tracking for all sampling operations
+- **Profile**: On-chain version metadata
 
-### What's New in v0.7
+### What's New in v0.9.0
 
-- **Core Facade** (`gaussian::core`): Single import point with shorter function names
-- **Events** (`gaussian::events`): All sampling functions emit events by default
-- **Profile** (`gaussian::profile`): On-chain version tracking and configuration
-- **Transcendental** (`gaussian::transcendental`): ln, exp, sqrt for financial math
+- **`ppf_from_u64(u)`**: Convenience function to compute PPF from any u64 seed (never aborts)
+- **Strict domain validation**: `ppf(p)` now aborts with `EProbOutOfDomain` (302) for invalid inputs
+- **SignedWad field rename**: `magnitude` → `mag`, `negative` → `neg` (use accessors for compatibility)
+- **Zero normalization**: `SignedWad::new(0, true)` now returns positive zero
 
 ### Security Note: `public_random` Lint
 
@@ -55,21 +55,9 @@ All sampling functions in this library suppress the `public_random` linter warni
 public fun sample_z(r: &random::Random, ctx: &mut TxContext): SignedWad
 ```
 
-**Why this is suppressed**: This library is designed for **composition** - other Move modules need to call these functions to build DeFi applications. The Sui linter warns about public functions accepting `Random` because they can be vulnerable to composition attacks where a malicious contract reverts if the random outcome is unfavorable.
+**Why this is suppressed**: This library is designed for **composition** - other Move modules need to call these functions to build DeFi applications.
 
-**Consumer responsibility**: If you're building an application using this library:
-
-1. **For entry points** (user-facing functions): Consider wrapping calls in a private `entry` function:
-   ```move
-   entry fun my_random_function(r: &Random, ctx: &mut TxContext) {
-       let z = gaussian::core::sample_z(r, ctx);
-       // Use z - attacker cannot compose with this
-   }
-   ```
-
-2. **For composable functions**: Ensure the "unhappy path" doesn't consume fewer resources than the "happy path" (see [Sui's randomness docs](https://docs.sui.io/guides/developer/advanced/randomness-onchain)).
-
-3. **Two-step pattern**: For high-value operations, consider splitting into two transactions - one to commit randomness, one to use it.
+**Consumer responsibility**: Wrap calls in private `entry` functions for user-facing endpoints.
 
 ### WAD Scaling Convention
 
@@ -79,7 +67,7 @@ All values are scaled by 10^18:
 |------------|-----------|
 | 1.0 | `1_000_000_000_000_000_000` |
 | 0.5 | `500_000_000_000_000_000` |
-| -2.5 | SignedWad { magnitude: `2_500_000_000_000_000_000`, negative: true } |
+| -2.5 | SignedWad { mag: `2_500_000_000_000_000_000`, neg: true } |
 
 ---
 
@@ -118,10 +106,10 @@ const SCALE: u256 = 1_000_000_000_000_000_000; // 10^18 (WAD)
 public struct SignedWad has copy, drop, store {
     /// Absolute value of the number (WAD-scaled, 10^18).
     /// Example: For -2.5, magnitude = 2_500_000_000_000_000_000
-    magnitude: u256,
+    mag: u256,
     /// Sign flag: true = negative, false = non-negative.
     /// Note: Zero is always stored with negative = false.
-    negative: bool,
+    neg: bool,
 }
 ```
 
@@ -334,15 +322,60 @@ public fun ppf(p: u128): SignedWad
 Inverse CDF / Percent Point Function: Φ⁻¹(p)
 
 **Parameters:**
-- `p`: Probability in (0, 1) as u128 WAD-scaled
+- `p`: Probability in (EPS, 1-EPS) as u128 WAD-scaled
 
 **Returns:** z-score such that Φ(z) ≈ p
 
+**Aborts:** `EProbOutOfDomain` (302) if `p < EPS` or `p > SCALE - EPS`
+
+**Behavior:**
+- **Strict domain validation (v0.9.0+)**: Aborts if p is outside valid range
+- Uses piecewise rational approximation + Newton refinement
+- Achieves < 0.05% error vs scipy.stats.norm
+
 **Example:**
 ```move
+use gaussian::normal_inverse;
+
+// Find z such that P(Z ≤ z) = 0.975 (97.5th percentile)
 let p: u128 = 975_000_000_000_000_000; // 0.975
-let z = core::ppf(p);
-// z ≈ 1.96 (97.5th percentile)
+let z = normal_inverse::ppf(p);
+// z ≈ 1.96 (WAD-scaled)
+
+// ❌ This will abort with EProbOutOfDomain (302):
+// let z = normal_inverse::ppf(0);  // p=0 is invalid
+```
+
+---
+
+#### `ppf_from_u64`
+
+```move
+public fun ppf_from_u64(u: u64): SignedWad
+```
+
+Convenience function to compute PPF from a u64 seed. Maps any u64 into the valid probability domain `(EPS, 1-EPS)` before computing PPF.
+
+**Parameters:**
+- `u`: Any u64 value (e.g., from `sui::random`)
+
+**Returns:** z-score as SignedWad
+
+**Never aborts:** All u64 inputs produce valid results.
+
+**Example:**
+```move
+use gaussian::core;
+
+// Safe: any u64 is valid input
+let z = core::ppf_from_u64(12345);
+let z_max = core::ppf_from_u64(0xFFFFFFFFFFFFFFFF);
+let z_zero = core::ppf_from_u64(0);
+
+// Useful for sampling from sui::random
+let mut gen = random::new_generator(r, ctx);
+let seed = random::generate_u64(&mut gen);
+let z = core::ppf_from_u64(seed);
 ```
 
 ---
@@ -359,6 +392,13 @@ Error function: erf(x) = (2/√π) ∫₀ˣ e^(-t²) dt
 - `x`: Non-negative WAD-scaled value
 
 **Returns:** erf(x) in [0, SCALE]
+
+**Behavior:**
+- x > 6 × SCALE is clamped to 6 × SCALE
+- erf(0) = 0
+- erf(6) ≈ SCALE (essentially 1.0)
+
+**Accuracy:** ~6e-11 max error vs mpmath reference
 
 ---
 
@@ -1355,19 +1395,29 @@ public fun inv_e(): u256  // Returns 1/e ≈ 0.368 in WAD
 | Code | Name | Description |
 |------|------|-------------|
 | 301 | `EDenominatorZero` | Denominator zero in rational |
+| **302** | **`EProbOutOfDomain`** | **Probability outside (EPS, 1-EPS) in `ppf()`** |
 
 ### Module: sampling (400-499)
 
 | Code | Name | Description |
 |------|------|-------------|
 | 401 | `EInvalidStdDev` | std_dev = 0 in `sample_normal*` |
+| 402 | `ERandomAlreadyUsed` | SamplerGuard reuse attempt |
+| 403 | `EInvalidUniformsLength` | CLT requires exactly 12 uniforms |
+
+### Module: transcendental (500-599)
+
+| Code | Name | Description |
+|------|------|-------------|
+| 500 | `ELnNonPositive` | ln(x) requires x > 0 |
+| 501 | `EExpOverflow` | exp(x) overflow (\|x\| > 20) |
 
 ### Module: signed_wad
 
 | Code | Name | Description |
 |------|------|-------------|
 | 10 | `EDivisionByZero` | Division by zero in `div_wad` |
-| 11 | (unnamed) | Negative value in `to_wad_checked` |
+| 11 | `EUnexpectedNegative` | Negative value in `to_wad_checked` |
 
 ---
 

@@ -125,15 +125,12 @@ module gaussian::sampling {
     /// By the Central Limit Theorem, the sum of 12 U(0,1) variables has variance 1,
     /// so Z = (Σ U_i) - 6 is approximately N(0, 1).
     public fun clt_from_uniforms(uniforms: &vector<u256>): (u256, bool) {
-        let n = std::vector::length(uniforms);
+        let n = uniforms.length();
         assert!(n == NUM_UNIFORMS, EInvalidUniformsLength);
 
+        // Sum all uniform values using do_ref! macro
         let mut sum: u256 = 0;
-        let mut i: u64 = 0;
-        while (i < NUM_UNIFORMS) {
-            sum = sum + *std::vector::borrow(uniforms, i);
-            i = i + 1;
-        };
+        uniforms.do_ref!(|u| sum = sum + *u);
 
         // Mean of 12 uniforms is 6.0
         let mean_scaled = 6 * math::scale();
@@ -148,15 +145,13 @@ module gaussian::sampling {
     fun sample_standard_normal_clt_with_gen(
         gen: &mut random::RandomGenerator
     ): (u256, bool) {
-        let mut uniforms = std::vector::empty<u256>();
+        let mut uniforms = vector[];
 
-        let mut i: u64 = 0;
-        while (i < NUM_UNIFORMS) {
+        NUM_UNIFORMS.do!(|_| {
             let raw = random::generate_u64(gen);
             let u_wad = uniform_from_u64(raw);
-            std::vector::push_back(&mut uniforms, u_wad);
-            i = i + 1;
-        };
+            uniforms.push_back(u_wad);
+        });
 
         clt_from_uniforms(&uniforms)
     }
@@ -184,7 +179,7 @@ module gaussian::sampling {
         let (z_mag, z_neg) = sample_standard_normal_clt_with_gen(&mut gen);
         
         // Emit event
-        events::emit_gaussian_sample(z_mag, z_neg, sui::tx_context::sender(ctx));
+        events::emit_gaussian_sample(z_mag, z_neg, ctx.sender());
         
         (z_mag, z_neg)
     }
@@ -243,7 +238,7 @@ module gaussian::sampling {
             z_mag, z_neg,
             mean, std_dev,
             value_mag, value_neg,
-            sui::tx_context::sender(ctx)
+            ctx.sender()
         );
 
         (value_mag, value_neg)
@@ -368,7 +363,7 @@ module gaussian::sampling {
         events::emit_gaussian_sample(
             signed_wad::abs(&z),
             signed_wad::is_negative(&z),
-            sui::tx_context::sender(ctx)
+            ctx.sender()
         );
         
         z
@@ -402,7 +397,7 @@ module gaussian::sampling {
         events::emit_gaussian_sample(
             signed_wad::abs(&z),
             signed_wad::is_negative(&z),
-            sui::tx_context::sender(ctx)
+            ctx.sender()
         );
         
         z
@@ -435,7 +430,7 @@ module gaussian::sampling {
         events::emit_gaussian_sample(
             signed_wad::abs(&value),
             signed_wad::is_negative(&value),
-            sui::tx_context::sender(ctx)
+            ctx.sender()
         );
         
         StandardNormal { value }
@@ -481,7 +476,7 @@ module gaussian::sampling {
             mean, std_dev,
             signed_wad::abs(&value),
             signed_wad::is_negative(&value),
-            sui::tx_context::sender(ctx)
+            ctx.sender()
         );
         
         StandardNormal { value }
@@ -524,7 +519,7 @@ module gaussian::sampling {
             mean, std_dev,
             signed_wad::abs(&value),
             signed_wad::is_negative(&value),
-            sui::tx_context::sender(ctx)
+            ctx.sender()
         );
         
         StandardNormal { value }
@@ -556,14 +551,10 @@ module gaussian::sampling {
 
     #[test]
     fun test_clt_zero_when_all_half() {
-        let mut uniforms = std::vector::empty<u256>();
+        let mut uniforms = vector[];
         let half = math::scale() / 2;
 
-        let mut i: u64 = 0;
-        while (i < NUM_UNIFORMS) {
-            std::vector::push_back(&mut uniforms, half);
-            i = i + 1;
-        };
+        NUM_UNIFORMS.do!(|_| uniforms.push_back(half));
 
         let (z_mag, z_neg) = clt_from_uniforms(&uniforms);
         assert!(z_mag == 0, 0);
@@ -572,14 +563,10 @@ module gaussian::sampling {
 
     #[test]
     fun test_clt_positive_when_uniforms_high() {
-        let mut uniforms = std::vector::empty<u256>();
+        let mut uniforms = vector[];
         let three_quarters = (math::scale() * 3) / 4;
 
-        let mut i: u64 = 0;
-        while (i < NUM_UNIFORMS) {
-            std::vector::push_back(&mut uniforms, three_quarters);
-            i = i + 1;
-        };
+        NUM_UNIFORMS.do!(|_| uniforms.push_back(three_quarters));
 
         let (z_mag, z_neg) = clt_from_uniforms(&uniforms);
         assert!(z_mag > 0, 0);
@@ -588,14 +575,10 @@ module gaussian::sampling {
 
     #[test]
     fun test_clt_negative_when_uniforms_low() {
-        let mut uniforms = std::vector::empty<u256>();
+        let mut uniforms = vector[];
         let quarter = math::scale() / 4;
 
-        let mut i: u64 = 0;
-        while (i < NUM_UNIFORMS) {
-            std::vector::push_back(&mut uniforms, quarter);
-            i = i + 1;
-        };
+        NUM_UNIFORMS.do!(|_| uniforms.push_back(quarter));
 
         let (z_mag, z_neg) = clt_from_uniforms(&uniforms);
         assert!(z_mag > 0, 0);

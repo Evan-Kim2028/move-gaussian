@@ -555,20 +555,16 @@ module gaussian::transcendental {
             5 * SCALE,      // 5.0
         ];
         
-        let mut i = 0;
-        while (i < 4) {
-            let x_wad = *std::vector::borrow(&test_values, i);
-            let x = signed_wad::from_wad(x_wad);
+        test_values.do_ref!(|x_wad| {
+            let x = signed_wad::from_wad(*x_wad);
             let exp_x = exp_wad(&x);
             let ln_exp_x = ln_wad(exp_x);
             let result_mag = signed_wad::abs(&ln_exp_x);
             
             // Should be close to original x
-            let diff = if (result_mag > x_wad) { result_mag - x_wad } else { x_wad - result_mag };
-            assert!(diff < x_wad / 50, i); // 2% tolerance for roundtrip
-            
-            i = i + 1;
-        };
+            let diff = if (result_mag > *x_wad) { result_mag - *x_wad } else { *x_wad - result_mag };
+            assert!(diff < *x_wad / 50, 0); // 2% tolerance for roundtrip
+        });
     }
 
     #[test]
@@ -582,18 +578,14 @@ module gaussian::transcendental {
             10 * SCALE,     // 10.0
         ];
         
-        let mut i = 0;
-        while (i < 5) {
-            let x = *std::vector::borrow(&test_values, i);
-            let ln_x = ln_wad(x);
+        test_values.do_ref!(|x| {
+            let ln_x = ln_wad(*x);
             let exp_ln_x = exp_wad(&ln_x);
             
             // Should be close to original x
-            let diff = if (exp_ln_x > x) { exp_ln_x - x } else { x - exp_ln_x };
-            assert!(diff < x / 50, i); // 2% tolerance for roundtrip
-            
-            i = i + 1;
-        };
+            let diff = if (exp_ln_x > *x) { exp_ln_x - *x } else { *x - exp_ln_x };
+            assert!(diff < *x / 50, 0); // 2% tolerance for roundtrip
+        });
     }
 
     #[test]
@@ -607,18 +599,14 @@ module gaussian::transcendental {
             10 * SCALE,     // 10.0
         ];
         
-        let mut i = 0;
-        while (i < 5) {
-            let x = *std::vector::borrow(&test_values, i);
-            let sqrt_x = sqrt_wad(x);
+        test_values.do_ref!(|x| {
+            let sqrt_x = sqrt_wad(*x);
             // sqrt(x)^2 = sqrt_x * sqrt_x / SCALE
             let squared = math::mul_div(sqrt_x, sqrt_x);
             
-            let diff = if (squared > x) { squared - x } else { x - squared };
-            assert!(diff < x / 1000000, i); // Very tight tolerance for sqrt
-            
-            i = i + 1;
-        };
+            let diff = if (squared > *x) { squared - *x } else { *x - squared };
+            assert!(diff < *x / 1000000, 0); // Very tight tolerance for sqrt
+        });
     }
 
     #[test]

@@ -133,7 +133,7 @@ module gaussian::core {
         normal_forward::pdf_standard(z)
     }
 
-    /// Inverse CDF / Percent Point Function: Φ⁻¹(p)
+    /// Inverse CDF / quantile function Φ⁻¹(p) with p as WAD-scaled u128.
     /// 
     /// Given probability p ∈ (0,1), returns z such that Φ(z) = p.
     /// 
@@ -146,6 +146,12 @@ module gaussian::core {
     /// // z ≈ 1.96 (97.5th percentile)
     /// ```
     public fun ppf(p: u128): SignedWad {
+        normal_inverse::ppf(p)
+    }
+
+    /// Convenience helper: map a u64 seed into (EPS, 1-EPS) and compute Φ⁻¹(p).
+    public fun ppf_from_u64(u: u64): SignedWad {
+        let p = sampling::uniform_open_interval_from_u64(u);
         normal_inverse::ppf(p)
     }
 
@@ -267,5 +273,58 @@ module gaussian::core {
 
         let pos = signed_from_wad(scale());
         assert!(!signed_is_negative(&pos), 5);
+    }
+
+    // === ppf_from_u64 Tests (v0.9.0 modernization) ===
+
+    #[test]
+    fun test_ppf_from_u64_at_midpoint() {
+        // u64 midpoint (0x8000000000000000) should map to p ≈ 0.5, z ≈ 0
+        let z = ppf_from_u64(0x8000000000000000);
+        let z_mag = signed_abs(&z);
+        // Should be very close to 0 (within 0.5σ tolerance)
+        assert!(z_mag < scale() / 2, 0);
+    }
+
+    #[test]
+    fun test_ppf_from_u64_at_low_seed() {
+        // Very low seed should produce negative z (left tail)
+        let z = ppf_from_u64(1000);
+        assert!(signed_is_negative(&z), 0);
+        let z_mag = signed_abs(&z);
+        // Should be large negative (several σ)
+        assert!(z_mag > 2 * scale(), 1);
+    }
+
+    #[test]
+    fun test_ppf_from_u64_at_high_seed() {
+        // Very high seed should produce positive z (right tail)
+        let z = ppf_from_u64(0xFFFFFFFFFFFFFFFF - 1000);
+        assert!(!signed_is_negative(&z), 0);
+        let z_mag = signed_abs(&z);
+        // Should be large positive (several σ)
+        assert!(z_mag > 2 * scale(), 1);
+    }
+
+    #[test]
+    fun test_ppf_from_u64_never_aborts() {
+        // Any u64 seed should produce a valid result (no abort)
+        // Test boundary seeds
+        let _z0 = ppf_from_u64(0);
+        let _z1 = ppf_from_u64(1);
+        let _zmax = ppf_from_u64(0xFFFFFFFFFFFFFFFF);
+        let _zmaxm1 = ppf_from_u64(0xFFFFFFFFFFFFFFFE);
+        let _zmid = ppf_from_u64(0x8000000000000000);
+    }
+
+    #[test]
+    fun test_ppf_from_u64_monotonic() {
+        // Larger seeds should produce larger z values (monotonicity)
+        let z_low = ppf_from_u64(0x1000000000000000);
+        let z_mid = ppf_from_u64(0x8000000000000000);
+        let z_high = ppf_from_u64(0xF000000000000000);
+        
+        assert!(signed_wad::lt(&z_low, &z_mid), 0);
+        assert!(signed_wad::lt(&z_mid, &z_high), 1);
     }
 }

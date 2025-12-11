@@ -30,6 +30,8 @@ module gaussian::normal_inverse {
     use gaussian::coefficients;
     use gaussian::signed_wad::{Self, SignedWad};
     use gaussian::normal_forward::{cdf_standard, pdf_standard};
+    use gaussian::math;
+
     // === Constants ===
     /// Scale factor: WAD = 10^18
     const SCALE: u128 = 1_000_000_000_000_000_000;
@@ -54,10 +56,21 @@ module gaussian::normal_inverse {
 
     /// ln(2) scaled by WAD (0.6931471805599453 * 1e18)
     const LN_2_WAD: u128 = 693_147_180_559_945_309;
+
     // === Errors ===
     /// Denominator zero in rational evaluation
     const EDenominatorZero: u64 = 301;
-    // === Internal Horner Evaluation ===
+
+    /// Probability outside (EPS, 1-EPS) domain
+    const EProbOutOfDomain: u64 = 302;
+
+    // === Internal helpers ===
+
+    fun validate_prob(p: u128): u128 {
+        assert!(p >= EPS && p <= SCALE - EPS, EProbOutOfDomain);
+        p
+    }
+
     /// Evaluate PPF central region numerator P(p) using Horner's method.
     fun horner_eval_ppf_central_num(p: u128): (u128, bool) {
         let n = coefficients::ppf_central_num_len();
@@ -69,13 +82,13 @@ module gaussian::normal_inverse {
             i = i - 1;
 
             // acc = acc * p / SCALE
-            let scaled_acc = mul_div_128(acc_mag, p);
+            let scaled_acc = math::mul_div_128(acc_mag, p);
 
             // Get coefficient
             let (coeff_mag, coeff_neg) = coefficients::ppf_central_num_coeff(i);
 
             // acc = acc + coeff (signed addition)
-            (acc_mag, acc_neg) = signed_add_128(scaled_acc, acc_neg, coeff_mag, coeff_neg);
+            (acc_mag, acc_neg) = math::signed_add_128(scaled_acc, acc_neg, coeff_mag, coeff_neg);
         };
 
         (acc_mag, acc_neg)
@@ -91,10 +104,10 @@ module gaussian::normal_inverse {
         while (i > 0) {
             i = i - 1;
 
-            let scaled_acc = mul_div_128(acc_mag, p);
+            let scaled_acc = math::mul_div_128(acc_mag, p);
             let (coeff_mag, coeff_neg) = coefficients::ppf_central_den_coeff(i);
 
-            (acc_mag, acc_neg) = signed_add_128(scaled_acc, acc_neg, coeff_mag, coeff_neg);
+            (acc_mag, acc_neg) = math::signed_add_128(scaled_acc, acc_neg, coeff_mag, coeff_neg);
         };
 
         (acc_mag, acc_neg)
@@ -110,10 +123,10 @@ module gaussian::normal_inverse {
         while (i > 0) {
             i = i - 1;
 
-            let scaled_acc = mul_div_128(acc_mag, t);
+            let scaled_acc = math::mul_div_128(acc_mag, t);
             let (coeff_mag, coeff_neg) = coefficients::ppf_tail_num_coeff(i);
 
-            (acc_mag, acc_neg) = signed_add_128(scaled_acc, acc_neg, coeff_mag, coeff_neg);
+            (acc_mag, acc_neg) = math::signed_add_128(scaled_acc, acc_neg, coeff_mag, coeff_neg);
         };
 
         (acc_mag, acc_neg)
@@ -129,48 +142,15 @@ module gaussian::normal_inverse {
         while (i > 0) {
             i = i - 1;
 
-            let scaled_acc = mul_div_128(acc_mag, t);
+            let scaled_acc = math::mul_div_128(acc_mag, t);
             let (coeff_mag, coeff_neg) = coefficients::ppf_tail_den_coeff(i);
 
-            (acc_mag, acc_neg) = signed_add_128(scaled_acc, acc_neg, coeff_mag, coeff_neg);
+            (acc_mag, acc_neg) = math::signed_add_128(scaled_acc, acc_neg, coeff_mag, coeff_neg);
         };
 
         (acc_mag, acc_neg)
     }
     // === Helper Functions ===
-    /// Fixed-point multiplication: (a * b) / SCALE for u128
-    fun mul_div_128(a: u128, b: u128): u128 {
-        let a256 = (a as u256);
-        let b256 = (b as u256);
-        let scale256 = (SCALE as u256);
-        // Preserve intermediate precision before scaling back to u128.
-        ((a256 * b256) / scale256) as u128
-    }
-
-    /// Fixed-point division: (a * SCALE) / b for u128
-    fun div_scaled_128(a: u128, b: u128): u128 {
-        assert!(b > 0, EDenominatorZero);
-        let a256 = (a as u256);
-        let b256 = (b as u256);
-        let scale256 = (SCALE as u256);
-        // Cast after the division so the denominator is not truncated.
-        ((a256 * scale256) / b256) as u128
-    }
-
-    /// Signed addition for u128 values
-    fun signed_add_128(a_mag: u128, a_neg: bool, b_mag: u128, b_neg: bool): (u128, bool) {
-        if (a_neg == b_neg) {
-            // Same sign: add magnitudes
-            (a_mag + b_mag, a_neg)
-        } else {
-            // Different signs: subtract magnitudes
-            if (a_mag >= b_mag) {
-                (a_mag - b_mag, a_neg)
-            } else {
-                (b_mag - a_mag, b_neg)
-            }
-        }
-    }
     // === PPF Region Evaluation ===
     /// Evaluate PPF in central region (P_LOW ≤ p ≤ P_HIGH).
     /// Returns z = P(p) / Q(p) as SignedWad.
@@ -180,105 +160,15 @@ module gaussian::normal_inverse {
 
         assert!(q_mag > 0, EDenominatorZero);
 
-        // Compute |P| / |Q| * SCALE
-        let ratio = div_scaled_128(p_mag, q_mag);
-
-        // Determine sign
+        let ratio = math::div_scaled_128(p_mag, q_mag);
         let result_neg = p_neg != q_neg;
 
         signed_wad::new((ratio as u256), result_neg)
     }
 
-    /// Natural log in WAD scaling using mantissa/exponent decomposition.
-    /// Returns (magnitude, is_negative) representing ln(p).
-    fun ln_wad(p: u128): (u256, bool) {
-        assert!(p > 0, EDenominatorZero);
-
-        // Fast-path: ln(1) = 0 to avoid sign ambiguity.
-        if (p == SCALE) {
-            return (0, false)
-        };
-
-        let scale = SCALE as u256;
-        let half_scale = (SCALE / 2) as u256;
-
-        // Normalize mantissa into [0.5, 1)
-        let mut mantissa = (p as u256);
-        let mut k: u64 = 0;
-        while (mantissa < half_scale) {
-            mantissa = mantissa * 2;
-            k = k + 1;
-        };
-        // Guard: clamp to [0.5,1)
-        if (mantissa >= scale) {
-            mantissa = scale - 1;
-        };
-
-        // z = mantissa/scale - 1, scaled by WAD (negative)
-        let z_mag = scale - mantissa; // mantissa < scale
-        let z_wad = (z_mag * scale) / scale; // simplify to z_mag, but keep form for clarity
-        let mut term_mag = z_wad;
-        let mut term_neg = true; // z is negative
-
-        let mut acc_mag = 0u256;
-        let mut _acc_neg = false;
-
-        let mut n: u64 = 1;
-        while (n <= 5) {
-            // term / n
-            let div_mag = term_mag / (n as u256);
-            (acc_mag, _acc_neg) = signed_add_128_internal(acc_mag, _acc_neg, div_mag, term_neg);
-
-            // next term: term *= z
-            term_mag = (term_mag * z_wad) / scale;
-        term_neg = !term_neg; // z is negative, so sign alternates each iteration
-            n = n + 1;
-        };
-
-        // Subtract k * ln(2)
-        let k_ln2 = (LN_2_WAD as u256) * (k as u256);
-        (acc_mag, _acc_neg) = signed_add_128_internal(acc_mag, _acc_neg, k_ln2, true);
-
-        // Sign should be negative for p < 1, positive for p > 1. Zero stays non-negative.
-        let is_neg = if (acc_mag == 0) { false } else { p < SCALE };
-        (acc_mag, is_neg)
-    }
-
-    /// Integer square root for WAD-scaled values.
-    /// Computes sqrt(x / WAD) * WAD by evaluating sqrt(x * WAD).
-    fun sqrt_wad(x: u256): u256 {
-        if (x == 0) {
-            return 0
-        };
-
-        let n = x * (SCALE as u256);
-        let mut guess = n;
-        let mut prev = 0u256;
-        while (guess != prev) {
-            prev = guess;
-            guess = (guess + n / guess) / 2;
-        };
-        guess
-    }
-
-    /// Signed addition helper for u256 magnitudes.
-    fun signed_add_128_internal(a_mag: u256, a_neg: bool, b_mag: u256, b_neg: bool): (u256, bool) {
-        if (a_neg == b_neg) {
-            (a_mag + b_mag, a_neg)
-        } else {
-            if (a_mag >= b_mag) {
-                (a_mag - b_mag, a_neg)
-            } else {
-                (b_mag - a_mag, b_neg)
-            }
-        }
-    }
-
     /// Evaluate PPF in tail region using AAA-derived rational with t = sqrt(-2 * ln(p)).
     fun ppf_tail(p: u128): SignedWad {
-        // Compute t = sqrt(-2 * ln(p))
         let (ln_mag, ln_neg) = ln_wad(p);
-        // ln(p) for p in (0,1) is negative; ensure sign
         let ln_signed = signed_wad::new(ln_mag, ln_neg);
         let neg_ln = signed_wad::negate(&ln_signed);
         let ln_abs = signed_wad::abs(&neg_ln);
@@ -291,10 +181,42 @@ module gaussian::normal_inverse {
 
         assert!(q_mag > 0, EDenominatorZero);
 
-        let ratio = div_scaled_128(p_mag, q_mag);
+        let ratio = math::div_scaled_128(p_mag, q_mag);
         let result_neg = p_neg != q_neg;
 
         signed_wad::new((ratio as u256), result_neg)
+    }
+
+    /// Single Newton refinement step: z_{n+1} = z_n - (Φ(z_n) - p) / φ(z_n).
+    fun newton_step(current: SignedWad, p: u128): SignedWad {
+        let cdf_z = cdf_standard(&current);
+        let pdf_z = pdf_standard(&current);
+
+        // Guard: if PDF is tiny (deep tails), skip update to avoid huge steps.
+        if (pdf_z < (MIN_PDF as u256)) {
+            return current
+        };
+
+        // err = Φ(z) - p as SignedWad
+        let err = signed_wad::from_difference(cdf_z, (p as u256));
+        if (signed_wad::is_zero(&err)) {
+            return current
+        };
+
+        // delta = err / φ(z)
+        let pdf_signed = signed_wad::from_wad(pdf_z);
+        let delta = signed_wad::div_wad(&err, &pdf_signed);
+
+        // z_{n+1} = z_n - delta
+        let mut next = signed_wad::sub(&current, &delta);
+
+        // Clamp |z| to MAX_Z
+        let z_mag = signed_wad::abs(&next);
+        if (z_mag > (MAX_Z as u256)) {
+            next = signed_wad::new((MAX_Z as u256), signed_wad::is_negative(&next));
+        };
+
+        next
     }
     // === Test-only Helpers ===
     #[test_only]
@@ -313,6 +235,13 @@ module gaussian::normal_inverse {
     fun test_ln_wad_zero_aborts() {
         let (_m, _n) = ln_wad(0);
     }
+
+    // Test-only helper for 128-bit division routed through math module.
+    #[test_only]
+    public fun div_scaled_128_public(a: u128, b: u128): u128 {
+        math::div_scaled_128(a, b)
+    }
+
     // === Public API ===
 
     /// Raw AAA-based inverse CDF (no Newton refinement).
@@ -381,46 +310,13 @@ module gaussian::normal_inverse {
     /// // z ≈ 1.96 (WAD-scaled)
     /// ```
     public fun ppf(p: u128): SignedWad {
-        // Get initial estimate from AAA
-        let mut z = ppf_aaa(p);
+        let p_valid = validate_prob(p);
+        let mut z = ppf_aaa(p_valid);
 
-        // Newton refinement iterations
-        let mut iter = 0u64;
-        while (iter < NEWTON_ITERATIONS) {
-            // Φ(z) - the CDF at current estimate
-            let cdf_z = cdf_standard(&z);
-
-            // φ(z) - the PDF at current estimate  
-            let pdf_z = pdf_standard(&z);
-
-            // Guard: if PDF is tiny (deep tails), skip to avoid huge steps
-            if (pdf_z < (MIN_PDF as u256)) {
-                break
-            };
-
-            // err = Φ(z) - p as SignedWad
-            let err = signed_wad::from_difference(cdf_z, (p as u256));
-
-            // If error is essentially zero, we're done
-            if (signed_wad::is_zero(&err)) {
-                break
-            };
-
-            // delta = err / φ(z)
-            // Convert pdf_z to SignedWad for division
-            let pdf_signed = signed_wad::from_wad(pdf_z);
-            let delta = signed_wad::div_wad(&err, &pdf_signed);
-
-            // z = z - delta (Newton step)
-            z = signed_wad::sub(&z, &delta);
-
-            // Clamp z magnitude to MAX_Z
-            let z_mag = signed_wad::abs(&z);
-            if (z_mag > (MAX_Z as u256)) {
-                z = signed_wad::new((MAX_Z as u256), signed_wad::is_negative(&z));
-            };
-
-            iter = iter + 1;
+        let mut i = 0u64;
+        while (i < NEWTON_ITERATIONS) {
+            i = i + 1;
+            z = newton_step(z, p_valid);
         };
 
         z
@@ -627,15 +523,16 @@ module gaussian::normal_inverse {
             10000000000000000, // 1e-2
             20000000000000000  // 0.02
         ];
-        let mut i = 1;
-        while (i < 8) {
-            let p_prev = *std::vector::borrow(&probs, i - 1);
-            let p_cur = *std::vector::borrow(&probs, i);
+        // Check monotonicity: z(p_prev) < z(p_cur) for all consecutive pairs
+        let len = probs.length();
+        (len - 1).do!(|idx| {
+            let i = idx + 1; // Start from 1
+            let p_prev = probs[i - 1];
+            let p_cur = probs[i];
             let z_prev = ppf(p_prev);
             let z_cur = ppf(p_cur);
-            assert!(signed_wad::lt(&z_prev, &z_cur), i as u64);
-            i = i + 1;
-        };
+            assert!(signed_wad::lt(&z_prev, &z_cur), i);
+        });
     }
 
     #[test]
@@ -643,7 +540,142 @@ module gaussian::normal_inverse {
         // (2 * SCALE) / SCALE == 2 * SCALE
         let a: u128 = 2 * SCALE;
         let b: u128 = SCALE;
-        let result = div_scaled_128(a, b);
+        let result = math::div_scaled_128(a, b);
         assert!(result == 2 * SCALE, 0);
+    }
+
+    // === Domain Validation Tests (v0.9.0 modernization) ===
+
+    #[test]
+    fun test_ppf_at_eps_boundary_succeeds() {
+        // ppf(EPS) should succeed (minimum valid probability)
+        let z = ppf(EPS);
+        assert!(signed_wad::is_negative(&z), 0); // Should be negative (far left tail)
+        let z_mag = signed_wad::abs(&z);
+        assert!(z_mag > 5 * (SCALE as u256), 1); // Should be around -6σ
+    }
+
+    #[test]
+    fun test_ppf_at_one_minus_eps_boundary_succeeds() {
+        // ppf(SCALE - EPS) should succeed (maximum valid probability)
+        let z = ppf(SCALE - EPS);
+        assert!(!signed_wad::is_negative(&z), 0); // Should be positive (far right tail)
+        let z_mag = signed_wad::abs(&z);
+        assert!(z_mag > 5 * (SCALE as u256), 1); // Should be around +6σ
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EProbOutOfDomain)]
+    fun test_ppf_below_eps_aborts() {
+        // ppf(EPS - 1) should abort with EProbOutOfDomain
+        let _z = ppf(EPS - 1);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EProbOutOfDomain)]
+    fun test_ppf_above_one_minus_eps_aborts() {
+        // ppf(SCALE - EPS + 1) should abort with EProbOutOfDomain
+        let _z = ppf(SCALE - EPS + 1);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EProbOutOfDomain)]
+    fun test_ppf_at_zero_aborts() {
+        // ppf(0) should abort with EProbOutOfDomain
+        let _z = ppf(0);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EProbOutOfDomain)]
+    fun test_ppf_at_scale_aborts() {
+        // ppf(SCALE) should abort with EProbOutOfDomain (p=1 is invalid)
+        let _z = ppf(SCALE);
+    }
+
+    // === Internal Helpers (must be inside module) ===
+
+    /// Natural log in WAD scaling using mantissa/exponent decomposition.
+    /// Returns (magnitude, is_negative) representing ln(p).
+    fun ln_wad(p: u128): (u256, bool) {
+        assert!(p > 0, EDenominatorZero);
+
+        // Fast-path: ln(1) = 0 to avoid sign ambiguity.
+        if (p == SCALE) {
+            return (0, false)
+        };
+
+        let scale = SCALE as u256;
+        let half_scale = (SCALE / 2) as u256;
+
+        // Normalize mantissa into [0.5, 1)
+        let mut mantissa = (p as u256);
+        let mut k: u64 = 0;
+        while (mantissa < half_scale) {
+            mantissa = mantissa * 2;
+            k = k + 1;
+        };
+        // Guard: clamp to [0.5,1)
+        if (mantissa >= scale) {
+            mantissa = scale - 1;
+        };
+
+        // z = mantissa/scale - 1, scaled by WAD (negative)
+        let z_mag = scale - mantissa; // mantissa < scale
+        let z_wad = (z_mag * scale) / scale; // simplify to z_mag, but keep form for clarity
+        let mut term_mag = z_wad;
+        let mut term_neg = true; // z is negative
+
+        let mut acc_mag = 0u256;
+        let mut _acc_neg = false;
+
+        let mut n: u64 = 1;
+        while (n <= 5) {
+            // term / n
+            let div_mag = term_mag / (n as u256);
+            (acc_mag, _acc_neg) = signed_add_128_internal(acc_mag, _acc_neg, div_mag, term_neg);
+
+            // next term: term *= z
+            term_mag = (term_mag * z_wad) / scale;
+            term_neg = !term_neg; // z is negative, so sign alternates each iteration
+            n = n + 1;
+        };
+
+        // Subtract k * ln(2)
+        let k_ln2 = (LN_2_WAD as u256) * (k as u256);
+        (acc_mag, _acc_neg) = signed_add_128_internal(acc_mag, _acc_neg, k_ln2, true);
+
+        // Sign should be negative for p < 1, positive for p > 1. Zero stays non-negative.
+        let is_neg = if (acc_mag == 0) { false } else { p < SCALE };
+        (acc_mag, is_neg)
+    }
+
+    /// Integer square root for WAD-scaled values.
+    /// Computes sqrt(x / WAD) * WAD by evaluating sqrt(x * WAD).
+    fun sqrt_wad(x: u256): u256 {
+        if (x == 0) {
+            return 0
+        };
+
+        let n = x * (SCALE as u256);
+        let mut guess = n;
+        let mut prev = 0u256;
+        while (guess != prev) {
+            prev = guess;
+            guess = (guess + n / guess) / 2;
+        };
+        guess
+    }
+
+    /// Signed addition helper for u256 magnitudes used in ln_wad.
+    fun signed_add_128_internal(a_mag: u256, a_neg: bool, b_mag: u256, b_neg: bool): (u256, bool) {
+        if (a_neg == b_neg) {
+            (a_mag + b_mag, a_neg)
+        } else {
+            if (a_mag >= b_mag) {
+                (a_mag - b_mag, a_neg)
+            } else {
+                (b_mag - a_mag, b_neg)
+            }
+        }
     }
 }
