@@ -9,5 +9,5 @@ published-at = "0x66f9087a3d9ae3fe07a5f3c1475d503f1b0ea508d3b83b73b0b8637b57629f
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "testnet-v1.62.0" }
 
 [addresses]
-# Use 0x0 for development; published-at handles deployment reference
-gaussian = "0x0"
+# Address matches published-at for proper dependency linking
+gaussian = "0x66f9087a3d9ae3fe07a5f3c1475d503f1b0ea508d3b83b73b0b8637b57629f7f"
