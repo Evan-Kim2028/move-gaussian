@@ -196,6 +196,7 @@ For detailed comparison, see [docs/DESIGN.md](docs/DESIGN.md).
 ## Package Info
 
 - **Version**: 0.9.0
-- **Latest Deployed (Testnet)**: v0.7.0 - `0xa3cf304af5b168686db4bff7e28072490bfd154fb1da50af84919ae20df12938`
+- **Latest Deployed (Testnet)**: `0x66f9087a3d9ae3fe07a5f3c1475d503f1b0ea508d3b83b73b0b8637b57629f7f`
+- **GaussianProfile Object**: `0x0676c9fb51af076b1a24cb872d9f6844bb97ebe0f7e96e1c1d8da5a12b534381`
 - **Tests**: 399 Move + 24 Python property tests
 - **License**: MIT
