@@ -195,7 +195,16 @@ For detailed comparison, see [docs/DESIGN.md](docs/DESIGN.md).
 
 ## Example: Black-Scholes Option Pricing
 
-The [move-black-scholes](https://github.com/Evan-Kim2028/move-black-scholes) package demonstrates real-world usage of this library for option pricing and Greeks calculations.
+The [move-black-scholes](https://github.com/Evan-Kim2028/move-black-scholes) package demonstrates real-world usage of this library for European option pricing and Greeks calculations.
+
+### Black-Scholes Package Info
+
+| Field | Value |
+|-------|-------|
+| **Repository** | [github.com/Evan-Kim2028/move-black-scholes](https://github.com/Evan-Kim2028/move-black-scholes) |
+| **Package (Testnet)** | [`0x1637ddc0495a8833ebd580224dad7154dfb33477f73d2c7fb41e2b350efa55b3`](https://suiscan.xyz/testnet/object/0x1637ddc0495a8833ebd580224dad7154dfb33477f73d2c7fb41e2b350efa55b3) |
+| **Version** | v0.2.0 |
+| **Depends On** | gaussian v0.9.0 |
 
 ### Live Testnet Transactions
 
@@ -207,14 +216,6 @@ The [move-black-scholes](https://github.com/Evan-Kim2028/move-black-scholes) pac
 **Greeks Calculation**
 - **TX**: [`48TFYV87TXRJMUuCzoMZ4T5CLVsFgQoT1fptR2w7NXPv`](https://suiscan.xyz/testnet/tx/48TFYV87TXRJMUuCzoMZ4T5CLVsFgQoT1fptR2w7NXPv)
 - Results: Δ=0.637, Γ=0.019, ν=37.52, θ=-6.41, ρ=53.23
-
-### Black-Scholes Package
-
-| Field | Value |
-|-------|-------|
-| **Package** | [`0x1637ddc0495a8833ebd580224dad7154dfb33477f73d2c7fb41e2b350efa55b3`](https://suiscan.xyz/testnet/object/0x1637ddc0495a8833ebd580224dad7154dfb33477f73d2c7fb41e2b350efa55b3) |
-| **Version** | v0.2.0 |
-| **Depends On** | gaussian v0.9.0 |
 
 ## Package Info
 
