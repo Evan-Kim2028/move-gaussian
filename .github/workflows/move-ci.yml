@@ -1,0 +1,84 @@
+name: Move CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  SUI_VERSION: testnet
+
+jobs:
+  lint-and-build:
+    name: Lint & Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Sui CLI
+        run: |
+          # Download and install Sui CLI
+          curl -fsSL https://sui-releases.s3.us-east-1.amazonaws.com/releases/sui-${{ env.SUI_VERSION }}-ubuntu-x86_64.tgz | tar -xzf -
+          sudo mv sui /usr/local/bin/
+          sui --version
+
+      - name: Build with linter
+        run: sui move build --lint
+        
+      - name: Build with strict warnings (warnings-as-errors)
+        run: sui move build --lint --warnings-are-errors
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-build
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Sui CLI
+        run: |
+          curl -fsSL https://sui-releases.s3.us-east-1.amazonaws.com/releases/sui-${{ env.SUI_VERSION }}-ubuntu-x86_64.tgz | tar -xzf -
+          sudo mv sui /usr/local/bin/
+          sui --version
+
+      - name: Run Move tests
+        run: sui move test
+
+      - name: Run tests with coverage (informational)
+        run: sui move test --coverage || true
+        continue-on-error: true
+
+  security-tests:
+    name: Security Test Suite
+    runs-on: ubuntu-latest
+    needs: lint-and-build
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Sui CLI
+        run: |
+          curl -fsSL https://sui-releases.s3.us-east-1.amazonaws.com/releases/sui-${{ env.SUI_VERSION }}-ubuntu-x86_64.tgz | tar -xzf -
+          sudo mv sui /usr/local/bin/
+          sui --version
+
+      - name: Run security audit tests
+        run: sui move test --filter security_audit
+
+      - name: Run boundary exploit tests
+        run: sui move test --filter boundary_exploit
+
+      - name: Run economic exploit tests
+        run: sui move test --filter economic_exploit
+
+      - name: Run DeFi exploit scenario tests
+        run: sui move test --filter defi_exploit_scenarios
+
+      - name: Run advanced adversarial tests
+        run: sui move test --filter advanced_adversarial
