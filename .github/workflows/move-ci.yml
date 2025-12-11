@@ -19,12 +19,13 @@ jobs:
         run: |
           # Install suiup (Sui version manager)
           curl -sSfL https://raw.githubusercontent.com/MystenLabs/suiup/main/install.sh | bash
-          # Add to PATH for this job
+          # Add to PATH for subsequent steps
           echo "$HOME/.sui/bin" >> $GITHUB_PATH
-          export PATH="$HOME/.sui/bin:$PATH"
-          # Install testnet version
-          $HOME/.sui/bin/suiup install testnet
-          $HOME/.sui/bin/sui --version
+
+      - name: Install Sui testnet
+        run: |
+          suiup install testnet
+          sui --version
 
       - name: Build with linter
         run: sui move build --lint
@@ -45,9 +46,11 @@ jobs:
         run: |
           curl -sSfL https://raw.githubusercontent.com/MystenLabs/suiup/main/install.sh | bash
           echo "$HOME/.sui/bin" >> $GITHUB_PATH
-          export PATH="$HOME/.sui/bin:$PATH"
-          $HOME/.sui/bin/suiup install testnet
-          $HOME/.sui/bin/sui --version
+
+      - name: Install Sui testnet
+        run: |
+          suiup install testnet
+          sui --version
 
       - name: Run Move tests
         run: sui move test
@@ -69,9 +72,11 @@ jobs:
         run: |
           curl -sSfL https://raw.githubusercontent.com/MystenLabs/suiup/main/install.sh | bash
           echo "$HOME/.sui/bin" >> $GITHUB_PATH
-          export PATH="$HOME/.sui/bin:$PATH"
-          $HOME/.sui/bin/suiup install testnet
-          $HOME/.sui/bin/sui --version
+
+      - name: Install Sui testnet
+        run: |
+          suiup install testnet
+          sui --version
 
       - name: Run security audit tests
         run: sui move test --filter security_audit
