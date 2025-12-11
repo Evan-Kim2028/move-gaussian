@@ -6,7 +6,7 @@ edition = "2024.beta"
 published-at = "0xa3cf304af5b168686db4bff7e28072490bfd154fb1da50af84919ae20df12938"
 
 [dependencies]
-# No explicit Sui dependency - let the CLI auto-add it based on local version
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "testnet-v1.39.3" }
 
 [addresses]
 # Use 0x0 for development; published-at handles deployment reference
