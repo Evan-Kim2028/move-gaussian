@@ -35,10 +35,12 @@ const SCALE: u256 = 1_000_000_000_000_000_000;
 // === Errors ===
 
 /// Division by zero.
-const EDivisionByZero: u64 = 10;
+#[error(code = 10)]
+const EDivisionByZero: vector<u8> = b"Divisor must be non-zero.";
 
 /// Unexpected negative value where only non-negative is allowed.
-const EUnexpectedNegative: u64 = 11;
+#[error(code = 11)]
+const EUnexpectedNegative: vector<u8> = b"Unexpected negative value.";
 
 // === Structs ===
 

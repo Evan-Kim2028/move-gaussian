@@ -72,6 +72,14 @@ fun validate_prob(p: u128): u128 {
     p
 }
 
+public fun validate_prob_checked(p: u128): Option<u128> {
+    if (p >= EPS && p <= SCALE - EPS) {
+        option::some(p)
+    } else {
+        option::none()
+    }
+}
+
 /// Evaluate PPF central region numerator P(p) using Horner's method.
 fun horner_eval_ppf_central_num(p: u128): (u128, bool) {
     let n = coefficients::ppf_central_num_len();
@@ -309,8 +317,7 @@ public fun ppf_aaa(p: u128): SignedWad {
 /// let z = ppf(p);
 /// // z ≈ 1.96 (WAD-scaled)
 /// ```
-public fun ppf(p: u128): SignedWad {
-    let p_valid = validate_prob(p);
+fun ppf_validated(p_valid: u128): SignedWad {
     let mut z = ppf_aaa(p_valid);
 
     let mut i = 0u64;
@@ -320,6 +327,20 @@ public fun ppf(p: u128): SignedWad {
     };
 
     z
+}
+
+public fun ppf(p: u128): SignedWad {
+    ppf_validated(validate_prob(p))
+}
+
+/// Checked PPF: returns `option::none()` when `p` is outside `(EPS, 1-EPS)`.
+public fun ppf_checked(p: u128): Option<SignedWad> {
+    let p_opt = validate_prob_checked(p);
+    if (option::is_none(&p_opt)) {
+        option::none()
+    } else {
+        option::some(ppf_validated(*option::borrow(&p_opt)))
+    }
 }
 // === Tests ===
 #[test]
