@@ -18,6 +18,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js (for prettier-move)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install formatter dependencies (npm)
+        run: npm ci
+
+      - name: Check Move formatting (prettier-move)
+        run: npm run fmt:check
+
       - name: Install Sui CLI
         run: |
           # Download Sui CLI from GitHub releases
@@ -41,6 +52,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js (for prettier-move)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install formatter dependencies (npm)
+        run: npm ci
+
+      - name: Check Move formatting (prettier-move)
+        run: npm run fmt:check
+
       - name: Install Sui CLI
         run: |
           curl -fLJO "https://github.com/MystenLabs/sui/releases/download/testnet-${{ env.SUI_VERSION }}/sui-testnet-${{ env.SUI_VERSION }}-ubuntu-x86_64.tgz"
@@ -63,6 +85,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Node.js (for prettier-move)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install formatter dependencies (npm)
+        run: npm ci
+
+      - name: Check Move formatting (prettier-move)
+        run: npm run fmt:check
 
       - name: Install Sui CLI
         run: |
