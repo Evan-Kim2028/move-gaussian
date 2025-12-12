@@ -4,1215 +4,1214 @@
 // Test vectors for erf
 
 #[test_only]
-module gaussian::erf_tests {
-    use gaussian::erf::erf;
-    
-    /// Test tolerance: 1e-7 in WAD scaling (100_000_000_000 out of 1e18)
-    const TEST_TOLERANCE: u256 = 100_000_000_000;
-    
-    /// Helper: absolute difference
-    fun abs_diff(a: u256, b: u256): u256 {
-        if (a > b) { a - b } else { b - a }
-    }
-    
-    #[test]
-    /// Test erf(0) ≈ 0.0000000000
-    fun test_erf_0_0_0000() {
-        let x = 0_u256;
-        let expected = 0_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 0);
-    }
-    
-    #[test]
-    /// Test erf(0.001) ≈ 0.0011283788
-    fun test_erf_1_0_0010() {
-        let x = 1000000000000000_u256;
-        let expected = 1128378794485484_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 1);
-    }
-    
-    #[test]
-    /// Test erf(0.01) ≈ 0.0112834156
-    fun test_erf_2_0_0100() {
-        let x = 10000000000000000_u256;
-        let expected = 11283415579881188_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 2);
-    }
-    
-    #[test]
-    /// Test erf(0.1) ≈ 0.1124629160
-    fun test_erf_3_0_1000() {
-        let x = 100000000000000000_u256;
-        let expected = 112462915974481391_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 3);
-    }
-    
-    #[test]
-    /// Test erf(0.5) ≈ 0.5204998778
-    fun test_erf_4_0_5000() {
-        let x = 500000000000000000_u256;
-        let expected = 520499877813060001_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 4);
-    }
-    
-    #[test]
-    /// Test erf(1.0) ≈ 0.8427007930
-    fun test_erf_5_1_0000() {
-        let x = 1000000000000000000_u256;
-        let expected = 842700792956151261_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 5);
-    }
-    
-    #[test]
-    /// Test erf(1.5) ≈ 0.9661051465
-    fun test_erf_6_1_5000() {
-        let x = 1500000000000000000_u256;
-        let expected = 966105146478537013_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 6);
-    }
-    
-    #[test]
-    /// Test erf(2.0) ≈ 0.9953222650
-    fun test_erf_7_2_0000() {
-        let x = 2000000000000000000_u256;
-        let expected = 995322265025322227_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 7);
-    }
-    
-    #[test]
-    /// Test erf(2.5) ≈ 0.9995930480
-    fun test_erf_8_2_5000() {
-        let x = 2500000000000000000_u256;
-        let expected = 999593047982559714_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 8);
-    }
-    
-    #[test]
-    /// Test erf(3.0) ≈ 0.9999779095
-    fun test_erf_9_3_0000() {
-        let x = 3000000000000000000_u256;
-        let expected = 999977909484333991_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 9);
-    }
-    
-    #[test]
-    /// Test erf(4.0) ≈ 0.9999999845
-    fun test_erf_10_4_0000() {
-        let x = 4000000000000000000_u256;
-        let expected = 999999984526090990_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 10);
-    }
-    
-    #[test]
-    /// Test erf(5.0) ≈ 0.9999999999
-    fun test_erf_11_5_0000() {
-        let x = 5000000000000000000_u256;
-        let expected = 999999999945655365_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 11);
-    }
-    
-    #[test]
-    /// Test erf(5.5) ≈ 1.0000000000
-    fun test_erf_12_5_5000() {
-        let x = 5500000000000000000_u256;
-        let expected = 999999999962835636_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 12);
-    }
-    
-    #[test]
-    /// Test erf(6.0) ≈ 1.0000000000
-    fun test_erf_13_6_0000() {
-        let x = 6000000000000000000_u256;
-        let expected = 999999999966535620_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 13);
-    }
-    
-    #[test]
-    /// Test erf(0.05) ≈ 0.0563719778
-    fun test_erf_14_0_0500() {
-        let x = 50000000000000000_u256;
-        let expected = 56371977794680637_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 14);
-    }
-    
-    #[test]
-    /// Test erf(0.11941176470588236) ≈ 0.1341040428
-    fun test_erf_15_0_1194() {
-        let x = 119411764705882352_u256;
-        let expected = 134104042763353525_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 15);
-    }
-    
-    #[test]
-    /// Test erf(0.18882352941176472) ≈ 0.2105591698
-    fun test_erf_16_0_1888() {
-        let x = 188823529411764736_u256;
-        let expected = 210559169813427197_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 16);
-    }
-    
-    #[test]
-    /// Test erf(0.25823529411764706) ≈ 0.2850377736
-    fun test_erf_17_0_2582() {
-        let x = 258235294117647072_u256;
-        let expected = 285037773642766803_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 17);
-    }
-    
-    #[test]
-    /// Test erf(0.3276470588235294) ≈ 0.3568957434
-    fun test_erf_18_0_3276() {
-        let x = 327647058823529408_u256;
-        let expected = 356895743430664514_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 18);
-    }
-    
-    #[test]
-    /// Test erf(0.39705882352941174) ≈ 0.4255609708
-    fun test_erf_19_0_3971() {
-        let x = 397058823529411712_u256;
-        let expected = 425560970816831494_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 19);
-    }
-    
-    #[test]
-    /// Test erf(0.46647058823529414) ≈ 0.4905465936
-    fun test_erf_20_0_4665() {
-        let x = 466470588235294144_u256;
-        let expected = 490546593639623980_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 20);
-    }
-    
-    #[test]
-    /// Test erf(0.5358823529411765) ≈ 0.5514604664
-    fun test_erf_21_0_5359() {
-        let x = 535882352941176448_u256;
-        let expected = 551460466373700842_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 21);
-    }
-    
-    #[test]
-    /// Test erf(0.6052941176470589) ≈ 0.6080106007
-    fun test_erf_22_0_6053() {
-        let x = 605294117647058816_u256;
-        let expected = 608010600656682008_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 22);
-    }
-    
-    #[test]
-    /// Test erf(0.6747058823529413) ≈ 0.6600065572
-    fun test_erf_23_0_6747() {
-        let x = 674705882352941312_u256;
-        let expected = 660006557210021775_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 23);
-    }
-    
-    #[test]
-    /// Test erf(0.7441176470588236) ≈ 0.7073569958
-    fun test_erf_24_0_7441() {
-        let x = 744117647058823552_u256;
-        let expected = 707356995831300914_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 24);
-    }
-    
-    #[test]
-    /// Test erf(0.813529411764706) ≈ 0.7500637871
-    fun test_erf_25_0_8135() {
-        let x = 813529411764705920_u256;
-        let expected = 750063787127627153_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 25);
-    }
-    
-    #[test]
-    /// Test erf(0.8829411764705883) ≈ 0.7882132459
-    fun test_erf_26_0_8829() {
-        let x = 882941176470588288_u256;
-        let expected = 788213245874387202_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 26);
-    }
-    
-    #[test]
-    /// Test erf(0.9523529411764706) ≈ 0.8219651532
-    fun test_erf_27_0_9524() {
-        let x = 952352941176470656_u256;
-        let expected = 821965153211632334_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 27);
-    }
-    
-    #[test]
-    /// Test erf(1.021764705882353) ≈ 0.8515402899
-    fun test_erf_28_1_0218() {
-        let x = 1021764705882352896_u256;
-        let expected = 851540289892662825_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 28);
-    }
-    
-    #[test]
-    /// Test erf(1.0911764705882354) ≈ 0.8772072066
-    fun test_erf_29_1_0912() {
-        let x = 1091176470588235392_u256;
-        let expected = 877207206602872228_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 29);
-    }
-    
-    #[test]
-    /// Test erf(1.1605882352941177) ≈ 0.8992689151
-    fun test_erf_30_1_1606() {
-        let x = 1160588235294117632_u256;
-        let expected = 899268915124221061_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 30);
-    }
-    
-    #[test]
-    /// Test erf(1.23) ≈ 0.9180501041
-    fun test_erf_31_1_2300() {
-        let x = 1230000000000000000_u256;
-        let expected = 918050104126811907_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 31);
-    }
-    
-    #[test]
-    /// Test erf(1.2994117647058825) ≈ 0.9338853760
-    fun test_erf_32_1_2994() {
-        let x = 1299411764705882368_u256;
-        let expected = 933885375963683741_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 32);
-    }
-    
-    #[test]
-    /// Test erf(1.3688235294117648) ≈ 0.9471088772
-    fun test_erf_33_1_3688() {
-        let x = 1368823529411764736_u256;
-        let expected = 947108877243027461_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 33);
-    }
-    
-    #[test]
-    /// Test erf(1.438235294117647) ≈ 0.9580455671
-    fun test_erf_34_1_4382() {
-        let x = 1438235294117647104_u256;
-        let expected = 958045567136498958_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 34);
-    }
-    
-    #[test]
-    /// Test erf(1.5076470588235296) ≈ 0.9670042432
-    fun test_erf_35_1_5076() {
-        let x = 1507647058823529472_u256;
-        let expected = 967004243169977668_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 35);
-    }
-    
-    #[test]
-    /// Test erf(1.5770588235294118) ≈ 0.9742723326
-    fun test_erf_36_1_5771() {
-        let x = 1577058823529411840_u256;
-        let expected = 974272332597674116_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 36);
-    }
-    
-    #[test]
-    /// Test erf(1.6464705882352941) ≈ 0.9801123641
-    fun test_erf_37_1_6465() {
-        let x = 1646470588235294208_u256;
-        let expected = 980112364087965863_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 37);
-    }
-    
-    #[test]
-    /// Test erf(1.7158823529411766) ≈ 0.9847599627
-    fun test_erf_38_1_7159() {
-        let x = 1715882352941176576_u256;
-        let expected = 984759962673626750_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 38);
-    }
-    
-    #[test]
-    /// Test erf(1.785294117647059) ≈ 0.9884231618
-    fun test_erf_39_1_7853() {
-        let x = 1785294117647058944_u256;
-        let expected = 988423161804250706_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 39);
-    }
-    
-    #[test]
-    /// Test erf(1.8547058823529412) ≈ 0.9912827990
-    fun test_erf_40_1_8547() {
-        let x = 1854705882352941312_u256;
-        let expected = 991282799003089128_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 40);
-    }
-    
-    #[test]
-    /// Test erf(1.9241176470588235) ≈ 0.9934937537
-    fun test_erf_41_1_9241() {
-        let x = 1924117647058823424_u256;
-        let expected = 993493753686637059_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 41);
-    }
-    
-    #[test]
-    /// Test erf(1.993529411764706) ≈ 0.9951867938
-    fun test_erf_42_1_9935() {
-        let x = 1993529411764706048_u256;
-        let expected = 995186793756382709_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 42);
-    }
-    
-    #[test]
-    /// Test erf(2.0629411764705883) ≈ 0.9964708177
-    fun test_erf_43_2_0629() {
-        let x = 2062941176470588160_u256;
-        let expected = 996470817704604654_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 43);
-    }
-    
-    #[test]
-    /// Test erf(2.1323529411764706) ≈ 0.9974353072
-    fun test_erf_44_2_1324() {
-        let x = 2132352941176470528_u256;
-        let expected = 997435307198467315_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 44);
-    }
-    
-    #[test]
-    /// Test erf(2.201764705882353) ≈ 0.9981528377
-    fun test_erf_45_2_2018() {
-        let x = 2201764705882352896_u256;
-        let expected = 998152837701569999_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 45);
-    }
-    
-    #[test]
-    /// Test erf(2.271176470588235) ≈ 0.9986815285
-    fun test_erf_46_2_2712() {
-        let x = 2271176470588235008_u256;
-        let expected = 998681528465507448_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 46);
-    }
-    
-    #[test]
-    /// Test erf(2.3405882352941174) ≈ 0.9990673456
-    fun test_erf_47_2_3406() {
-        let x = 2340588235294117376_u256;
-        let expected = 999067345648691592_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 47);
-    }
-    
-    #[test]
-    /// Test erf(2.4099999999999997) ≈ 0.9993462016
-    fun test_erf_48_2_4100() {
-        let x = 2409999999999999488_u256;
-        let expected = 999346201585183888_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 48);
-    }
-    
-    #[test]
-    /// Test erf(2.479411764705882) ≈ 0.9995458182
-    fun test_erf_49_2_4794() {
-        let x = 2479411764705882112_u256;
-        let expected = 999545818210003939_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 49);
-    }
-    
-    #[test]
-    /// Test erf(2.5488235294117647) ≈ 0.9996873428
-    fun test_erf_50_2_5488() {
-        let x = 2548823529411764736_u256;
-        let expected = 999687342832736779_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 50);
-    }
-    
-    #[test]
-    /// Test erf(2.618235294117647) ≈ 0.9997867198
-    fun test_erf_51_2_6182() {
-        let x = 2618235294117646848_u256;
-        let expected = 999786719810852148_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 51);
-    }
-    
-    #[test]
-    /// Test erf(2.6876470588235293) ≈ 0.9998558325
-    fun test_erf_52_2_6876() {
-        let x = 2687647058823529472_u256;
-        let expected = 999855832540812491_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 52);
-    }
-    
-    #[test]
-    /// Test erf(2.7570588235294116) ≈ 0.9999034371
-    fun test_erf_53_2_7571() {
-        let x = 2757058823529411584_u256;
-        let expected = 999903437126222019_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 53);
-    }
-    
-    #[test]
-    /// Test erf(2.826470588235294) ≈ 0.9999359128
-    fun test_erf_54_2_8265() {
-        let x = 2826470588235293696_u256;
-        let expected = 999935912787234179_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 54);
-    }
-    
-    #[test]
-    /// Test erf(2.895882352941176) ≈ 0.9999578553
-    fun test_erf_55_2_8959() {
-        let x = 2895882352941176320_u256;
-        let expected = 999957855265621368_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 55);
-    }
-    
-    #[test]
-    /// Test erf(2.965294117647059) ≈ 0.9999725388
-    fun test_erf_56_2_9653() {
-        let x = 2965294117647058944_u256;
-        let expected = 999972538841195180_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 56);
-    }
-    
-    #[test]
-    /// Test erf(3.034705882352941) ≈ 0.9999822707
-    fun test_erf_57_3_0347() {
-        let x = 3034705882352941056_u256;
-        let expected = 999982270714108065_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 57);
-    }
-    
-    #[test]
-    /// Test erf(3.1041176470588234) ≈ 0.9999886589
-    fun test_erf_58_3_1041() {
-        let x = 3104117647058823680_u256;
-        let expected = 999988658928775876_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 58);
-    }
-    
-    #[test]
-    /// Test erf(3.1735294117647057) ≈ 0.9999928121
-    fun test_erf_59_3_1735() {
-        let x = 3173529411764705792_u256;
-        let expected = 999992812111606320_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 59);
-    }
-    
-    #[test]
-    /// Test erf(3.242941176470588) ≈ 0.9999954864
-    fun test_erf_60_3_2429() {
-        let x = 3242941176470587904_u256;
-        let expected = 999995486355915818_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 60);
-    }
-    
-    #[test]
-    /// Test erf(3.3123529411764703) ≈ 0.9999971918
-    fun test_erf_61_3_3124() {
-        let x = 3312352941176470528_u256;
-        let expected = 999997191808156225_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 61);
-    }
-    
-    #[test]
-    /// Test erf(3.381764705882353) ≈ 0.9999982690
-    fun test_erf_62_3_3818() {
-        let x = 3381764705882353152_u256;
-        let expected = 999998269008278782_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 62);
-    }
-    
-    #[test]
-    /// Test erf(3.4511764705882353) ≈ 0.9999989429
-    fun test_erf_63_3_4512() {
-        let x = 3451176470588235264_u256;
-        let expected = 999998942870855713_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 63);
-    }
-    
-    #[test]
-    /// Test erf(3.5205882352941176) ≈ 0.9999993604
-    fun test_erf_64_3_5206() {
-        let x = 3520588235294117376_u256;
-        let expected = 999999360378032689_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 64);
-    }
-    
-    #[test]
-    /// Test erf(3.59) ≈ 0.9999996166
-    fun test_erf_65_3_5900() {
-        let x = 3590000000000000000_u256;
-        let expected = 999999616574718656_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 65);
-    }
-    
-    #[test]
-    /// Test erf(3.659411764705882) ≈ 0.9999997723
-    fun test_erf_66_3_6594() {
-        let x = 3659411764705882112_u256;
-        let expected = 999999772278502501_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 66);
-    }
-    
-    #[test]
-    /// Test erf(3.7288235294117644) ≈ 0.9999998660
-    fun test_erf_67_3_7288() {
-        let x = 3728823529411764224_u256;
-        let expected = 999999866000176103_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 67);
-    }
-    
-    #[test]
-    /// Test erf(3.7982352941176467) ≈ 0.9999999219
-    fun test_erf_68_3_7982() {
-        let x = 3798235294117646848_u256;
-        let expected = 999999921872439033_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 68);
-    }
-    
-    #[test]
-    /// Test erf(3.8676470588235294) ≈ 0.9999999549
-    fun test_erf_69_3_8676() {
-        let x = 3867647058823529472_u256;
-        let expected = 999999954861461522_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 69);
-    }
-    
-    #[test]
-    /// Test erf(3.9370588235294117) ≈ 0.9999999742
-    fun test_erf_70_3_9371() {
-        let x = 3937058823529411584_u256;
-        let expected = 999999974152991326_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 70);
-    }
-    
-    #[test]
-    /// Test erf(4.0064705882352944) ≈ 0.9999999853
-    fun test_erf_71_4_0065() {
-        let x = 4006470588235294208_u256;
-        let expected = 999999985326765052_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 71);
-    }
-    
-    #[test]
-    /// Test erf(4.075882352941177) ≈ 0.9999999917
-    fun test_erf_72_4_0759() {
-        let x = 4075882352941176832_u256;
-        let expected = 999999991737268489_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 72);
-    }
-    
-    #[test]
-    /// Test erf(4.145294117647059) ≈ 0.9999999954
-    fun test_erf_73_4_1453() {
-        let x = 4145294117647058944_u256;
-        let expected = 999999995380329787_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 73);
-    }
-    
-    #[test]
-    /// Test erf(4.214705882352941) ≈ 0.9999999974
-    fun test_erf_74_4_2147() {
-        let x = 4214705882352941056_u256;
-        let expected = 999999997431267358_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 74);
-    }
-    
-    #[test]
-    /// Test erf(4.284117647058824) ≈ 0.9999999986
-    fun test_erf_75_4_2841() {
-        let x = 4284117647058823680_u256;
-        let expected = 999999998575084352_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 75);
-    }
-    
-    #[test]
-    /// Test erf(4.353529411764706) ≈ 0.9999999992
-    fun test_erf_76_4_3535() {
-        let x = 4353529411764705792_u256;
-        let expected = 999999999206900724_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 76);
-    }
-    
-    #[test]
-    /// Test erf(4.422941176470588) ≈ 0.9999999996
-    fun test_erf_77_4_4229() {
-        let x = 4422941176470587904_u256;
-        let expected = 999999999552352567_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 77);
-    }
-    
-    #[test]
-    /// Test erf(4.49235294117647) ≈ 0.9999999997
-    fun test_erf_78_4_4924() {
-        let x = 4492352941176470528_u256;
-        let expected = 999999999739067257_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 78);
-    }
-    
-    #[test]
-    /// Test erf(4.561764705882353) ≈ 0.9999999998
-    fun test_erf_79_4_5618() {
-        let x = 4561764705882352640_u256;
-        let expected = 999999999838598496_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 79);
-    }
-    
-    #[test]
-    /// Test erf(4.631176470588235) ≈ 0.9999999999
-    fun test_erf_80_4_6312() {
-        let x = 4631176470588234752_u256;
-        let expected = 999999999890743511_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 80);
-    }
-    
-    #[test]
-    /// Test erf(4.700588235294117) ≈ 0.9999999999
-    fun test_erf_81_4_7006() {
-        let x = 4700588235294116864_u256;
-        let expected = 999999999917540122_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 81);
-    }
-    
-    #[test]
-    /// Test erf(4.77) ≈ 0.9999999999
-    fun test_erf_82_4_7700() {
-        let x = 4770000000000000000_u256;
-        let expected = 999999999931090395_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 82);
-    }
-    
-    #[test]
-    /// Test erf(4.839411764705882) ≈ 0.9999999999
-    fun test_erf_83_4_8394() {
-        let x = 4839411764705882112_u256;
-        let expected = 999999999938055463_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 83);
-    }
-    
-    #[test]
-    /// Test erf(4.908823529411764) ≈ 0.9999999999
-    fun test_erf_84_4_9088() {
-        let x = 4908823529411764224_u256;
-        let expected = 999999999941991106_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 84);
-    }
-    
-    #[test]
-    /// Test erf(4.978235294117647) ≈ 0.9999999999
-    fun test_erf_85_4_9782() {
-        let x = 4978235294117647360_u256;
-        let expected = 999999999944823973_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 85);
-    }
-    
-    #[test]
-    /// Test erf(5.04764705882353) ≈ 0.9999999999
-    fun test_erf_86_5_0476() {
-        let x = 5047647058823529472_u256;
-        let expected = 999999999947439426_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 86);
-    }
-    
-    #[test]
-    /// Test erf(5.117058823529412) ≈ 1.0000000000
-    fun test_erf_87_5_1171() {
-        let x = 5117058823529411584_u256;
-        let expected = 999999999950193307_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 87);
-    }
-    
-    #[test]
-    /// Test erf(5.186470588235294) ≈ 1.0000000000
-    fun test_erf_88_5_1865() {
-        let x = 5186470588235293696_u256;
-        let expected = 999999999953054512_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 88);
-    }
-    
-    #[test]
-    /// Test erf(5.2558823529411764) ≈ 1.0000000000
-    fun test_erf_89_5_2559() {
-        let x = 5255882352941176832_u256;
-        let expected = 999999999955860156_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 89);
-    }
-    
-    #[test]
-    /// Test erf(5.325294117647059) ≈ 1.0000000000
-    fun test_erf_90_5_3253() {
-        let x = 5325294117647058944_u256;
-        let expected = 999999999958453540_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 90);
-    }
-    
-    #[test]
-    /// Test erf(5.394705882352941) ≈ 1.0000000000
-    fun test_erf_91_5_3947() {
-        let x = 5394705882352941056_u256;
-        let expected = 999999999960619555_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 91);
-    }
-    
-    #[test]
-    /// Test erf(5.464117647058823) ≈ 1.0000000000
-    fun test_erf_92_5_4641() {
-        let x = 5464117647058823168_u256;
-        let expected = 999999999962231132_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 92);
-    }
-    
-    #[test]
-    /// Test erf(5.533529411764706) ≈ 1.0000000000
-    fun test_erf_93_5_5335() {
-        let x = 5533529411764705280_u256;
-        let expected = 999999999963273356_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 93);
-    }
-    
-    #[test]
-    /// Test erf(5.602941176470588) ≈ 1.0000000000
-    fun test_erf_94_5_6029() {
-        let x = 5602941176470587392_u256;
-        let expected = 999999999963823282_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 94);
-    }
-    
-    #[test]
-    /// Test erf(5.67235294117647) ≈ 1.0000000000
-    fun test_erf_95_5_6724() {
-        let x = 5672352941176470528_u256;
-        let expected = 999999999964068262_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 95);
-    }
-    
-    #[test]
-    /// Test erf(5.741764705882352) ≈ 1.0000000000
-    fun test_erf_96_5_7418() {
-        let x = 5741764705882352640_u256;
-        let expected = 999999999964244025_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 96);
-    }
-    
-    #[test]
-    /// Test erf(5.811176470588235) ≈ 1.0000000000
-    fun test_erf_97_5_8112() {
-        let x = 5811176470588234752_u256;
-        let expected = 999999999964570769_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 97);
-    }
-    
-    #[test]
-    /// Test erf(5.880588235294118) ≈ 1.0000000000
-    fun test_erf_98_5_8806() {
-        let x = 5880588235294117888_u256;
-        let expected = 999999999965167473_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 98);
-    }
-    
-    #[test]
-    /// Test erf(5.95) ≈ 1.0000000000
-    fun test_erf_99_5_9500() {
-        let x = 5950000000000000000_u256;
-        let expected = 999999999965972162_u256;
-        
-        let result = erf(x);
-        let diff = abs_diff(result, expected);
-        
-        assert!(diff <= TEST_TOLERANCE, 99);
-    }
-    
+module gaussian::erf_tests;
+
+use gaussian::erf::erf;
+
+/// Test tolerance: 1e-7 in WAD scaling (100_000_000_000 out of 1e18)
+const TEST_TOLERANCE: u256 = 100_000_000_000;
+
+/// Helper: absolute difference
+fun abs_diff(a: u256, b: u256): u256 {
+    if (a > b) { a - b } else { b - a }
+}
+
+#[test]
+/// Test erf(0) ≈ 0.0000000000
+fun test_erf_0_0_0000() {
+    let x = 0_u256;
+    let expected = 0_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 0);
+}
+
+#[test]
+/// Test erf(0.001) ≈ 0.0011283788
+fun test_erf_1_0_0010() {
+    let x = 1000000000000000_u256;
+    let expected = 1128378794485484_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 1);
+}
+
+#[test]
+/// Test erf(0.01) ≈ 0.0112834156
+fun test_erf_2_0_0100() {
+    let x = 10000000000000000_u256;
+    let expected = 11283415579881188_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 2);
+}
+
+#[test]
+/// Test erf(0.1) ≈ 0.1124629160
+fun test_erf_3_0_1000() {
+    let x = 100000000000000000_u256;
+    let expected = 112462915974481391_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 3);
+}
+
+#[test]
+/// Test erf(0.5) ≈ 0.5204998778
+fun test_erf_4_0_5000() {
+    let x = 500000000000000000_u256;
+    let expected = 520499877813060001_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 4);
+}
+
+#[test]
+/// Test erf(1.0) ≈ 0.8427007930
+fun test_erf_5_1_0000() {
+    let x = 1000000000000000000_u256;
+    let expected = 842700792956151261_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 5);
+}
+
+#[test]
+/// Test erf(1.5) ≈ 0.9661051465
+fun test_erf_6_1_5000() {
+    let x = 1500000000000000000_u256;
+    let expected = 966105146478537013_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 6);
+}
+
+#[test]
+/// Test erf(2.0) ≈ 0.9953222650
+fun test_erf_7_2_0000() {
+    let x = 2000000000000000000_u256;
+    let expected = 995322265025322227_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 7);
+}
+
+#[test]
+/// Test erf(2.5) ≈ 0.9995930480
+fun test_erf_8_2_5000() {
+    let x = 2500000000000000000_u256;
+    let expected = 999593047982559714_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 8);
+}
+
+#[test]
+/// Test erf(3.0) ≈ 0.9999779095
+fun test_erf_9_3_0000() {
+    let x = 3000000000000000000_u256;
+    let expected = 999977909484333991_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 9);
+}
+
+#[test]
+/// Test erf(4.0) ≈ 0.9999999845
+fun test_erf_10_4_0000() {
+    let x = 4000000000000000000_u256;
+    let expected = 999999984526090990_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 10);
+}
+
+#[test]
+/// Test erf(5.0) ≈ 0.9999999999
+fun test_erf_11_5_0000() {
+    let x = 5000000000000000000_u256;
+    let expected = 999999999945655365_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 11);
+}
+
+#[test]
+/// Test erf(5.5) ≈ 1.0000000000
+fun test_erf_12_5_5000() {
+    let x = 5500000000000000000_u256;
+    let expected = 999999999962835636_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 12);
+}
+
+#[test]
+/// Test erf(6.0) ≈ 1.0000000000
+fun test_erf_13_6_0000() {
+    let x = 6000000000000000000_u256;
+    let expected = 999999999966535620_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 13);
+}
+
+#[test]
+/// Test erf(0.05) ≈ 0.0563719778
+fun test_erf_14_0_0500() {
+    let x = 50000000000000000_u256;
+    let expected = 56371977794680637_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 14);
+}
+
+#[test]
+/// Test erf(0.11941176470588236) ≈ 0.1341040428
+fun test_erf_15_0_1194() {
+    let x = 119411764705882352_u256;
+    let expected = 134104042763353525_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 15);
+}
+
+#[test]
+/// Test erf(0.18882352941176472) ≈ 0.2105591698
+fun test_erf_16_0_1888() {
+    let x = 188823529411764736_u256;
+    let expected = 210559169813427197_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 16);
+}
+
+#[test]
+/// Test erf(0.25823529411764706) ≈ 0.2850377736
+fun test_erf_17_0_2582() {
+    let x = 258235294117647072_u256;
+    let expected = 285037773642766803_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 17);
+}
+
+#[test]
+/// Test erf(0.3276470588235294) ≈ 0.3568957434
+fun test_erf_18_0_3276() {
+    let x = 327647058823529408_u256;
+    let expected = 356895743430664514_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 18);
+}
+
+#[test]
+/// Test erf(0.39705882352941174) ≈ 0.4255609708
+fun test_erf_19_0_3971() {
+    let x = 397058823529411712_u256;
+    let expected = 425560970816831494_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 19);
+}
+
+#[test]
+/// Test erf(0.46647058823529414) ≈ 0.4905465936
+fun test_erf_20_0_4665() {
+    let x = 466470588235294144_u256;
+    let expected = 490546593639623980_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 20);
+}
+
+#[test]
+/// Test erf(0.5358823529411765) ≈ 0.5514604664
+fun test_erf_21_0_5359() {
+    let x = 535882352941176448_u256;
+    let expected = 551460466373700842_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 21);
+}
+
+#[test]
+/// Test erf(0.6052941176470589) ≈ 0.6080106007
+fun test_erf_22_0_6053() {
+    let x = 605294117647058816_u256;
+    let expected = 608010600656682008_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 22);
+}
+
+#[test]
+/// Test erf(0.6747058823529413) ≈ 0.6600065572
+fun test_erf_23_0_6747() {
+    let x = 674705882352941312_u256;
+    let expected = 660006557210021775_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 23);
+}
+
+#[test]
+/// Test erf(0.7441176470588236) ≈ 0.7073569958
+fun test_erf_24_0_7441() {
+    let x = 744117647058823552_u256;
+    let expected = 707356995831300914_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 24);
+}
+
+#[test]
+/// Test erf(0.813529411764706) ≈ 0.7500637871
+fun test_erf_25_0_8135() {
+    let x = 813529411764705920_u256;
+    let expected = 750063787127627153_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 25);
+}
+
+#[test]
+/// Test erf(0.8829411764705883) ≈ 0.7882132459
+fun test_erf_26_0_8829() {
+    let x = 882941176470588288_u256;
+    let expected = 788213245874387202_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 26);
+}
+
+#[test]
+/// Test erf(0.9523529411764706) ≈ 0.8219651532
+fun test_erf_27_0_9524() {
+    let x = 952352941176470656_u256;
+    let expected = 821965153211632334_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 27);
+}
+
+#[test]
+/// Test erf(1.021764705882353) ≈ 0.8515402899
+fun test_erf_28_1_0218() {
+    let x = 1021764705882352896_u256;
+    let expected = 851540289892662825_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 28);
+}
+
+#[test]
+/// Test erf(1.0911764705882354) ≈ 0.8772072066
+fun test_erf_29_1_0912() {
+    let x = 1091176470588235392_u256;
+    let expected = 877207206602872228_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 29);
+}
+
+#[test]
+/// Test erf(1.1605882352941177) ≈ 0.8992689151
+fun test_erf_30_1_1606() {
+    let x = 1160588235294117632_u256;
+    let expected = 899268915124221061_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 30);
+}
+
+#[test]
+/// Test erf(1.23) ≈ 0.9180501041
+fun test_erf_31_1_2300() {
+    let x = 1230000000000000000_u256;
+    let expected = 918050104126811907_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 31);
+}
+
+#[test]
+/// Test erf(1.2994117647058825) ≈ 0.9338853760
+fun test_erf_32_1_2994() {
+    let x = 1299411764705882368_u256;
+    let expected = 933885375963683741_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 32);
+}
+
+#[test]
+/// Test erf(1.3688235294117648) ≈ 0.9471088772
+fun test_erf_33_1_3688() {
+    let x = 1368823529411764736_u256;
+    let expected = 947108877243027461_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 33);
+}
+
+#[test]
+/// Test erf(1.438235294117647) ≈ 0.9580455671
+fun test_erf_34_1_4382() {
+    let x = 1438235294117647104_u256;
+    let expected = 958045567136498958_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 34);
+}
+
+#[test]
+/// Test erf(1.5076470588235296) ≈ 0.9670042432
+fun test_erf_35_1_5076() {
+    let x = 1507647058823529472_u256;
+    let expected = 967004243169977668_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 35);
+}
+
+#[test]
+/// Test erf(1.5770588235294118) ≈ 0.9742723326
+fun test_erf_36_1_5771() {
+    let x = 1577058823529411840_u256;
+    let expected = 974272332597674116_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 36);
+}
+
+#[test]
+/// Test erf(1.6464705882352941) ≈ 0.9801123641
+fun test_erf_37_1_6465() {
+    let x = 1646470588235294208_u256;
+    let expected = 980112364087965863_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 37);
+}
+
+#[test]
+/// Test erf(1.7158823529411766) ≈ 0.9847599627
+fun test_erf_38_1_7159() {
+    let x = 1715882352941176576_u256;
+    let expected = 984759962673626750_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 38);
+}
+
+#[test]
+/// Test erf(1.785294117647059) ≈ 0.9884231618
+fun test_erf_39_1_7853() {
+    let x = 1785294117647058944_u256;
+    let expected = 988423161804250706_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 39);
+}
+
+#[test]
+/// Test erf(1.8547058823529412) ≈ 0.9912827990
+fun test_erf_40_1_8547() {
+    let x = 1854705882352941312_u256;
+    let expected = 991282799003089128_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 40);
+}
+
+#[test]
+/// Test erf(1.9241176470588235) ≈ 0.9934937537
+fun test_erf_41_1_9241() {
+    let x = 1924117647058823424_u256;
+    let expected = 993493753686637059_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 41);
+}
+
+#[test]
+/// Test erf(1.993529411764706) ≈ 0.9951867938
+fun test_erf_42_1_9935() {
+    let x = 1993529411764706048_u256;
+    let expected = 995186793756382709_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 42);
+}
+
+#[test]
+/// Test erf(2.0629411764705883) ≈ 0.9964708177
+fun test_erf_43_2_0629() {
+    let x = 2062941176470588160_u256;
+    let expected = 996470817704604654_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 43);
+}
+
+#[test]
+/// Test erf(2.1323529411764706) ≈ 0.9974353072
+fun test_erf_44_2_1324() {
+    let x = 2132352941176470528_u256;
+    let expected = 997435307198467315_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 44);
+}
+
+#[test]
+/// Test erf(2.201764705882353) ≈ 0.9981528377
+fun test_erf_45_2_2018() {
+    let x = 2201764705882352896_u256;
+    let expected = 998152837701569999_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 45);
+}
+
+#[test]
+/// Test erf(2.271176470588235) ≈ 0.9986815285
+fun test_erf_46_2_2712() {
+    let x = 2271176470588235008_u256;
+    let expected = 998681528465507448_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 46);
+}
+
+#[test]
+/// Test erf(2.3405882352941174) ≈ 0.9990673456
+fun test_erf_47_2_3406() {
+    let x = 2340588235294117376_u256;
+    let expected = 999067345648691592_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 47);
+}
+
+#[test]
+/// Test erf(2.4099999999999997) ≈ 0.9993462016
+fun test_erf_48_2_4100() {
+    let x = 2409999999999999488_u256;
+    let expected = 999346201585183888_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 48);
+}
+
+#[test]
+/// Test erf(2.479411764705882) ≈ 0.9995458182
+fun test_erf_49_2_4794() {
+    let x = 2479411764705882112_u256;
+    let expected = 999545818210003939_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 49);
+}
+
+#[test]
+/// Test erf(2.5488235294117647) ≈ 0.9996873428
+fun test_erf_50_2_5488() {
+    let x = 2548823529411764736_u256;
+    let expected = 999687342832736779_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 50);
+}
+
+#[test]
+/// Test erf(2.618235294117647) ≈ 0.9997867198
+fun test_erf_51_2_6182() {
+    let x = 2618235294117646848_u256;
+    let expected = 999786719810852148_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 51);
+}
+
+#[test]
+/// Test erf(2.6876470588235293) ≈ 0.9998558325
+fun test_erf_52_2_6876() {
+    let x = 2687647058823529472_u256;
+    let expected = 999855832540812491_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 52);
+}
+
+#[test]
+/// Test erf(2.7570588235294116) ≈ 0.9999034371
+fun test_erf_53_2_7571() {
+    let x = 2757058823529411584_u256;
+    let expected = 999903437126222019_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 53);
+}
+
+#[test]
+/// Test erf(2.826470588235294) ≈ 0.9999359128
+fun test_erf_54_2_8265() {
+    let x = 2826470588235293696_u256;
+    let expected = 999935912787234179_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 54);
+}
+
+#[test]
+/// Test erf(2.895882352941176) ≈ 0.9999578553
+fun test_erf_55_2_8959() {
+    let x = 2895882352941176320_u256;
+    let expected = 999957855265621368_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 55);
+}
+
+#[test]
+/// Test erf(2.965294117647059) ≈ 0.9999725388
+fun test_erf_56_2_9653() {
+    let x = 2965294117647058944_u256;
+    let expected = 999972538841195180_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 56);
+}
+
+#[test]
+/// Test erf(3.034705882352941) ≈ 0.9999822707
+fun test_erf_57_3_0347() {
+    let x = 3034705882352941056_u256;
+    let expected = 999982270714108065_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 57);
+}
+
+#[test]
+/// Test erf(3.1041176470588234) ≈ 0.9999886589
+fun test_erf_58_3_1041() {
+    let x = 3104117647058823680_u256;
+    let expected = 999988658928775876_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 58);
+}
+
+#[test]
+/// Test erf(3.1735294117647057) ≈ 0.9999928121
+fun test_erf_59_3_1735() {
+    let x = 3173529411764705792_u256;
+    let expected = 999992812111606320_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 59);
+}
+
+#[test]
+/// Test erf(3.242941176470588) ≈ 0.9999954864
+fun test_erf_60_3_2429() {
+    let x = 3242941176470587904_u256;
+    let expected = 999995486355915818_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 60);
+}
+
+#[test]
+/// Test erf(3.3123529411764703) ≈ 0.9999971918
+fun test_erf_61_3_3124() {
+    let x = 3312352941176470528_u256;
+    let expected = 999997191808156225_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 61);
+}
+
+#[test]
+/// Test erf(3.381764705882353) ≈ 0.9999982690
+fun test_erf_62_3_3818() {
+    let x = 3381764705882353152_u256;
+    let expected = 999998269008278782_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 62);
+}
+
+#[test]
+/// Test erf(3.4511764705882353) ≈ 0.9999989429
+fun test_erf_63_3_4512() {
+    let x = 3451176470588235264_u256;
+    let expected = 999998942870855713_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 63);
+}
+
+#[test]
+/// Test erf(3.5205882352941176) ≈ 0.9999993604
+fun test_erf_64_3_5206() {
+    let x = 3520588235294117376_u256;
+    let expected = 999999360378032689_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 64);
+}
+
+#[test]
+/// Test erf(3.59) ≈ 0.9999996166
+fun test_erf_65_3_5900() {
+    let x = 3590000000000000000_u256;
+    let expected = 999999616574718656_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 65);
+}
+
+#[test]
+/// Test erf(3.659411764705882) ≈ 0.9999997723
+fun test_erf_66_3_6594() {
+    let x = 3659411764705882112_u256;
+    let expected = 999999772278502501_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 66);
+}
+
+#[test]
+/// Test erf(3.7288235294117644) ≈ 0.9999998660
+fun test_erf_67_3_7288() {
+    let x = 3728823529411764224_u256;
+    let expected = 999999866000176103_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 67);
+}
+
+#[test]
+/// Test erf(3.7982352941176467) ≈ 0.9999999219
+fun test_erf_68_3_7982() {
+    let x = 3798235294117646848_u256;
+    let expected = 999999921872439033_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 68);
+}
+
+#[test]
+/// Test erf(3.8676470588235294) ≈ 0.9999999549
+fun test_erf_69_3_8676() {
+    let x = 3867647058823529472_u256;
+    let expected = 999999954861461522_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 69);
+}
+
+#[test]
+/// Test erf(3.9370588235294117) ≈ 0.9999999742
+fun test_erf_70_3_9371() {
+    let x = 3937058823529411584_u256;
+    let expected = 999999974152991326_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 70);
+}
+
+#[test]
+/// Test erf(4.0064705882352944) ≈ 0.9999999853
+fun test_erf_71_4_0065() {
+    let x = 4006470588235294208_u256;
+    let expected = 999999985326765052_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 71);
+}
+
+#[test]
+/// Test erf(4.075882352941177) ≈ 0.9999999917
+fun test_erf_72_4_0759() {
+    let x = 4075882352941176832_u256;
+    let expected = 999999991737268489_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 72);
+}
+
+#[test]
+/// Test erf(4.145294117647059) ≈ 0.9999999954
+fun test_erf_73_4_1453() {
+    let x = 4145294117647058944_u256;
+    let expected = 999999995380329787_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 73);
+}
+
+#[test]
+/// Test erf(4.214705882352941) ≈ 0.9999999974
+fun test_erf_74_4_2147() {
+    let x = 4214705882352941056_u256;
+    let expected = 999999997431267358_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 74);
+}
+
+#[test]
+/// Test erf(4.284117647058824) ≈ 0.9999999986
+fun test_erf_75_4_2841() {
+    let x = 4284117647058823680_u256;
+    let expected = 999999998575084352_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 75);
+}
+
+#[test]
+/// Test erf(4.353529411764706) ≈ 0.9999999992
+fun test_erf_76_4_3535() {
+    let x = 4353529411764705792_u256;
+    let expected = 999999999206900724_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 76);
+}
+
+#[test]
+/// Test erf(4.422941176470588) ≈ 0.9999999996
+fun test_erf_77_4_4229() {
+    let x = 4422941176470587904_u256;
+    let expected = 999999999552352567_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 77);
+}
+
+#[test]
+/// Test erf(4.49235294117647) ≈ 0.9999999997
+fun test_erf_78_4_4924() {
+    let x = 4492352941176470528_u256;
+    let expected = 999999999739067257_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 78);
+}
+
+#[test]
+/// Test erf(4.561764705882353) ≈ 0.9999999998
+fun test_erf_79_4_5618() {
+    let x = 4561764705882352640_u256;
+    let expected = 999999999838598496_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 79);
+}
+
+#[test]
+/// Test erf(4.631176470588235) ≈ 0.9999999999
+fun test_erf_80_4_6312() {
+    let x = 4631176470588234752_u256;
+    let expected = 999999999890743511_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 80);
+}
+
+#[test]
+/// Test erf(4.700588235294117) ≈ 0.9999999999
+fun test_erf_81_4_7006() {
+    let x = 4700588235294116864_u256;
+    let expected = 999999999917540122_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 81);
+}
+
+#[test]
+/// Test erf(4.77) ≈ 0.9999999999
+fun test_erf_82_4_7700() {
+    let x = 4770000000000000000_u256;
+    let expected = 999999999931090395_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 82);
+}
+
+#[test]
+/// Test erf(4.839411764705882) ≈ 0.9999999999
+fun test_erf_83_4_8394() {
+    let x = 4839411764705882112_u256;
+    let expected = 999999999938055463_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 83);
+}
+
+#[test]
+/// Test erf(4.908823529411764) ≈ 0.9999999999
+fun test_erf_84_4_9088() {
+    let x = 4908823529411764224_u256;
+    let expected = 999999999941991106_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 84);
+}
+
+#[test]
+/// Test erf(4.978235294117647) ≈ 0.9999999999
+fun test_erf_85_4_9782() {
+    let x = 4978235294117647360_u256;
+    let expected = 999999999944823973_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 85);
+}
+
+#[test]
+/// Test erf(5.04764705882353) ≈ 0.9999999999
+fun test_erf_86_5_0476() {
+    let x = 5047647058823529472_u256;
+    let expected = 999999999947439426_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 86);
+}
+
+#[test]
+/// Test erf(5.117058823529412) ≈ 1.0000000000
+fun test_erf_87_5_1171() {
+    let x = 5117058823529411584_u256;
+    let expected = 999999999950193307_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 87);
+}
+
+#[test]
+/// Test erf(5.186470588235294) ≈ 1.0000000000
+fun test_erf_88_5_1865() {
+    let x = 5186470588235293696_u256;
+    let expected = 999999999953054512_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 88);
+}
+
+#[test]
+/// Test erf(5.2558823529411764) ≈ 1.0000000000
+fun test_erf_89_5_2559() {
+    let x = 5255882352941176832_u256;
+    let expected = 999999999955860156_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 89);
+}
+
+#[test]
+/// Test erf(5.325294117647059) ≈ 1.0000000000
+fun test_erf_90_5_3253() {
+    let x = 5325294117647058944_u256;
+    let expected = 999999999958453540_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 90);
+}
+
+#[test]
+/// Test erf(5.394705882352941) ≈ 1.0000000000
+fun test_erf_91_5_3947() {
+    let x = 5394705882352941056_u256;
+    let expected = 999999999960619555_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 91);
+}
+
+#[test]
+/// Test erf(5.464117647058823) ≈ 1.0000000000
+fun test_erf_92_5_4641() {
+    let x = 5464117647058823168_u256;
+    let expected = 999999999962231132_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 92);
+}
+
+#[test]
+/// Test erf(5.533529411764706) ≈ 1.0000000000
+fun test_erf_93_5_5335() {
+    let x = 5533529411764705280_u256;
+    let expected = 999999999963273356_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 93);
+}
+
+#[test]
+/// Test erf(5.602941176470588) ≈ 1.0000000000
+fun test_erf_94_5_6029() {
+    let x = 5602941176470587392_u256;
+    let expected = 999999999963823282_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 94);
+}
+
+#[test]
+/// Test erf(5.67235294117647) ≈ 1.0000000000
+fun test_erf_95_5_6724() {
+    let x = 5672352941176470528_u256;
+    let expected = 999999999964068262_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 95);
+}
+
+#[test]
+/// Test erf(5.741764705882352) ≈ 1.0000000000
+fun test_erf_96_5_7418() {
+    let x = 5741764705882352640_u256;
+    let expected = 999999999964244025_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 96);
+}
+
+#[test]
+/// Test erf(5.811176470588235) ≈ 1.0000000000
+fun test_erf_97_5_8112() {
+    let x = 5811176470588234752_u256;
+    let expected = 999999999964570769_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 97);
+}
+
+#[test]
+/// Test erf(5.880588235294118) ≈ 1.0000000000
+fun test_erf_98_5_8806() {
+    let x = 5880588235294117888_u256;
+    let expected = 999999999965167473_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 98);
+}
+
+#[test]
+/// Test erf(5.95) ≈ 1.0000000000
+fun test_erf_99_5_9500() {
+    let x = 5950000000000000000_u256;
+    let expected = 999999999965972162_u256;
+
+    let result = erf(x);
+    let diff = abs_diff(result, expected);
+
+    assert!(diff <= TEST_TOLERANCE, 99);
 }
