@@ -29,6 +29,8 @@
 /// Each coefficient Pi may be positive or negative.
 module gaussian::math;
 
+use gaussian::rounding::{Self, RoundingMode};
+
 /// Scale factor: WAD = 10^18 as u256
 const SCALE: u256 = 1_000_000_000_000_000_000;
 
@@ -74,7 +76,8 @@ const MAX_INPUT: u256 = 6_000_000_000_000_000_000;
 /// - Max product: ~6e38 << u256 max (~1e77)
 ///
 /// Division by zero is the primary failure mode, not overflow.
-const EDivisionByZero: u64 = 2;
+#[error(code = 2)]
+const EDivisionByZero: vector<u8> = b"Denominator must be non-zero.";
 
 // === Public Getters ===
 
@@ -111,12 +114,49 @@ public fun signed_add(a_mag: u256, a_neg: bool, b_mag: u256, b_neg: bool): (u256
     }
 }
 
+// === Shared helpers (OZ-style) ===
+
+/// Multiply two unsigned integers, divide by WAD `SCALE`, and return the `u256` quotient.
+///
+/// Kept as a macro so it can be reused across widths (`u128`, `u256`) without duplicating logic.
+public(package) macro fun mul_div_wad_u256<$Int>($a: $Int, $b: $Int): u256 {
+    (($a as u256) * ($b as u256)) / SCALE
+}
+
+/// Compute `($a * SCALE) / $b` and return the `u256` quotient.
+public(package) macro fun div_scaled_wad_u256<$Int>($a: $Int, $b: $Int): u256 {
+    (($a as u256) * SCALE) / ($b as u256)
+}
+
+fun div_round(numer: u256, denom: u256, mode: RoundingMode): u256 {
+    let q = numer / denom;
+    let r = numer % denom;
+    if (r == 0) {
+        return q
+    };
+
+    if (mode == rounding::down()) {
+        q
+    } else if (mode == rounding::up()) {
+        q + 1
+    } else {
+        // Nearest (ties round up).
+        // Condition r * 2 >= denom rewritten as r >= denom - r (avoids potential overflow).
+        if (r >= denom - r) { q + 1 } else { q }
+    }
+}
+
 /// Fixed-point multiplication: (a * x) / SCALE
 ///
 /// Used in Horner's method for polynomial evaluation.
 /// Assumes both a and x are WAD-scaled.
 public fun mul_div(a: u256, x: u256): u256 {
     (a * x) / SCALE
+}
+
+/// Fixed-point multiplication: (a * x) / SCALE with explicit rounding.
+public fun mul_div_round(a: u256, x: u256, mode: RoundingMode): u256 {
+    div_round(a * x, SCALE, mode)
 }
 
 /// Fixed-point division with scaling: (a * SCALE) / b
@@ -126,6 +166,32 @@ public fun mul_div(a: u256, x: u256): u256 {
 public fun div_scaled(a: u256, b: u256): u256 {
     assert!(b > 0, EDivisionByZero);
     (a * SCALE) / b
+}
+
+/// Fixed-point division with scaling: (a * SCALE) / b with explicit rounding.
+public fun div_scaled_round(a: u256, b: u256, mode: RoundingMode): u256 {
+    assert!(b > 0, EDivisionByZero);
+    div_round(a * SCALE, b, mode)
+}
+
+/// Checked fixed-point division with scaling.
+///
+/// Returns `option::none()` when `b == 0` instead of aborting.
+public fun div_scaled_checked(a: u256, b: u256): Option<u256> {
+    if (b == 0) {
+        option::none()
+    } else {
+        option::some((a * SCALE) / b)
+    }
+}
+
+/// Checked fixed-point division with scaling and explicit rounding.
+public fun div_scaled_round_checked(a: u256, b: u256, mode: RoundingMode): Option<u256> {
+    if (b == 0) {
+        option::none()
+    } else {
+        option::some(div_round(a * SCALE, b, mode))
+    }
 }
 
 /// Clamp a value to the range [0, SCALE] (i.e., [0, 1] in float terms)
@@ -140,20 +206,22 @@ public fun clamp_to_unit(value: u256): u256 {
 /// Fixed-point multiplication: (a * b) / SCALE for u128.
 /// Uses u256 intermediates to preserve precision before scaling back.
 public(package) fun mul_div_128(a: u128, b: u128): u128 {
-    let a256 = (a as u256);
-    let b256 = (b as u256);
-    let scale256 = SCALE;
-    ((a256 * b256) / scale256) as u128
+    (mul_div_wad_u256!(a, b) as u128)
 }
 
 /// Fixed-point division: (a * SCALE) / b for u128.
 /// Aborts if b is zero; denominator is not truncated before division.
 public(package) fun div_scaled_128(a: u128, b: u128): u128 {
     assert!(b > 0, EDivisionByZero);
-    let a256 = (a as u256);
-    let b256 = (b as u256);
-    let scale256 = SCALE;
-    ((a256 * scale256) / b256) as u128
+    (div_scaled_wad_u256!(a, b) as u128)
+}
+
+public(package) fun div_scaled_128_checked(a: u128, b: u128): Option<u128> {
+    if (b == 0) {
+        option::none()
+    } else {
+        option::some((div_scaled_wad_u256!(a, b) as u128))
+    }
 }
 
 /// Signed addition for u128 magnitudes with separate sign flags.
@@ -247,6 +315,22 @@ fun test_div_scaled_zero_denominator() {
 /// Test that div_scaled aborts even with large numerator and zero denominator
 fun test_div_scaled_large_numerator_zero_denominator() {
     div_scaled(1_000_000_000_000_000_000, 0); // Should abort
+}
+
+#[test]
+fun test_div_scaled_checked_zero_returns_none() {
+    let result = div_scaled_checked(1, 0);
+    assert!(option::is_none(&result), 0);
+}
+
+#[test]
+fun test_div_scaled_round_up_matches_expected() {
+    // (1.0 * SCALE) / 3 should round to 0.333... -> up should add 1 wei.
+    let a = SCALE;
+    let b = 3u256;
+    let down = div_scaled_round(a, b, rounding::down());
+    let up = div_scaled_round(a, b, rounding::up());
+    assert!(up == down + 1, 0);
 }
 
 #[test]

@@ -713,7 +713,7 @@ fun test_coefficient_consistency_roundtrip() {
 ///
 /// Expected: Abort with EDivisionByZero (2).
 #[test]
-#[expected_failure(abort_code = 2)]
+#[expected_failure(abort_code = math::EDivisionByZero)]
 fun test_div_scaled_zero_denominator_aborts() {
     let _result = math::div_scaled(SCALE, 0);
 }
