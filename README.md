@@ -2,7 +2,7 @@
 
 On-chain Gaussian (normal) distribution library for Sui Move.
 
-> **Warning**: This library has **not been audited** by a professional security firm. Use at your own risk in production environments.
+> **Warning**: This library has **not been audited** by a professional security firm. Use at your own risk.
 
 Generate random samples from normal distributions, compute probabilities, and perform statistical calculations directly in your smart contracts.
 
