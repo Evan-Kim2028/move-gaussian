@@ -5,8 +5,9 @@ This directory contains reproducible formal verification of the Gaussian CDF imp
 ## Quick Start
 
 ```bash
-# 1. Run sui-prover (45 specs)
-cd ..
+# 1. Run sui-prover (45 specs) - requires sui-prover installed
+# Note: specs are in verification/specs/, not sources/specs/
+# sui-prover uses implicit dependencies, so you may need to modify Move.toml
 sui-prover
 
 # 2. Run Sturm certificate (CDF monotonicity)
@@ -15,6 +16,25 @@ python3 sturm_certificate.py
 # 3. Run overflow analysis
 python3 overflow_analysis.py
 ```
+
+## Directory Structure
+
+```
+verification/
+├── README.md                 # This file
+├── specs/                    # sui-prover spec files (NOT in sources/)
+│   ├── math_spec.move
+│   ├── overflow_safety_spec.move
+│   ├── cdf_monotonicity_spec.move
+│   └── ...
+├── sturm_certificate.py      # Sturm sequence computation
+├── overflow_analysis.py      # Intermediate value bounds
+└── results/
+    ├── sui-prover-output.txt # Captured prover output
+    └── sturm-output.txt      # Captured Sturm result
+```
+
+**Important**: The spec files are in `verification/specs/`, NOT `sources/specs/`, because they use sui-prover-specific syntax (`#[spec_only]`, `requires`, `ensures`, `to_real()`) that doesn't compile with the standard Sui Move compiler.
 
 ## What's Verified
 
