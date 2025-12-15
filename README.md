@@ -2,6 +2,8 @@
 
 On-chain Gaussian (normal) distribution library for Sui Move.
 
+> **Warning**: This library has **not been audited** by a professional security firm. Use at your own risk in production environments.
+
 Generate random samples from normal distributions, compute probabilities, and perform statistical calculations directly in your smart contracts.
 
 ## Features
@@ -65,7 +67,9 @@ All values use **WAD scaling** (10¹⁸) for fixed-point precision:
 
 ## Formal Verification
 
-This library has been formally verified using two complementary approaches:
+> **Note**: The verification below was performed by the library author, not by an independent auditor. The proofs are reproducible but have not been externally reviewed.
+
+This library includes formal verification using two complementary approaches:
 
 ### [sui-prover](https://github.com/asymptotic-code/sui-prover) (45 specs)
 
