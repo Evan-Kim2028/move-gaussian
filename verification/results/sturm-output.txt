@@ -1,0 +1,130 @@
+======================================================================
+Sturm Sequence Analysis for CDF Monotonicity Certificate
+======================================================================
+
+Computing N(z) = P'(z)*Q(z) - P(z)*Q'(z)...
+N(z) degree: 22
+
+N(0) = 3.989422804000692e-01
+N(6) = 1.346241866960274e-04
+
+Computing Sturm sequence...
+Sturm sequence length: 23 polynomials
+
+Sturm sequence degrees:
+  p_0: degree 22
+  p_1: degree 21
+  p_2: degree 20
+  p_3: degree 19
+  p_4: degree 18
+  p_5: degree 17
+  p_6: degree 16
+  p_7: degree 15
+  p_8: degree 14
+  p_9: degree 13
+  p_10: degree 12
+  p_11: degree 11
+  p_12: degree 10
+  p_13: degree 9
+  p_14: degree 8
+  p_15: degree 7
+  p_16: degree 6
+  p_17: degree 5
+  p_18: degree 4
+  p_19: degree 3
+  p_20: degree 2
+  p_21: degree 1
+  p_22: degree 0
+
+======================================================================
+Evaluating Sturm sequence at endpoints:
+======================================================================
+
+At z = 0:
+  p_0(0) = + (3.989423e-01)
+  p_1(0) = - (-3.130246e-01)
+  p_2(0) = - (-3.626607e-01)
+  p_3(0) = + (1.202847e+01)
+  p_4(0) = - (-1.104194e-01)
+  p_5(0) = - (-5.933798e+01)
+  p_6(0) = - (-2.484985e-02)
+  p_7(0) = + (7.250618e+01)
+  p_8(0) = + (1.096770e-02)
+  p_9(0) = - (-3.863378e+02)
+  p_10(0) = - (-2.610472e-03)
+  p_11(0) = + (2.435435e+02)
+  p_12(0) = + (1.772521e-02)
+  p_13(0) = + (3.139478e+02)
+  p_14(0) = - (-8.200951e-03)
+  p_15(0) = - (-8.225882e+03)
+  p_16(0) = + (5.402315e-05)
+  p_17(0) = + (6.829120e+03)
+  p_18(0) = - (-1.872950e-03)
+  p_19(0) = - (-2.481392e+02)
+  p_20(0) = - (-8.002983e-06)
+  p_21(0) = + (5.561341e+01)
+  p_22(0) = - (-4.532189e-08)
+
+At z = 6:
+  p_0(6) = + (1.346242e-04)
+  p_1(6) = - (-4.047010e-04)
+  p_2(6) = - (-1.980897e-04)
+  p_3(6) = + (1.047341e-03)
+  p_4(6) = + (1.143341e-04)
+  p_5(6) = + (6.462185e-02)
+  p_6(6) = - (-8.534846e-06)
+  p_7(6) = - (-1.383975e-01)
+  p_8(6) = - (-5.426662e-06)
+  p_9(6) = + (3.916242e-01)
+  p_10(6) = + (8.408515e-06)
+  p_11(6) = - (-1.744649e-01)
+  p_12(6) = + (2.308523e-05)
+  p_13(6) = + (5.738372e-01)
+  p_14(6) = + (1.048114e-06)
+  p_15(6) = + (1.046766e+00)
+  p_16(6) = - (-4.221944e-07)
+  p_17(6) = - (-3.285741e-01)
+  p_18(6) = + (5.551687e-07)
+  p_19(6) = - (-7.640366e-01)
+  p_20(6) = + (4.076883e-09)
+  p_21(6) = + (7.079635e-01)
+  p_22(6) = - (-4.532189e-08)
+
+Sign changes at z=0: V(0) = 11
+Sign changes at z=6: V(6) = 11
+
+Number of roots in (0, 6]: V(0) - V(6) = 0
+
+======================================================================
+CERTIFICATE RESULT:
+======================================================================
+
+✓ THEOREM VERIFIED: N(z) > 0 for all z ∈ [0, 6]
+
+Proof:
+1. N(0) > 0 (numerically: 3.989422804000692e-01)
+2. Sturm's theorem: V(0) - V(6) = 0 roots in (0, 6]
+3. Since N(0) > 0 and there are no roots, N(z) > 0 on [0, 6]
+4. Therefore CDF'(z) = N(z)/Q(z)² > 0, proving monotonicity
+
+
+Roots in [-0.001, 6]: 0
+
+======================================================================
+Certificate Data for Formal Verification:
+======================================================================
+
+The following facts constitute a formal certificate:
+
+1. Polynomial N(z) has exact rational coefficients (derivable from P, Q)
+2. Sturm sequence computed with exact arithmetic
+3. V(0) = 11 (sign changes at z=0)
+4. V(6) = 11 (sign changes at z=6)  
+5. Root count = 0
+6. N(0) = 997355701000173/2500000000000000 > 0
+
+This certificate can be checked in any proof assistant that supports:
+- Exact rational arithmetic
+- Polynomial GCD computation
+- Sign evaluation
+
